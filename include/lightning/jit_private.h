@@ -177,6 +177,13 @@ typedef jit_uint64_t		jit_regset_t;
 #  define JIT_RET		_A0
 #  define JIT_FRET		_FA0
 typedef jit_uint64_t		jit_regset_t;
+#elif defined(__sh__)
+#  define JIT_RA0		_R4
+#  define JIT_FA0		_F4
+#  define JIT_SP		_R15
+#  define JIT_RET		_R0
+#  define JIT_FRET		_F0
+typedef jit_uint32_t		jit_regset_t;
 #endif
 
 #define jit_data(u,v,w)		_jit_data(_jit,u,v,w)
@@ -748,6 +755,8 @@ struct jit_compiler {
 	    jit_word_t	  length;	/* length of instrs/values vector */
 	} vector;
     } consts;
+#elif defined(__sh__)
+    jit_bool_t mode_d;
 #endif
 #if GET_JIT_SIZE
     /* Temporary storage to calculate instructions length */

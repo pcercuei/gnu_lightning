@@ -4595,6 +4595,8 @@ static maybe_unused void _patch_alist(jit_state_t *_jit, jit_bool_t revert);
 #  include "jit_riscv.c"
 #elif defined(__loongarch__)
 #  include "jit_loongarch.c"
+#elif defined(__sh__)
+#  include "jit_sh.c"
 #endif
 
 static maybe_unused void
