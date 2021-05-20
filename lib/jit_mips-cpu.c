@@ -54,8 +54,11 @@ typedef union {
 #endif
     int					op;
 } jit_instr_t;
-/* FIXME */
+#if defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
+#  define jit_mips2_p()			1
+#else
 #  define jit_mips2_p()			0
+#endif
 #  define _ZERO_REGNO			0
 #  define _T0_REGNO			0x08
 #  define _T1_REGNO			0x09
