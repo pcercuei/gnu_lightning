@@ -1170,7 +1170,11 @@ _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     else if (is_low_mask(i0)) {
 #if defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
 	if (masked_bits_count(i0) <= 32)
-	    EXT(r0, r1, 0, masked_bits_count(i0));
+#if defined(_MIPS_ARCH_MIPS32R2)
+		EXT(r0, r1, 0, masked_bits_count(i0));
+#else
+		DEXT(r0, r1, 0, masked_bits_count(i0));
+#endif
 	else
 #endif
 	{
