@@ -612,7 +612,7 @@ static void _torl(jit_state_t*,int,int,int) maybe_unused;
 #  define CMNI(rn,im)			CC_CMNI(ARM_CC_AL,rn,im)
 #  define T2_CMNI(rn,im)		torri(THUMB2_CMNI,rn,_R15_REGNO,im)
 #  define CC_TST(cc,rn,rm)		corrr(cc,ARM_TST,rn,r0,rm)
-#  define TST(rn,rm)			CC_TST(ARM_CC_AL,rn,rm)
+#  define TST(rn,rm)			corrr(ARM_CC_AL,ARM_TST,rn,0,rm)
 #  define T1_TST(rn,rm)			is(THUMB_TST|(_u3(rm)<<3)|_u3(rn))
 #  define T2_TST(rn,rm)			torrr(THUMB2_TST,rn,_R15_REGNO,rm)
 #  define CC_TSTI(cc,rn,im)		corri(cc,ARM_TST|ARM_I,rn,0,im)
