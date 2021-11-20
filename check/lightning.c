@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <lightning.h>
 #include <dlfcn.h>
+#include <math.h>
 
 #if defined(__linux__) && (defined(__i386__) || defined(__x86_64__))
 #  include <fpu_control.h>
