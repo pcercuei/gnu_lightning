@@ -804,6 +804,8 @@
     8,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    4,	/* movnr */
+    4,	/* movzr */
 #endif /* NEW_ABI */
 #endif /* __WORDSIZE */
 
@@ -1207,4 +1209,6 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
+    4,	/* movnr */
+    4,	/* movzr */
 #endif /* __WORDSIZE */
