@@ -2900,16 +2900,12 @@ _bmsi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_word_t		w;
     jit_int32_t		t0;
     t0 = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    if (can_zero_extend_short_p(i1)) {
-	ANDI(rn(t0), r0, i1);
-	w = _jit->pc.w;
-	BNE(_ZERO_REGNO, rn(t0), ((i0 - w) >> 2) - 1);
-	NOP(1);
-    }
-    else {
-	movi(rn(t0), i1);
-	w = bmsr(i0, r0, rn(t0));
-    }
+
+    andi(rn(t0), r0, i1);
+    w = _jit->pc.w;
+    BNE(_ZERO_REGNO, rn(t0), ((i0 - w) >> 2) - 1);
+    NOP(1);
+
     jit_unget_reg(t0);
     return (w);
 }
@@ -2934,16 +2930,12 @@ _bmci(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_word_t		w;
     jit_int32_t		t0;
     t0 = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    if (can_zero_extend_short_p(i1)) {
-	ANDI(rn(t0), r0, i1);
-	w = _jit->pc.w;
-	BEQ(_ZERO_REGNO, rn(t0), ((i0 - w) >> 2) - 1);
-	NOP(1);
-    }
-    else {
-	movi(rn(t0), i1);
-	w = bmcr(i0, r0, rn(t0));
-    }
+
+    andi(rn(t0), r0, i1);
+    w = _jit->pc.w;
+    BEQ(_ZERO_REGNO, rn(t0), ((i0 - w) >> 2) - 1);
+    NOP(1);
+
     jit_unget_reg(t0);
     return (w);
 }
