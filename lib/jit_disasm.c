@@ -75,7 +75,7 @@ jit_init_debug(const char *progname)
     bfd_check_format(disasm_bfd, bfd_object);
     bfd_check_format(disasm_bfd, bfd_archive);
     if (!disasm_stream)
-	disasm_stream = stderr;
+	disasm_stream = stdout;
     INIT_DISASSEMBLE_INFO(disasm_info, disasm_stream, fprintf);
 #  if defined(__i386__) || defined(__x86_64__)
     disasm_info.arch = bfd_arch_i386;
