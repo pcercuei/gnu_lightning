@@ -325,6 +325,7 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define DADDIU(rt,rs,im)		hrri(MIPS_DADDIU,rs,rt,im)
 #  define SUBU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_SUBU)
 #  define DSUBU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_DSUBU)
+#  define MUL(rd,rs,rt)			hrrr_t(MIPS_SPECIAL2,rs,rt,rd,MIPS_MUL)
 #  define MULT(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_MULT)
 #  define MULTU(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_MULTU)
 #  define DMULT(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DMULT)
@@ -1047,8 +1048,12 @@ _rsbi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _mulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    multu(r1, r2);
-    MFLO(r0);
+    if (__WORDSIZE == 32)
+        MUL(r0, r1, r2);
+    else {
+        multu(r1, r2);
+        MFLO(r0);
+    }
 }
 
 static void
