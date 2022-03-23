@@ -1897,10 +1897,8 @@ _lei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
 
-    if (i0 == 0) {
-	SLT(r0, _ZERO_REGNO, r1);
-	XORI(r0, r0, 1);
-    }
+    if (can_sign_extend_short_p(i0 + 1))
+        SLTI(r0, r1, i0 + 1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
@@ -1921,10 +1919,8 @@ _lei_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
 
-    if (i0 == 0) {
-	SLTU(r0, _ZERO_REGNO, r1);
-	XORI(r0, r0, 1);
-    }
+    if (can_sign_extend_short_p(i0 + 1))
+        SLTIU(r0, r1, i0 + 1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
