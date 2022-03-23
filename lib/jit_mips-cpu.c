@@ -1770,13 +1770,19 @@ static void
 _htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		t0;
-    t0 = jit_get_reg(jit_class_gpr);
-    rshi(rn(t0), r1, 8);
-    andi(r0, r1, 0xff);
-    andi(rn(t0), rn(t0), 0xff);
-    lshi(r0, r0, 8);
-    orr(r0, r0, rn(t0));
-    jit_unget_reg(t0);
+
+    if (jit_mips2_p()) {
+        extr_us(r0, r1);
+        WSBH(r0, r0);
+    } else {
+        t0 = jit_get_reg(jit_class_gpr);
+        rshi(rn(t0), r1, 8);
+        andi(r0, r1, 0xff);
+        andi(rn(t0), rn(t0), 0xff);
+        lshi(r0, r0, 8);
+        orr(r0, r0, rn(t0));
+        jit_unget_reg(t0);
+    }
 }
 
 static void
@@ -1785,25 +1791,40 @@ _htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_int32_t		t0;
     jit_int32_t		t1;
     jit_int32_t		t2;
-    t0 = jit_get_reg(jit_class_gpr);
-    t1 = jit_get_reg(jit_class_gpr);
-    t2 = jit_get_reg(jit_class_gpr);
-    rshi(rn(t0), r1, 24);
-    rshi(rn(t1), r1, 16);
-    rshi(rn(t2), r1,  8);
-    andi(rn(t0), rn(t0), 0xff);
-    andi(rn(t1), rn(t1), 0xff);
-    andi(rn(t2), rn(t2), 0xff);
-    andi(r0, r1, 0xff);
-    lshi(r0, r0, 24);
-    lshi(rn(t1), rn(t1), 8);
-    orr(r0, r0, rn(t0));
-    lshi(rn(t2), rn(t2), 16);
-    orr(r0, r0, rn(t1));
-    orr(r0, r0, rn(t2));
-    jit_unget_reg(t2);
-    jit_unget_reg(t1);
-    jit_unget_reg(t0);
+
+    if (jit_mips2_p()) {
+        if (__WORDSIZE == 64) {
+            SLL(r0, r1, 0);
+            WSBH(r0, r0);
+            ROTR(r0, r0, 16);
+            extr(r0, r0, 0, 32);
+        } else {
+            WSBH(r0, r1);
+            ROTR(r0, r0, 16);
+        }
+    } else {
+        t0 = jit_get_reg(jit_class_gpr);
+        t1 = jit_get_reg(jit_class_gpr);
+        t2 = jit_get_reg(jit_class_gpr);
+
+        rshi(rn(t0), r1, 24);
+        rshi(rn(t1), r1, 16);
+        rshi(rn(t2), r1,  8);
+        andi(rn(t0), rn(t0), 0xff);
+        andi(rn(t1), rn(t1), 0xff);
+        andi(rn(t2), rn(t2), 0xff);
+        andi(r0, r1, 0xff);
+        lshi(r0, r0, 24);
+        lshi(rn(t1), rn(t1), 8);
+        orr(r0, r0, rn(t0));
+        lshi(rn(t2), rn(t2), 16);
+        orr(r0, r0, rn(t1));
+        orr(r0, r0, rn(t2));
+
+        jit_unget_reg(t2);
+        jit_unget_reg(t1);
+        jit_unget_reg(t0);
+    }
 }
 
 static void
