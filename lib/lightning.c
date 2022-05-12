@@ -3303,7 +3303,7 @@ _register_change_p(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 	    default:
 		value = jit_classify(node->code);
 		/* lack of extra information */
-		if (value & jit_cc_a0_jmp)
+		if (value & (jit_cc_a0_jmp|jit_cc_a0_cnd))
 		    return (jit_reg_change);
 		else if ((value & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
 			 (jit_cc_a0_reg|jit_cc_a0_chg) &&
