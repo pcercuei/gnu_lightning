@@ -59,6 +59,7 @@ static FILE			 *disasm_stream;
 void
 jit_init_debug(const char *progname)
 {
+    jit_init_print();
 #if DISASSEMBLER
     bfd_init();
 
