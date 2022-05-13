@@ -96,6 +96,8 @@
     14,	/* nei */
     4,	/* movr */
     8,	/* movi */
+    8,	/* movnr */
+    8,	/* movzr */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
@@ -500,6 +502,8 @@
     14,	/* nei */
     4,	/* movr */
     8,	/* movi */
+    22,	/* movnr */
+    22,	/* movzr */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */
@@ -804,7 +808,5 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* movnr */
-    8,	/* movzr */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */

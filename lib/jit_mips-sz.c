@@ -96,6 +96,8 @@
     8,	/* nei */
     4,	/* movr */
     8,	/* movi */
+    4,	/* movnr */
+    4,	/* movzr */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */
@@ -500,6 +502,8 @@
     8,	/* nei */
     4,	/* movr */
     8,	/* movi */
+    4,	/* movnr */
+    4,	/* movzr */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */
@@ -903,6 +907,8 @@
     8,	/* nei */
     4,	/* movr */
     28,	/* movi */
+    4,	/* movnr */
+    4,	/* movzr */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */
@@ -1207,6 +1213,4 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
-    4,	/* movnr */
-    4,	/* movzr */
 #endif /* __WORDSIZE */

@@ -95,6 +95,8 @@
     16,	/* nei */
     2,	/* movr */
     5,	/* movi */
+    7,	/* movnr */
+    7,	/* movzr */
     11,	/* extr_c */
     11,	/* extr_uc */
     3,	/* extr_s */
@@ -399,8 +401,6 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    7,	/* movnr */
-    7,	/* movzr */
 #endif
 
 #if __X64
@@ -500,6 +500,8 @@
     14,	/* nei */
     3,	/* movr */
     10,	/* movi */
+    7,	/* movnr */
+    7,	/* movzr */
     7,	/* extr_c */
     7,	/* extr_uc */
     4,	/* extr_s */
@@ -804,8 +806,6 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    7,	/* movnr */
-    7,	/* movzr */
 #else
 
 #  if __X64_32
@@ -904,6 +904,8 @@
     14,	/* nei */
     3,	/* movr */
     6,	/* movi */
+    7,	/* movnr */
+    7,	/* movzr */
     7,	/* extr_c */
     7,	/* extr_uc */
     4,	/* extr_s */
@@ -1208,8 +1210,6 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    7,	/* movnr */
-    7,	/* movzr */
 
 #  else
 #define JIT_INSTR_MAX 115
@@ -1307,6 +1307,8 @@
     14,	/* nei */
     3,	/* movr */
     10,	/* movi */
+    7,	/* movnr */
+    7,	/* movzr */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
@@ -1611,8 +1613,6 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    7,	/* movnr */
-    7,	/* movzr */
 #endif /* __CYGWIN__ || _WIN32 */
 #  endif /* __X64_32 */
 #endif /* __X64 */

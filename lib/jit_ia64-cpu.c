@@ -1307,6 +1307,10 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #  define htonr_us(r0,r1)		_htonr_us(_jit,r0,r1)
 static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
@@ -3481,6 +3485,24 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     w = _jit->pc.w;
     MOVL(r0, i0);
     return (w);
+}
+
+static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = beqi(_jit->pc.w, r2, 0);
+    movr(r0, r1);
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = bnei(_jit->pc.w, r2, 0);
+    movr(r0, r1);
+    patch_at(w, _jit->pc.w);
 }
 
 static void

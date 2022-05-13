@@ -966,6 +966,10 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #  define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addr(r0,r1,r2)		_addr(_jit,r0,r1,r2)
 static void _addr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -2440,6 +2444,32 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     IIHH(r0, x16((jit_uword_t)i0 >> 48));
 #endif
     return (w);
+}
+
+static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = beqi_p(_jit->pc.w, r2, 0);
+#if __WORDSIZE == 32
+    LR(r0, r1);
+#else
+    LGR(r0, r1);
+#endif
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = bnei_p(_jit->pc.w, r2, 0);
+#if __WORDSIZE == 32
+    LR(r0, r1);
+#else
+    LGR(r0, r1);
+#endif
+    patch_at(w, _jit->pc.w);
 }
 
 static void

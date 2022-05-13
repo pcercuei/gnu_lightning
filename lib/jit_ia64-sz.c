@@ -95,6 +95,8 @@
     32,	/* nei */
     16,	/* movr */
     16,	/* movi */
+    48, /* movnr */
+    48, /* movzr */
     16,	/* extr_c */
     16,	/* extr_uc */
     16,	/* extr_s */
