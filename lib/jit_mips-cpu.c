@@ -1961,10 +1961,15 @@ _gei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
 
-    reg = jit_get_reg(jit_class_gpr);
-    movi(rn(reg), i0);
-    ger(r0, r1, rn(reg));
-    jit_unget_reg(reg);
+    if (can_sign_extend_short_p(i0)) {
+        SLTI(r0, r1, i0);
+        XORI(r0, r0, 1);
+    } else {
+        reg = jit_get_reg(jit_class_gpr);
+        movi(rn(reg), i0);
+        ger(r0, r1, rn(reg));
+        jit_unget_reg(reg);
+    }
 }
 
 static void
@@ -1979,10 +1984,15 @@ _gei_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
 
-    reg = jit_get_reg(jit_class_gpr);
-    movi(rn(reg), i0);
-    ger_u(r0, r1, rn(reg));
-    jit_unget_reg(reg);
+    if (can_sign_extend_short_p(i0)) {
+        SLTIU(r0, r1, i0);
+        XORI(r0, r0, 1);
+    } else {
+        reg = jit_get_reg(jit_class_gpr);
+        movi(rn(reg), i0);
+        ger_u(r0, r1, rn(reg));
+        jit_unget_reg(reg);
+    }
 }
 
 static void
