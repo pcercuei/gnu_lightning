@@ -111,6 +111,7 @@ typedef union {
 #  define can_sign_extend_short_p(im)	((im) >= -32678 && (im) <= 32767)
 #  define can_zero_extend_short_p(im)	((im) >= 0 && (im) <= 65535)
 #  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
+#  define is_middle_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) <= 1) : 0)
 #  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
 #  define masked_bits_count(im)		__builtin_popcountl(im)
 #  define unmasked_bits_count(im)	(__WORDSIZE - masked_bits_count(im))
@@ -349,8 +350,12 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define DSRL32(rd,rt,sa)		rrit(rt,rd,sa,MIPS_DSRL32)
 #  define INS(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,pos+size-1,pos,MIPS_INS)
 #  define DINS(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,pos+size-1,pos,MIPS_DINS)
+#  define DINSU(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,pos+size-32-1,pos-32,MIPS_DINSU)
+#  define DINSM(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,pos+size-32-1,pos,MIPS_DINSM)
 #  define EXT(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,size-1,pos,MIPS_EXT)
 #  define DEXT(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,size-1,pos,MIPS_DEXT)
+#  define DEXTU(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,size-1,pos-32,MIPS_DEXTU)
+#  define DEXTM(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,size-32-1,pos,MIPS_DEXTM)
 #  define ROTR(rd,rt,sa)		hrrrit(MIPS_SPECIAL,1,rt,rd,sa,MIPS_SRL)
 #  define DROTR(rd,rt,sa)		hrrrit(MIPS_SPECIAL,1,rt,rd,sa,MIPS_DSRL)
 #  define MFHI(rd)			rrr_t(_ZERO_REGNO,_ZERO_REGNO,rd,MIPS_MFHI)
@@ -415,6 +420,10 @@ static void _nop(jit_state_t*,jit_int32_t);
 #    define div(rs,rt)			DDIV(rs,rt)
 #    define divu(rs,rt)			DDIVU(rs,rt)
 #  endif
+#  define extr(rd,rt,lsb,nb)	_extr(_jit,rd,rt,lsb,nb)
+static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define insr(rd,rt,lsb,nb)	_insr(_jit,rd,rt,lsb,nb)
+static void _insr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #define addcr(r0,r1,r2)			_addcr(_jit,r0,r1,r2)
@@ -813,6 +822,38 @@ _nop(jit_state_t *_jit, jit_int32_t i0)
 }
 
 static void
+_extr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+      jit_int32_t pos, jit_int32_t size)
+{
+    assert(size > 0);
+
+    if (__WORDSIZE == 32)
+        EXT(r0, r1, pos, size);
+    else if (pos >= 32)
+        DEXTU(r0, r1, pos, size);
+    else if (size > 32)
+        DEXTM(r0, r1, pos, size);
+    else
+        DEXT(r0, r1, pos, size);
+}
+
+static void
+_insr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+      jit_int32_t pos, jit_int32_t size)
+{
+    assert(size > 0);
+
+    if (__WORDSIZE == 32)
+        INS(r0, r1, pos, size);
+    else if (pos >= 32)
+        DINSU(r0, r1, pos, size);
+    else if (size > 32)
+        DINSM(r0, r1, pos, size);
+    else
+        DINS(r0, r1, pos, size);
+}
+
+static void
 _addi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -1172,29 +1213,33 @@ _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_zero_extend_short_p(i0))
-	ANDI(r0, r1, i0);
+        ANDI(r0, r1, i0);
     else if (is_low_mask(i0)) {
-#if defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
-	if (masked_bits_count(i0) <= 32)
-#if defined(_MIPS_ARCH_MIPS32R2)
-		EXT(r0, r1, 0, masked_bits_count(i0));
-#else
-		DEXT(r0, r1, 0, masked_bits_count(i0));
-#endif
-	else
-#endif
-	{
-		lshi(r0, r1, unmasked_bits_count(i0));
-		rshi_u(r0, r0, unmasked_bits_count(i0));
-	}
+        if (jit_mips2_p())
+            extr(r0, r1, 0, masked_bits_count(i0));
+        else {
+            lshi(r0, r1, unmasked_bits_count(i0));
+            rshi_u(r0, r0, unmasked_bits_count(i0));
+        }
     } else if (is_high_mask(i0)) {
-	rshi(r0, r1, unmasked_bits_count(i0));
-	lshi(r0, r0, unmasked_bits_count(i0));
+        if (jit_mips2_p() && r0 == r1)
+            insr(r0, _ZERO_REGNO, 0, unmasked_bits_count(i0));
+        else {
+            rshi(r0, r1, unmasked_bits_count(i0));
+            lshi(r0, r0, unmasked_bits_count(i0));
+        }
+    } else if (jit_mips2_p() && is_middle_mask(i0)) {
+        extr(r0, r1, __builtin_ctzl(i0), masked_bits_count(i0));
+        lshi(r0, r0, __builtin_ctzl(i0));
+    } else if (jit_mips2_p() && is_middle_mask(~i0)) {
+        if (r0 != r1)
+            movr(r0, r1);
+        insr(r0, _ZERO_REGNO, __builtin_ctzl(~i0), masked_bits_count(~i0));
     } else {
-	reg = jit_get_reg(jit_class_gpr);
-	movi(rn(reg), i0);
-	AND(r0, r1, rn(reg));
-	jit_unget_reg(reg);
+        reg = jit_get_reg(jit_class_gpr);
+        movi(rn(reg), i0);
+        AND(r0, r1, rn(reg));
+        jit_unget_reg(reg);
     }
 }
 
