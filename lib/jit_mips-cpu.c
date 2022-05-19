@@ -1841,8 +1841,12 @@ _extr_s(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _extr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    lshi(r0, r1, 32);
-    rshi_u(r0, r0, 32);
+    if (jit_mips2_p())
+        DEXT(r0, r1, 0, 32);
+    else {
+        lshi(r0, r1, 32);
+        rshi_u(r0, r0, 32);
+    }
 }
 #  endif
 
