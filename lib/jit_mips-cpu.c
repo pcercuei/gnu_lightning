@@ -110,7 +110,7 @@ typedef union {
 #  endif
 #  define can_sign_extend_short_p(im)	((im) >= -32678 && (im) <= 32767)
 #  define can_zero_extend_short_p(im)	((im) >= 0 && (im) <= 65535)
-#  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) == 1) : 0)
+#  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
 #  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
 #  define masked_bits_count(im)		__builtin_popcountl(im)
 #  define unmasked_bits_count(im)	(__WORDSIZE - masked_bits_count(im))
