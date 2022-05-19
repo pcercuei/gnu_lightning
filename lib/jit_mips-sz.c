@@ -42,8 +42,8 @@
     28,	/* subxr */
     28,	/* subxi */
     16,	/* rsbi */
-    8,	/* mulr */
-    16,	/* muli */
+    4,	/* mulr */
+    12,	/* muli */
     12,	/* qmulr */
     20,	/* qmuli */
     12,	/* qmulr_u */
@@ -448,8 +448,8 @@
     28,	/* subxr */
     28,	/* subxi */
     16,	/* rsbi */
-    8,	/* mulr */
-    16,	/* muli */
+    4,	/* mulr */
+    12,	/* muli */
     12,	/* qmulr */
     20,	/* qmuli */
     12,	/* qmulr_u */
