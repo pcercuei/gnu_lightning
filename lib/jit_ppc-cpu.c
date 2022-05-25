@@ -521,23 +521,11 @@ static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
 #    define extr_i(r0,r1)		EXTSW(r0,r1)
 #    define extr_ui(r0,r1)		CLRLDI(r0,r1,32)
 #  endif
-#  if __BYTE_ORDER == __BIG_ENDIAN
-#    define htonr_us(r0,r1)		extr_us(r0,r1)
-#    if __WORDSIZE == 32
-#      define htonr_ui(r0,r1)		movr(r0,r1)
-#    else
-#      define htonr_ui(r0,r1)		extr_ui(r0,r1)
-#      define htonr_ul(r0,r1)		movr(r0,r1)
-#    endif
-#  else
-#    define htonr_us(r0,r1)		_htonr_us(_jit,r0,r1)
-static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#    define htonr_ui(r0,r1)		_htonr_ui(_jit,r0,r1)
-static void _htonr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#    if __WORDSIZE == 64
-#      define htonr_ul(r0,r1)		_htonr_ul(_jit,r0,r1)
-static void _htonr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
-#    endif
+#  define bswapr_us(r0,r1)		generic_bswapr_us(_jit,r0,r1)
+#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  if __WORDSIZE == 64
+#    define bswapr_ul(r0,r1)		generic_bswapr_ul(_jit,r0,r1)
 #  endif
 #  define addr(r0,r1,r2)		ADD(r0,r1,r2)
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -1158,22 +1146,8 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     return (word);
 }
 
-#  if __BYTE_ORDER == __LITTLE_ENDIAN
 static void
-_htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		t0;
-    t0 = jit_get_reg(jit_class_gpr);
-    rshi(rn(t0), r1, 8);
-    andi(r0, r1, 0xff);
-    andi(rn(t0), rn(t0), 0xff);
-    lshi(r0, r0, 8);
-    orr(r0, r0, rn(t0));
-    jit_unget_reg(t0);
-}
-
-static void
-_htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     reg = jit_get_reg(jit_class_gpr);
@@ -1187,22 +1161,6 @@ _htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #  endif
     jit_unget_reg(reg);
 }
-
-#    if __WORDSIZE == 64
-static void
-_htonr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    rshi_u(rn(reg), r1, 32);
-    htonr_ui(r0, r1);
-    htonr_ui(rn(reg), rn(reg));
-    lshi(r0, r0, 32);
-    orr(r0, r0, rn(reg));
-    jit_unget_reg(reg);
-}
-#    endif
-#  endif
 
 static void
 _addi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)

@@ -1,7 +1,7 @@
 
 #if __WORDSIZE == 32
 #if NEW_ABI
-#define JIT_INSTR_MAX 44
+#define JIT_INSTR_MAX 52
     0,	/* data */
     0,	/* live */
     0,	/* align */
@@ -402,6 +402,9 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
+    20,	/* bswapr_us */
+    52,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 #endif	/* NEW_ABI */
 #endif /* __WORDSIZE */
 
@@ -808,11 +811,14 @@
     8,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    20,	/* bswapr_us */
+    52,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 #endif /* NEW_ABI */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 44
+#define JIT_INSTR_MAX 116
     0,	/* data */
     0,	/* live */
     4,	/* align */
@@ -1213,4 +1219,7 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
+    20,	/* bswapr_us */
+    52,	/* bswapr_ui */
+    116,	/* bswapr_ul */
 #endif /* __WORDSIZE */

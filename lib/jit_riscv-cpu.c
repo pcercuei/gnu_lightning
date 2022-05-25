@@ -434,12 +434,9 @@ static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static void _stxr_l(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define stxi_l(i0, r0, r1)		_stxi_l(_jit, i0, r0, r1)
 static void _stxi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#  define htonr_us(r0, r1)		_htonr_us(_jit, r0, r1)
-static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define htonr_ui(r0, r1)		_htonr_ui(_jit, r0, r1)
-static void _htonr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define htonr_ul(r0, r1)		_htonr_ul(_jit, r0, r1)
-static void _htonr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_us(r0, r1)		generic_bswapr_us(_jit, r0, r1)
+#  define bswapr_ui(r0, r1)		generic_bswapr_ui(_jit, r0, r1)
+#  define bswapr_ul(r0, r1)		generic_bswapr_ul(_jit, r0, r1)
 #  define extr_c(r0, r1)		_extr_c(_jit, r0, r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0, r1)		andi(r0, r1, 0xff)
@@ -1246,59 +1243,6 @@ DEFST(c, B)
 DEFST(s, H)
 DEFST(i, W)
 DEFST(l, D)
-
-static void
-_htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		t0;
-    t0 = jit_get_reg(jit_class_gpr);
-    rshi(rn(t0), r1, 8);
-    andi(r0, r1, 0xff);
-    andi(rn(t0), rn(t0), 0xff);
-    lshi(r0, r0, 8);
-    orr(r0, r0, rn(t0));
-    jit_unget_reg(t0);
-}
-
-static void
-_htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		t0;
-    jit_int32_t		t1;
-    jit_int32_t		t2;
-    t0 = jit_get_reg(jit_class_gpr);
-    t1 = jit_get_reg(jit_class_gpr);
-    t2 = jit_get_reg(jit_class_gpr);
-    rshi(rn(t0), r1, 24);
-    rshi(rn(t1), r1, 16);
-    rshi(rn(t2), r1,  8);
-    andi(rn(t0), rn(t0), 0xff);
-    andi(rn(t1), rn(t1), 0xff);
-    andi(rn(t2), rn(t2), 0xff);
-    andi(r0, r1, 0xff);
-    lshi(r0, r0, 24);
-    lshi(rn(t1), rn(t1), 8);
-    orr(r0, r0, rn(t0));
-    lshi(rn(t2), rn(t2), 16);
-    orr(r0, r0, rn(t1));
-    orr(r0, r0, rn(t2));
-    jit_unget_reg(t2);
-    jit_unget_reg(t1);
-    jit_unget_reg(t0);
-}
-
-static void
-_htonr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		t0;
-    t0 = jit_get_reg(jit_class_gpr);
-    rshi_u(rn(t0), r1, 32);
-    htonr_ui(r0, r1);
-    htonr_ui(rn(t0), rn(t0));
-    lshi(r0, r0, 32);
-    orr(r0, r0, rn(t0));
-    jit_unget_reg(t0);
-}
 
 static void
 _extr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)

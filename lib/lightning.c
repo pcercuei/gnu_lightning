@@ -1380,6 +1380,7 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_truncr_f_i:			case jit_code_truncr_f_l:
 	case jit_code_truncr_d_i:			case jit_code_truncr_d_l:
 	case jit_code_htonr_us:	case jit_code_htonr_ui:	case jit_code_htonr_ul:
+	case jit_code_bswapr_us:	case jit_code_bswapr_ui:	case jit_code_bswapr_ul:
 	case jit_code_ldr_c:	case jit_code_ldr_uc:
 	case jit_code_ldr_s:	case jit_code_ldr_us:	case jit_code_ldr_i:
 	case jit_code_ldr_ui:	case jit_code_ldr_l:	case jit_code_negr_f:
@@ -3491,6 +3492,31 @@ _patch_register(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
     }
 }
 
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define htonr_us(r0,r1)		bswapr_us(r0,r1)
+#  define htonr_ui(r0,r1)		bswapr_ui(r0,r1)
+#  if __WORDSIZE == 64
+#    define htonr_ul(r0,r1)		bswapr_ul(r0,r1)
+#  endif
+#else
+#  define htonr_us(r0,r1)		extr_us(r0,r1)
+#  if __WORDSIZE == 32
+#    define htonr_ui(r0,r1)		movr(r0,r1)
+#  else
+#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
+#    define htonr_ul(r0,r1)		movr(r0,r1)
+#  endif
+#endif
+
+static maybe_unused void
+generic_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+static maybe_unused void
+generic_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+#if __WORDSIZE == 64
+static maybe_unused void
+generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+#endif
+
 #if defined(__i386__) || defined(__x86_64__)
 #  include "jit_x86.c"
 #elif defined(__mips__)
@@ -3513,4 +3539,48 @@ _patch_register(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 #  include "jit_alpha.c"
 #elif defined(__riscv)
 #  include "jit_riscv.c"
+#endif
+
+static maybe_unused void
+generic_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+    rshi(rn(reg), r1, 8);
+    andi(r0, r1, 0xff);
+    andi(rn(reg), rn(reg), 0xff);
+    lshi(r0, r0, 8);
+    orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+
+static maybe_unused void
+generic_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+	rshi(rn(reg), r1, 16);
+	bswapr_us(r0, r1);
+	bswapr_us(rn(reg), rn(reg));
+	lshi(r0, r0, 16);
+	orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+
+#if __WORDSIZE == 64
+static maybe_unused void
+generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+    rshi_u(rn(reg), r1, 32);
+    bswapr_ui(r0, r1);
+    bswapr_ui(rn(reg), rn(reg));
+    lshi(r0, r0, 32);
+    orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
 #endif

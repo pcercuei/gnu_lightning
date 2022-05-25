@@ -1054,6 +1054,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(ext, _us);
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
+		case_rr(bswap, _us);
+		case_rr(bswap, _ui);
 		case_rrr(lt,);
 		case_rrw(lt,);
 		case_rrr(lt, _u);

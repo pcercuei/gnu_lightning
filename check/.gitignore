@@ -4,6 +4,7 @@ nodata
 *.trs
 
 3to2
+bswap
 add
 align
 allocai

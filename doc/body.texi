@@ -372,6 +372,14 @@ htonr    _us _ui _ul @r{Host-to-network (big endian) order}
 ntohr    _us _ui _ul @r{Network-to-host order }
 @end example
 
+@code{bswapr} can be used to unconditionally byte-swap an operand.
+On little-endian architectures, @code{htonr} and @code{ntohr} resolve
+to this.
+The @code{_ul} variant is only available in 64-bit architectures.
+@example
+bswapr    _us _ui _ul  01 = byte_swap(02)
+@end example
+
 @item Load operations
 @code{ld} accepts two operands while @code{ldx} accepts three;
 in both cases, the last can be either a register or an immediate

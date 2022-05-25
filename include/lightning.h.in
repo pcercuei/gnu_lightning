@@ -896,6 +896,18 @@ typedef enum {
 #define jit_movr_d_w(u, v)	jit_new_node_ww(jit_code_movr_d_w, u, v)
 #define jit_movi_d_w(u, v)	jit_new_node_wd(jit_code_movi_d_w, u, v)
 
+#define jit_bswapr_us(u,v)	jit_new_node_ww(jit_code_bswapr_us,u,v)
+    jit_code_bswapr_us,
+#define jit_bswapr_ui(u,v)	jit_new_node_ww(jit_code_bswapr_ui,u,v)
+    jit_code_bswapr_ui,
+#define jit_bswapr_ul(u,v)	jit_new_node_ww(jit_code_bswapr_ul,u,v)
+    jit_code_bswapr_ul,
+#if __WORDSIZE == 32
+#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ui,u,v)
+#else
+#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ul,u,v)
+#endif
+
     jit_code_last_code
 } jit_code_t;
 

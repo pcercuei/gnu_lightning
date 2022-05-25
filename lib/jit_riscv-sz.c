@@ -400,4 +400,7 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     16,	/* movi_d_w */
+    20,	/* bswapr_us */
+    52,	/* bswapr_ui */
+    116,	/* bswapr_ul */
 #endif /* __WORDSIZE */

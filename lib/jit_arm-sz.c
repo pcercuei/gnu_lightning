@@ -402,6 +402,9 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* bswapr_us */
+    4,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */
 
@@ -808,5 +811,8 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    20,	/* bswapr_us */
+    16,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */

@@ -401,6 +401,9 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    7,	/* bswapr_us */
+    4,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 #endif
 
 #if __X64
@@ -806,6 +809,9 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    9,	/* bswapr_us */
+    6,	/* bswapr_ui */
+    6,	/* bswapr_ul */
 #else
 
 #  if __X64_32
@@ -1210,6 +1216,9 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    9,	/* bswapr_us */
+    6,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 
 #  else
 #define JIT_INSTR_MAX 115
@@ -1613,6 +1622,9 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    9,	/* bswapr_us */
+    6,	/* bswapr_ui */
+    6,	/* bswapr_ul */
 #endif /* __CYGWIN__ || _WIN32 */
 #  endif /* __X64_32 */
 #endif /* __X64 */

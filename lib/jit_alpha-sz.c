@@ -401,4 +401,7 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    16,	/* bswapr_us */
+    36,	/* bswapr_ui */
+    36,	/* bswapr_ul */
 #endif /* __WORDSIZE */

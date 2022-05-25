@@ -658,12 +658,8 @@ static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define extr_uc(r0,r1)		EXTRWR_U(r1,31,8,r0)
 #define extr_s(r0,r1)		EXTRWR(r1,31,16,r0)
 #define extr_us(r0,r1)		EXTRWR_U(r1,31,16,r0)
-#if __BYTE_ORDER == __BIG_ENDIAN
-#  define htonr_us(r0,r1)	extr_us(r0,r1)
-#  define htonr_ui(r0,r1)	movr(r0,r1)
-#else
-#  error need htonr implementation
-#endif
+#define bswapr_us(r0,r1)	generic_bswapr_us(_jit,r0,r1)
+#define bswapr_ui(r0,r1)	generic_bswapr_ui(_jit,r0,r1)
 #define addr(r0,r1,r2)		ADD(r1,r2,r0)
 #define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
