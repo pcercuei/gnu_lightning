@@ -63,7 +63,7 @@ case "$target_cpu" in
     *)						;;
 esac
 
-AC_CHECK_FUNCS(mremap ffsl getopt_long_only isnan isinf,,)
+AC_CHECK_FUNCS(mmap mremap ffsl getopt_long_only isnan isinf,,)
 
 AC_CHECK_HEADERS([getopt.h stdint.h],,,)
 
