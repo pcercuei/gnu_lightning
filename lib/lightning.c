@@ -19,7 +19,9 @@
 
 #include <lightning.h>
 #include <lightning/jit_private.h>
-#include <sys/mman.h>
+#if HAVE_MMAP
+#  include <sys/mman.h>
+#endif
 #if defined(__sgi)
 #  include <fcntl.h>
 #endif
@@ -956,10 +958,12 @@ _jit_destroy_state(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
     jit_really_clear_state();
 #endif
+#if HAVE_MMAP
     if (!_jit->user_code)
 	munmap(_jit->code.ptr, _jit->code.length);
     if (!_jit->user_data)
 	munmap(_jit->data.ptr, _jit->data.length);
+#endif
     jit_free((jit_pointer_t *)&_jit);
 }
 
@@ -1895,6 +1899,9 @@ _jit_dataset(jit_state_t *_jit)
 #endif
 
     assert(!_jitc->dataset);
+#if !HAVE_MMAP
+    assert(_jit->user_data);
+#else
     if (!_jit->user_data) {
 
 	/* create read only data buffer */
@@ -1912,6 +1919,7 @@ _jit_dataset(jit_state_t *_jit)
 	close(mmap_fd);
 #endif
     }
+#endif /* !HAVE_MMAP */
 
     if (!_jitc->no_data)
 	jit_memcpy(_jit->data.ptr, _jitc->data.ptr, _jitc->data.offset);
@@ -2026,6 +2034,9 @@ _jit_emit(jit_state_t *_jit)
 
     _jitc->emit = 1;
 
+#if !HAVE_MMAP
+    assert(_jit->user_code);
+#else
     if (!_jit->user_code) {
 #if defined(__sgi)
 	mmap_fd = open("/dev/zero", O_RDWR);
@@ -2035,6 +2046,7 @@ _jit_emit(jit_state_t *_jit)
 			      MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
 	assert(_jit->code.ptr != MAP_FAILED);
     }
+#endif /* !HAVE_MMAP */
     _jitc->code.end = _jit->code.ptr + _jit->code.length -
 	jit_get_max_instr();
     _jit->pc.uc = _jit->code.ptr;
@@ -2048,6 +2060,9 @@ _jit_emit(jit_state_t *_jit)
 		     node->code == jit_code_epilog))
 		    node->flag &= ~jit_flag_patch;
 	    }
+#if !HAVE_MMAP
+	    assert(_jit->user_code);
+#else
 	    if (_jit->user_code)
 		goto fail;
 #if GET_JIT_SIZE
@@ -2081,6 +2096,7 @@ _jit_emit(jit_state_t *_jit)
 	    _jitc->code.end = _jit->code.ptr + _jit->code.length -
 		jit_get_max_instr();
 	    _jit->pc.uc = _jit->code.ptr;
+#endif /* !HAVE_MMAP */
 	}
 	else
 	    break;
@@ -2097,6 +2113,7 @@ _jit_emit(jit_state_t *_jit)
 
     if (_jit->user_data)
 	jit_free((jit_pointer_t *)&_jitc->data.ptr);
+#if HAVE_MMAP
     else {
 	result = mprotect(_jit->data.ptr, _jit->data.length, PROT_READ);
 	assert(result == 0);
@@ -2106,6 +2123,7 @@ _jit_emit(jit_state_t *_jit)
 			  PROT_READ | PROT_EXEC);
 	assert(result == 0);
     }
+#endif /* HAVE_MMAP */
 
     return (_jit->code.ptr);
 fail:
