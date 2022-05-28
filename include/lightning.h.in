@@ -123,6 +123,11 @@ typedef jit_int32_t		jit_bool_t;
 typedef jit_int32_t		jit_gpr_t;
 typedef jit_int32_t		jit_fpr_t;
 
+#if !defined(__powerpc__) && \
+	(defined(__POWERPC__) || defined(__ppc__) || defined(__PPC__))
+#define __powerpc__ 1
+#endif
+
 #if defined(__i386__) || defined(__x86_64__)
 #  include <lightning/jit_x86.h>
 #elif defined(__mips__)
