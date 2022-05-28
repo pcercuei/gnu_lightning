@@ -521,7 +521,8 @@ static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
 #    define extr_i(r0,r1)		EXTSW(r0,r1)
 #    define extr_ui(r0,r1)		CLRLDI(r0,r1,32)
 #  endif
-#  define bswapr_us(r0,r1)		generic_bswapr_us(_jit,r0,r1)
+#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  if __WORDSIZE == 64
@@ -1144,6 +1145,18 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     ORI(r0, r0, (jit_uint16_t)i0);
 #  endif
     return (word);
+}
+
+static void
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (r0 == r1) {
+        RLWIMI(r0, r0, 16, 8, 15);
+        RLWINM(r0, r0, 24, 16, 31);
+    } else {
+        RLWINM(r0, r1, 8, 16, 23);
+        RLWIMI(r0, r1, 24, 24, 31);
+    }
 }
 
 static void
