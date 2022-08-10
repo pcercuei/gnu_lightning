@@ -1148,6 +1148,7 @@ _emit_code(jit_state_t *_jit)
     jit_word_t		 word;
     jit_int32_t		 value;
     jit_int32_t		 offset;
+    jit_bool_t       no_flag = 0;
     struct {
 	jit_node_t	*node;
 	jit_word_t	 word;
@@ -1356,8 +1357,12 @@ _emit_code(jit_state_t *_jit)
 #  if __WORDSIZE == 64
 		case_rr(hton, _ul);
 #  endif
-		case_rr(bswap, _us);
-		case_rr(bswap, _ui);
+	    case jit_code_bswapr_us:
+		bswapr_us_lh(rn(node->u.w), rn(node->v.w), no_flag);
+		break;
+	    case jit_code_bswapr_ui:
+		bswapr_ui_lw(rn(node->u.w), rn(node->v.w), no_flag);
+		break;
 #  if __WORDSIZE == 64
 		case_rr(bswap, _ul);
 #  endif
@@ -1823,6 +1828,8 @@ _emit_code(jit_state_t *_jit)
 	assert(_jitc->regarg == 0 && _jitc->synth == 0);
 	/* update register live state */
 	jit_reglive(node);
+
+        no_flag = !(node->flag & jit_flag_patch);
     }
 #undef case_brf
 #undef case_brw

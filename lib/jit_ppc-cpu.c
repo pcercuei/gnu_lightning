@@ -260,7 +260,7 @@ static void _FXS(jit_state_t*,int,int,int,int,int,int,int);
 #  define LHAU(d,a,s)			FDs(43,d,a,s)
 #  define LHAUX(d,a,b)			FX(31,d,a,b,375)
 #  define LHAX(d,a,b)			FX(31,d,a,b,343)
-#  define LHRBX(d,a,b)			FX(31,d,a,b,790)
+#  define LHBRX(d,a,b)			FX(31,d,a,b,790)
 #  define LHZ(d,a,s)			FDs(40,d,a,s)
 #  define LHZU(d,a,s)			FDs(41,d,a,s)
 #  define LHZUX(d,a,b)			FX(31,d,a,b,311)
@@ -521,10 +521,12 @@ static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
 #    define extr_i(r0,r1)		EXTSW(r0,r1)
 #    define extr_ui(r0,r1)		CLRLDI(r0,r1,32)
 #  endif
-#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
-static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
-static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_us_lh(r0,r1,no_flag)	_bswapr_us(_jit,r0,r1,no_flag)
+#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1,0)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_bool_t);
+#  define bswapr_ui_lw(r0,r1,no_flag)	_bswapr_ui(_jit,r0,r1,no_flag)
+#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1,0)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_bool_t);
 #  if __WORDSIZE == 64
 #    define bswapr_ul(r0,r1)		generic_bswapr_ul(_jit,r0,r1)
 #  endif
@@ -1148,8 +1150,31 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
-_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_bool_t no_flag)
 {
+    jit_int32_t		reg, addr_reg;
+
+    if (no_flag && r0 == r1) {
+        if ((*(_jit->pc.ui - 1) & 0xffe007ff) == (0x7c00022e | r0 << 21)) {
+            /* Convert LHZX to LHBRX */
+            _jit->pc.ui--;
+            LHBRX(r0, (*_jit->pc.ui >> 16) & 0x1f, (*_jit->pc.ui >> 11) & 0x1f);
+            return;
+        }
+
+        if ((*(_jit->pc.ui - 1) & 0xffe00000) == (0xa0000000 | r0 << 21)) {
+            /* Convert LHZ to LHBRX */
+            _jit->pc.ui--;
+            addr_reg = (*_jit->pc.ui >> 16) & 0x1f;
+
+            reg = jit_get_reg(jit_class_gpr);
+            LI(rn(reg), (short)*_jit->pc.ui);
+            LHBRX(r0, rn(reg), addr_reg);
+            jit_unget_reg(reg);
+            return;
+        }
+    }
+
     if (r0 == r1) {
         RLWIMI(r0, r0, 16, 8, 15);
         RLWINM(r0, r0, 24, 16, 31);
@@ -1160,9 +1185,31 @@ _bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_bool_t no_flag)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, addr_reg;
+
+    if (no_flag && r0 == r1) {
+        if ((*(_jit->pc.ui - 1) & 0xffe007ff) == (0x7c00002e | r0 << 21)) {
+            /* Convert LWZX to LWBRX */
+            _jit->pc.ui--;
+            LWBRX(r0, (*_jit->pc.ui >> 16) & 0x1f, (*_jit->pc.ui >> 11) & 0x1f);
+            return;
+        }
+
+        if ((*(_jit->pc.ui - 1) & 0xffe00000) == (0x80000000 | r0 << 21)) {
+            /* Convert LWZ to LWBRX */
+            _jit->pc.ui--;
+            addr_reg = (*_jit->pc.ui >> 16) & 0x1f;
+
+            reg = jit_get_reg(jit_class_gpr);
+            LI(rn(reg), (short)*_jit->pc.ui);
+            LWBRX(r0, rn(reg), addr_reg);
+            jit_unget_reg(reg);
+            return;
+        }
+    }
+
     reg = jit_get_reg(jit_class_gpr);
     ROTLWI(rn(reg), r1, 8);
     RLWIMI(rn(reg), r1, 24, 0, 7);
