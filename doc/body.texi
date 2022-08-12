@@ -672,7 +672,7 @@ forward = jit_forward();
           jit_align(16);
 label1  = jit_indirect();                @rem{/* first entry point */}
 jump    = jit_jmpi();                    @rem{/* jump to first handler */}
-          jit_patch_at(jump, entry1);
+          jit_patch_at(jump, forward);
           jit_align(16);
 label2  = jit_indirect();                @rem{/* second entry point */}
           ...                            @rem{/* second handler */}
