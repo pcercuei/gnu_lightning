@@ -1148,7 +1148,8 @@ _emit_code(jit_state_t *_jit)
     jit_word_t		 word;
     jit_int32_t		 value;
     jit_int32_t		 offset;
-    jit_bool_t       no_flag = 0;
+    jit_bool_t       no_flag = 0;	/* Set if previous instruction is
+					 * *not* a jump target. */
     struct {
 	jit_node_t	*node;
 	jit_word_t	 word;
