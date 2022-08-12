@@ -597,8 +597,8 @@ forward   (not specified)                @r{forward label}
 indirect  (not specified)                @r{special simple label}
 @end example
 
-The following instruction is used to specify a minimal alignment for a
-label:
+The following instruction is used to specify a minimal alignment for
+the next instruction, usually with a label:
 @example
 align     (not specified)                @r{align code}
 @end example
@@ -666,7 +666,7 @@ less than the argument to @code{align}.  If the argument to
 specified minimal alignment exactly.
 
 @example
-          jit_node_t *forward, *label1, *label2, jump;
+          jit_node_t *forward, *label1, *label2, *jump;
           unsigned char *addr1, *addr2;
 forward = jit_forward();
           jit_align(16);
