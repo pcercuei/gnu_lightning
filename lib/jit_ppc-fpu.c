@@ -143,8 +143,17 @@ static void _truncr_d_l(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define absr_d(r0,r1)			FABS(r0,r1)
 #  define negr_f(r0,r1)			negr_d(r0,r1)
 #  define negr_d(r0,r1)			FNEG(r0,r1)
-#  define sqrtr_f(r0,r1)		FSQRTS(r0,r1)
-#  define sqrtr_d(r0,r1)		FSQRT(r0,r1)
+#  ifdef _ARCH_PPCSQ
+#    define sqrtr_f(r0,r1)		FSQRTS(r0,r1)
+#    define sqrtr_d(r0,r1)		FSQRT(r0,r1)
+#  else
+extern float sqrtf(float);
+#    define sqrtr_f(r0,r1)		_sqrtr_f(_jit,r0,r1)
+static void _sqrtr_f(jit_state_t*,jit_int32_t,jit_int32_t);
+extern double sqrt(double);
+#    define sqrtr_d(r0,r1)		_sqrtr_d(_jit,r0,r1)
+static void _sqrtr_d(jit_state_t*,jit_int32_t,jit_int32_t);
+#  endif
 #  define addr_f(r0,r1,r2)		FADDS(r0,r1,r2)
 #  define addr_d(r0,r1,r2)		FADD(r0,r1,r2)
 #  define addi_f(r0,r1,i0)		_addi_f(_jit,r0,r1,i0)
@@ -530,6 +539,24 @@ _truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     stxi_d(alloca_offset - 8, _FP_REGNO, rn(reg));
     ldxi(r0, _FP_REGNO, alloca_offset - 8);
     jit_unget_reg(reg);
+}
+#  endif
+
+#  ifndef _ARCH_PPCSQ
+static void
+_sqrtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    movr_f(rn(JIT_FA0), r1);
+    calli(sqrtf);
+    movr_f(rn(JIT_FRET), r1);
+}
+
+static void
+_sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    movr_d(rn(JIT_FA0), r1);
+    calli(sqrt);
+    movr_d(rn(JIT_FRET), r1);
 }
 #  endif
 
