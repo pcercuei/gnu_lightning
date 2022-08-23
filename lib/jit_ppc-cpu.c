@@ -3257,7 +3257,7 @@ _calli(jit_state_t *_jit, jit_word_t i0
 {
 #  if _CALL_SYSV
     jit_word_t		d;
-    d = (i0 - _jit->pc.w) & ~3;
+    d = (i0 - _jit->pc.w - !!varargs * 4) & ~3;
     if (can_sign_extend_jump_p(d)) {
         /* Tell double arguments were passed in registers. */
         if (varargs)
