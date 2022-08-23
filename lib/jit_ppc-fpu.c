@@ -547,16 +547,24 @@ static void
 _sqrtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     movr_f(rn(JIT_FA0), r1);
-    calli(sqrtf);
-    movr_f(rn(JIT_FRET), r1);
+    calli((jit_word_t)sqrtf
+#  if _CALL_SYSV
+	  , 0
+#  endif
+	  );
+    movr_f(r0, rn(JIT_FRET));
 }
 
 static void
 _sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     movr_d(rn(JIT_FA0), r1);
-    calli(sqrt);
-    movr_d(rn(JIT_FRET), r1);
+    calli((jit_word_t)sqrt
+#  if _CALL_SYSV
+	  , 0
+#  endif
+	  );
+    movr_d(r0, rn(JIT_FRET));
 }
 #  endif
 
