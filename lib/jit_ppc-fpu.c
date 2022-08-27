@@ -484,23 +484,40 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	ldi_d(r0, (jit_word_t)i0);
 }
 
-/* should only work on newer ppc (fcfid is a ppc64 instruction) */
 static void
 _extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
 #  if __WORDSIZE == 32
-    jit_int32_t		reg;
+    jit_int32_t		reg, freg, off1, off2;
+
+#  if __BYTE_ORDER == __BIG_ENDIAN
+    off1 = alloca_offset - 8;
+    off2 = alloca_offset - 4;
+#  else
+    off1 = alloca_offset - 4;
+    off2 = alloca_offset - 8;
+#  endif
+
     reg = jit_get_reg(jit_class_gpr);
-    rshi(rn(reg), r1, 31);
-    /* use reserved 8 bytes area */
-    stxi(alloca_offset - 4, _FP_REGNO, r1);
-    stxi(alloca_offset - 8, _FP_REGNO, rn(reg));
+    freg = jit_get_reg(jit_class_fpr);
+
+    movi(rn(reg), 0x43300000);
+    stxi_i(off1, _FP_REGNO, rn(reg));
+    movi(rn(reg), 0x80000000);
+    stxi_i(off2, _FP_REGNO, rn(reg));
+    ldxi_d(rn(freg), _FP_REGNO, alloca_offset - 8);
+    xorr(rn(reg), r1, rn(reg));
+    stxi_i(off2, _FP_REGNO, rn(reg));
+    ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
+    subr_d(r0, r0, rn(freg));
+
     jit_unget_reg(reg);
+    jit_unget_reg(freg);
 #  else
     stxi(alloca_offset - 8, _FP_REGNO, r1);
-#  endif
     ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
     FCFID(r0, r0);
+#  endif
 }
 
 static void
