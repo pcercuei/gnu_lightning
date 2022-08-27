@@ -2931,6 +2931,32 @@ _callr(jit_state_t *_jit, jit_int32_t r0)
 static void
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
+    if (((_jit->pc.w + sizeof(jit_int32_t)) & 0xf0000000) == (i0 & 0xf0000000)) {
+        if (can_sign_extend_short_p(i0)) {
+            JAL((i0 & ~0xf0000000) >> 2);
+            addiu(_T9_REGNO, _ZERO_REGNO, i0);
+            return;
+        }
+
+        if (can_zero_extend_short_p(i0)) {
+            JAL((i0 & ~0xf0000000) >> 2);
+            ORI(_T9_REGNO, _ZERO_REGNO, i0);
+            return;
+        }
+
+        if (can_sign_extend_int_p(i0)) {
+            if (i0 & 0xffff) {
+                LUI(_T9_REGNO, i0 >> 16);
+                JAL((i0 & ~0xf0000000) >> 2);
+                ORI(_T9_REGNO, _T9_REGNO, i0);
+            } else {
+                JAL((i0 & ~0xf0000000) >> 2);
+                LUI(_T9_REGNO, i0 >> 16);
+            }
+            return;
+        }
+    }
+
     movi(_T9_REGNO, i0);
     JALR(_T9_REGNO);
     NOP(1);
