@@ -1154,6 +1154,9 @@ _bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_bool_t no_flag
 {
     jit_int32_t		reg, addr_reg;
 
+    /* Convert load followed by bswap to a single instruction */
+    /* FIXME r0 and r1 do not need to be the same, only must check if
+     * r1 was loaded in previous instruction */
     if (no_flag && r0 == r1) {
         if ((*(_jit->pc.ui - 1) & 0xffe007ff) == (0x7c00022e | r0 << 21)) {
             /* Convert LHZX to LHBRX */
@@ -1189,6 +1192,9 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_bool_t no_flag
 {
     jit_int32_t		reg, addr_reg;
 
+    /* Convert load followed by bswap to a single instruction */
+    /* FIXME r0 and r1 do not need to be the same, only must check if
+     * r1 was loaded in previous instruction */
     if (no_flag && r0 == r1) {
         if ((*(_jit->pc.ui - 1) & 0xffe007ff) == (0x7c00002e | r0 << 21)) {
             /* Convert LWZX to LWBRX */
@@ -3251,10 +3257,13 @@ _calli(jit_state_t *_jit, jit_word_t i0
 {
 #  if _CALL_SYSV
     jit_word_t		d;
-    d = (i0 - _jit->pc.w) & ~3;
-    if (can_sign_extend_jump_p(d))
-	BL(d);
-    else
+    d = (i0 - _jit->pc.w - !!varargs * 4) & ~3;
+    if (can_sign_extend_jump_p(d)) {
+        /* Tell double arguments were passed in registers. */
+        if (varargs)
+            CREQV(6, 6, 6);
+        BL(d);
+    } else
 #  endif
     {
 	movi(_R12_REGNO, i0);

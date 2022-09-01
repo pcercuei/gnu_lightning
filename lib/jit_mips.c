@@ -1073,8 +1073,7 @@ _jit_finishr(jit_state_t *_jit, jit_int32_t r0)
     jit_inc_synth_w(finishr, r0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
-    jit_movr(_T9, r0);
-    call = jit_callr(_T9);
+    call = jit_callr(r0);
     call->v.w = _jitc->function->self.argi;
 #if NEW_ABI
     call->w.w = call->v.w;
