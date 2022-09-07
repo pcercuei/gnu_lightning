@@ -2374,19 +2374,18 @@ _jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
 			 * means that only JIT_Vn registers can be trusted on
 			 * arrival of jmpr.
 			 */
+			jit_regset_set_ui(&regmask, 0);
 			for (regno = 0; regno < _jitc->reglen; regno++) {
 			    spec = jit_class(_rvs[regno].spec);
-			    if (jit_regset_tstbit(&regmask, regno) &&
-				(spec & (jit_class_gpr|jit_class_fpr)) &&
-				!(spec & jit_class_sav))
-				jit_regset_clrbit(&regmask, regno);
+			    if ((spec & (jit_class_gpr|jit_class_fpr)) &&
+				(spec & jit_class_sav))
+				jit_regset_setbit(&regmask, regno);
 			}
 			/*   Assume non callee save registers are live due
 			 * to jump to unknown location. */
 			/* Treat all callee save as live. */
-			jit_regset_ior(&block->reglive, &reglive, &regmask);
+			jit_regset_ior(&block->reglive, &regmask, &regmask);
 			/* Treat anything else as dead. */
-			jit_regset_set_ui(&regmask, 0);
 			return;
 		    }
 		}
@@ -2523,19 +2522,18 @@ _jit_update(jit_state_t *_jit, jit_node_t *node,
 			 * means that only JIT_Vn registers can be trusted on
 			 * arrival of jmpr.
 			 */
+			jit_regset_set_ui(mask, 0);
 			for (regno = 0; regno < _jitc->reglen; regno++) {
 			    spec = jit_class(_rvs[regno].spec);
-			    if (jit_regset_tstbit(mask, regno) &&
-				(spec & (jit_class_gpr|jit_class_fpr)) &&
-				!(spec & jit_class_sav))
-				jit_regset_clrbit(mask, regno);
+			    if ((spec & (jit_class_gpr|jit_class_fpr)) &&
+				(spec & jit_class_sav))
+				jit_regset_setbit(mask, regno);
 			}
 			/*   Assume non callee save registers are live due
 			 * to jump to unknown location. */
 			/* Treat all callee save as live. */
 			jit_regset_ior(live, live, mask);
 			/* Treat anything else as dead. */
-			jit_regset_set_ui(mask, 0);
 			return;
 		    }
 		}
