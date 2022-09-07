@@ -2384,7 +2384,7 @@ _jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
 			/*   Assume non callee save registers are live due
 			 * to jump to unknown location. */
 			/* Treat all callee save as live. */
-			jit_regset_ior(&block->reglive, &regmask, &regmask);
+			jit_regset_ior(&block->reglive, &reglive, &regmask);
 			/* Treat anything else as dead. */
 			return;
 		    }
