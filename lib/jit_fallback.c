@@ -145,10 +145,9 @@ _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     if ((iscasi = r1 == _NOREG)) {
 	r1_reg = jit_get_reg(jit_class_gpr);
 	r1 = rn(r1_reg);
+	movi(r1, i0);
     }
     fallback_save_regs(r0);
-    if (iscasi)
-	movi(r1, i0);
     fallback_calli((jit_word_t)pthread_mutex_lock, (jit_word_t)&mutex);
     fallback_load(r1);
     ldr(r0, r1);
