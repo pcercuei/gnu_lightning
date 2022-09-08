@@ -1369,6 +1369,14 @@ _emit_code(jit_state_t *_jit)
 #  endif
 		case_rr(neg,);
 		case_rr(com,);
+	    case jit_code_casr:
+		casr(rn(node->u.w), rn(node->v.w),
+		     rn(node->w.q.l), rn(node->w.q.h));
+		break;
+	    case jit_code_casi:
+		casi(rn(node->u.w), node->v.w,
+		     rn(node->w.q.l), rn(node->w.q.h));
+		break;
 		case_rrr(movn,);
 		case_rrr(movz,);
 		case_rr(mov,);

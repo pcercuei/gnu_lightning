@@ -930,6 +930,34 @@ zero if the pointer is inside the generated jit code. Must be
 called after @code{jit_emit} and before @code{jit_destroy_state}.
 @end table
 
+@item Atomic operations
+Only compare-and-swap is implemented. It accepts four operands;
+the second can be an immediate.
+
+The first argument is set with a boolean value telling if the operation
+did succeed.
+
+Arguments must be different, cannot use the result register to also pass
+an argument.
+
+The second argument is the address of a machine word.
+
+The third argument is the old value.
+
+The fourth argument is the new value.
+
+@example
+casr                                  01 = (*O2 == O3) ? (*O2 = O4, 1) : 0
+casi                                  01 = (*O2 == O3) ? (*O2 = O4, 1) : 0
+@end example
+
+If value at the address in the second argument is equal to the third
+argument, the address value is atomically modified to the value of the
+fourth argument and the first argument is set to a non zero value.
+
+If the value at the address in the second argument is not equal to the
+third argument nothing is done and the first argument is set to zero.
+
 @node GNU lightning examples
 @chapter Generating code at run-time
 
