@@ -118,7 +118,7 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
     movi(rn(_O0), i1);
 #  elif defined(__ia64__)
     /* avoid confusion with pushargi patching */
-    if (i1 >= -2097152 && i0 <= 2097151)
+    if (i1 >= -2097152 && i1 <= 2097151)
 	MOVI(_jitc->rout, i1);
     else
 	MOVL(_jitc->rout, i1);
