@@ -3035,8 +3035,25 @@ _redundant_store(jit_state_t *_jit, jit_node_t *node, jit_bool_t jump)
 		if (regno == jit_regno(iter->u.w)) {
 		    if (iter->flag || iter->v.w != word)
 			return;
+#if 0
+		    /* Cannot just remove the instruction as previous
+		     * instructions might use it as a temporary, assuming
+		     * the value would be rematerialized here. But such
+		     * computation was already done, and the register
+		     * removed from the mask of registers in unknown state
+		     * at the start of a block. */
 		    del_node(prev, iter);
 		    iter = prev;
+#else
+		    /* Assume register is live, even tough it is not set
+		     * again to the value it was holding.
+		     * This is the safe path.
+		     * If it is in a dead code path, for example, reach
+		     * end of a function, and is not a callee save register,
+		     * it might end up being a pessimization as it could
+		     * have been used as a no spill temporary. */
+		    node->code = jit_code_live;
+#endif
 		}
 		break;
 	    default:
