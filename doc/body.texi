@@ -928,7 +928,6 @@ to save and load the values when making function calls.
 @code{pointer_p} expects a pointer argument, and will return non
 zero if the pointer is inside the generated jit code. Must be
 called after @code{jit_emit} and before @code{jit_destroy_state}.
-@end table
 
 @item Atomic operations
 Only compare-and-swap is implemented. It accepts four operands;
@@ -957,6 +956,7 @@ fourth argument and the first argument is set to a non zero value.
 
 If the value at the address in the second argument is not equal to the
 third argument nothing is done and the first argument is set to zero.
+@end table
 
 @node GNU lightning examples
 @chapter Generating code at run-time
