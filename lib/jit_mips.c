@@ -67,7 +67,6 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 #  include "jit_rewind.c"
 #  include "jit_mips-cpu.c"
 #  include "jit_mips-fpu.c"
-#  include "jit_fallback.c"
 #undef PROTO
 
 /*
@@ -1883,7 +1882,6 @@ _emit_code(jit_state_t *_jit)
 #  include "jit_rewind.c"
 #  include "jit_mips-cpu.c"
 #  include "jit_mips-fpu.c"
-#  include "jit_fallback.c"
 #undef CODE
 
 void
