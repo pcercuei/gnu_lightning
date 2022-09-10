@@ -1043,8 +1043,8 @@ _rsbi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _mulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    if (__WORDSIZE == 32)
-        MUL(r0, r1, r2);
+    if (jit_mips2_p() && __WORDSIZE == 32)
+	MUL(r0, r1, r2);
     else {
         multu(r1, r2);
         MFLO(r0);
