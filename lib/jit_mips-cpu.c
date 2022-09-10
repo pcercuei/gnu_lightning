@@ -400,6 +400,7 @@ static void _nop(jit_state_t*,jit_int32_t);
 #   define JR(r0)			hrrrit(MIPS_SPECIAL,r0,0,0,0,MIPS_JR)
 #  endif
 #  define J(i0)				hi(MIPS_J,i0)
+#  define JAL(i0)			hi(MIPS_JAL,i0)
 #  define MOVN(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVN)
 #  define MOVZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVZ)
 #  define comr(r0,r1)			xori(r0,r1,-1)
