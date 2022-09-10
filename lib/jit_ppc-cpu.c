@@ -1524,15 +1524,23 @@ _remi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     jit_unget_reg(reg);
 }
 
+#  define is_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) <= 1) : 0)
+
 static void
 _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, offt;
     if (can_zero_extend_short_p(i0))
 	ANDI_(r0, r1, i0);
     else if (can_zero_extend_int_p(i0) && !(i0 & 0x0000ffff))
 	ANDIS_(r0, r1, (jit_uword_t)i0 >> 16);
-    else {
+    else if (__WORDSIZE == 32 && is_mask(i0)) {
+	offt = __builtin_ctzl(i0);
+	RLWINM(r0, r1, 0, 32 - offt - __builtin_popcountl(i0), 31 - offt);
+    } else if (__WORDSIZE == 32 && is_mask(~i0)) {
+	offt = __builtin_ctzl(~i0);
+	RLWINM(r0, r1, 0, 32 - offt, 31 - offt - __builtin_popcountl(~i0));
+    } else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
 	AND(r0, r1, rn(reg));
