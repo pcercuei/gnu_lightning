@@ -1697,7 +1697,7 @@ _emit_code(jit_state_t *_jit)
 		    }
 		}
 		else
-		    (void)jmpi_p(node->u.w);
+		    jmpi(node->u.w);
 		break;
 	    case jit_code_callr:
 		callr(rn(node->u.w)
