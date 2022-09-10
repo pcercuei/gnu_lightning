@@ -24,7 +24,7 @@ _fallback_save(jit_state_t *_jit, jit_int32_t r0)
 	regno = jit_regno(spec);
 	if (regno == r0) {
 	    if (!(spec & jit_class_sav))
-		stxi(_jitc->function->regoff[offset], rn(JIT_FP), regno);
+		stxi(_jitc->function->regoff[JIT_R(offset)], rn(JIT_FP), regno);
 	    break;
 	}
     }
@@ -39,7 +39,7 @@ _fallback_load(jit_state_t *_jit, jit_int32_t r0)
 	regno = jit_regno(spec);
 	if (regno == r0) {
 	    if (!(spec & jit_class_sav))
-		ldxi(regno, rn(JIT_FP), _jitc->function->regoff[offset]);
+		ldxi(regno, rn(JIT_FP), _jitc->function->regoff[JIT_R(offset)]);
 	    break;
 	}
     }
@@ -52,14 +52,14 @@ _fallback_save_regs(jit_state_t *_jit, jit_int32_t r0)
     for (offset = 0; offset < JIT_R_NUM; offset++) {
 	regno = JIT_R(offset);
 	spec =  _rvs[regno].spec;
-	if ((spec & jit_class_gpr) && regno == r0)
-	    continue;
 	if (!(spec & jit_class_sav)) {
 	    if (!_jitc->function->regoff[regno]) {
 		_jitc->function->regoff[regno] =
 		    jit_allocai(sizeof(jit_word_t));
 		_jitc->again = 1;
 	    }
+	    if ((spec & jit_class_gpr) && regno == r0)
+		continue;
 	    jit_regset_setbit(&_jitc->regsav, regno);
 	    emit_stxi(_jitc->function->regoff[regno], JIT_FP, regno);
 	}
@@ -110,9 +110,7 @@ _fallback_load_regs(jit_state_t *_jit, jit_int32_t r0)
 static void
 _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 {
-#  if defined(__mips__)
-    movi(rn(_A0), i1);
-#  elif defined(__arm__)
+#  if defined(__arm__)
     movi(rn(_R0), i1);
 #  elif defined(__sparc__)
     movi(rn(_O0), i1);
