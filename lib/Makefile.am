@@ -35,6 +35,7 @@ liblightning_la_SOURCES =	\
 	lightning.c
 
 EXTRA_DIST =			\
+	jit_fallback.c		\
 	jit_rewind.c		\
 	jit_aarch64.c		\
 	jit_aarch64-cpu.c	\
