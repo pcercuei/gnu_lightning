@@ -141,7 +141,7 @@ _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     /* XXX only attempts to fallback cas for lightning jit code */
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     if ((iscasi = r1 == _NOREG)) {
-	r1_reg = jit_get_reg(jit_class_gpr);
+	r1_reg = jit_get_reg(jit_class_gpr|jit_class_sav);
 	r1 = rn(r1_reg);
 	movi(r1, i0);
     }
