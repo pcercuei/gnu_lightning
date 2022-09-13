@@ -1293,9 +1293,9 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     }
     else {
 	jit_int32_t	lo = i0 << 32 >> 32;
-	jit_word_t	hi = i0 - lo;
+	jit_int32_t	hi = (i0 - lo) >> 32;
 	jit_int32_t	t0 = jit_get_reg(jit_class_gpr);
-	movi(rn(t0), (jit_int32_t)(hi >> 32));
+	movi(rn(t0), hi);
 	movi(r0, lo);
 	lshi(rn(t0), rn(t0), 32);
 	addr(r0, r0, rn(t0));
@@ -1308,18 +1308,14 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_word_t		w;
     jit_int32_t		t0;
-    jit_int32_t		ww = i0 << 32 >> 32;
-    jit_int32_t		lo = ww << 20 >> 20;
-    jit_int32_t		hi = ww - lo;
+    jit_int32_t		lo = i0 << 32 >> 32;
+    jit_int32_t		hi = (i0 - lo) >> 32;
     w = _jit->pc.w;
     t0 = jit_get_reg(jit_class_gpr);
-    LUI(r0, hi >> 12);
-    ADDIW(r0, r0, lo);
-    ww = i0 >> 32;
-    lo = ww << 20 >> 20;
-    hi = ww - lo;
+    LUI(r0, lo >> 12);
+    ADDIW(r0, r0, lo << 20 >> 20);
     LUI(rn(t0), hi >> 12);
-    ADDIW(rn(t0), rn(t0), lo);
+    ADDIW(rn(t0), rn(t0), hi << 20 >> 20);
     SLLI(rn(t0), rn(t0), 32);
     ADD(r0, r0, rn(t0));
     jit_unget_reg(t0);
@@ -2328,25 +2324,21 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
     i.w = u.i[0];
     /* movi_p? */
     if (i.U.opcode == 55) {					/* LUI */
-	jit_int32_t	ww = label << 32 >> 32;
-	jit_int32_t	lo = ww << 20 >> 20;
-	jit_int32_t	hi = ww - lo;
-	i.U.imm12_31 = hi >> 12;
+	jit_int32_t	lo = label << 32 >> 32;
+	jit_int32_t	hi = (label - lo) >> 32;
+	i.U.imm12_31 = lo >> 12;
 	u.i[0] = i.w;
 	i.w = u.i[1];
 	if (i.I.opcode == 27 && i.I.funct3 == 0) {		/* ADDIW */
-	    i.I.imm11_0 = lo & 0xfff;
+	    i.I.imm11_0 = lo << 20 >> 20;
 	    u.i[1] = i.w;
 	    i.w = u.i[2];
 	    if (i.U.opcode == 55) {				/* LUI */
-		ww = label >> 32;
-		lo = ww << 20 >> 20;
-		hi = ww - lo;
 		i.U.imm12_31 = hi >> 12;
 		u.i[2] = i.w;
 		i.w = u.i[3];
 		if (i.I.opcode == 27 && i.I.funct3 == 0) {	/* ADDIW */
-		    i.I.imm11_0 = lo & 0xfff;
+		    i.I.imm11_0 = hi << 20 >> 20;
 		    u.i[3] = i.w;
 		    i.w = u.i[4];
 		    assert(i.IS.opcode == 19);			/* SLLI */
