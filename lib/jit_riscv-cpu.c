@@ -1327,7 +1327,7 @@ _movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_word_t	w;
     w = beqi(_jit->pc.w, r2, 0);
-    movr(r1, r0);
+    movr(r0, r1);
     patch_at(w, _jit->pc.w);
 }
 
@@ -1336,7 +1336,7 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_word_t	w;
     w = bnei(_jit->pc.w, r2, 0);
-    movr(r1, r0);
+    movr(r0, r1);
     patch_at(w, _jit->pc.w);
 }
 
