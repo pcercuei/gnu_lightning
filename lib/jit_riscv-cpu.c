@@ -1292,13 +1292,15 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	    ADDIW(r0, _ZERO_REGNO, lo);
     }
     else {
-	jit_int32_t	lo = i0 << 32 >> 32;
-	jit_int32_t	hi = (i0 - lo) >> 32;
+	jit_int32_t	lo = i0 & 0xffffffff;
+	jit_int32_t	hi = i0 >> 32;
 	jit_int32_t	t0 = jit_get_reg(jit_class_gpr);
-	movi(rn(t0), hi);
 	movi(r0, lo);
+	lshi(r0, r0, 32);
+	movi(rn(t0), hi);
 	lshi(rn(t0), rn(t0), 32);
-	addr(r0, r0, rn(t0));
+	rshi_u(r0, r0, 32);
+	orr(r0, r0, rn(t0));
 	jit_unget_reg(t0);
     }
 }
@@ -1308,16 +1310,23 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_word_t		w;
     jit_int32_t		t0;
-    jit_int32_t		lo = i0 << 32 >> 32;
-    jit_int32_t		hi = (i0 - lo) >> 32;
+    jit_int32_t		lo = i0 & 0xffffffff;
+    jit_int32_t		hi = i0 >> 32;
+    jit_int32_t		lui, addiw;
     w = _jit->pc.w;
     t0 = jit_get_reg(jit_class_gpr);
-    LUI(r0, lo >> 12);
-    ADDIW(r0, r0, lo << 20 >> 20);
-    LUI(rn(t0), hi >> 12);
-    ADDIW(rn(t0), rn(t0), hi << 20 >> 20);
-    SLLI(rn(t0), rn(t0), 32);
-    ADD(r0, r0, rn(t0));
+    addiw = lo << 20 >> 20;
+    lui = (lo - addiw) >> 12;
+    LUI(r0, lui);			// 0
+    ADDIW(r0, r0, addiw);		// 1
+    SLLI(r0, r0, 32);			// 2
+    addiw = hi << 20 >> 20;
+    lui = (hi - addiw) >> 12;
+    LUI(rn(t0), lui);			// 3
+    ADDIW(rn(t0), rn(t0), addiw);	// 4
+    SLLI(rn(t0), rn(t0), 32);		// 5
+    SRLI(r0, r0, 32);			// 6
+    OR(r0, r0, rn(t0));			// 7
     jit_unget_reg(t0);
     return (w);
 }
@@ -2324,27 +2333,41 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
     i.w = u.i[0];
     /* movi_p? */
     if (i.U.opcode == 55) {					/* LUI */
-	jit_int32_t	lo = label << 32 >> 32;
-	jit_int32_t	hi = (label - lo) >> 32;
-	i.U.imm12_31 = lo >> 12;
+	jit_int32_t	lo = label & 0xffffffff;;
+	jit_int32_t	hi = label >> 32;
+	jit_int32_t	lui, addiw;
+	addiw = lo << 20 >> 20;
+	lui = (lo - addiw) >> 12;
+	i.U.imm12_31 = lui;
 	u.i[0] = i.w;
 	i.w = u.i[1];
 	if (i.I.opcode == 27 && i.I.funct3 == 0) {		/* ADDIW */
-	    i.I.imm11_0 = lo << 20 >> 20;
+	    i.I.imm11_0 = addiw;
 	    u.i[1] = i.w;
 	    i.w = u.i[2];
+	    assert(i.IS.opcode == 19);				/* SLLI */
+	    assert(i.IS.funct3 == 1);
+	    assert(i.IS.shamt == 32);
+	    i.w = u.i[3];
 	    if (i.U.opcode == 55) {				/* LUI */
-		i.U.imm12_31 = hi >> 12;
-		u.i[2] = i.w;
-		i.w = u.i[3];
+		addiw = hi << 20 >> 20;
+		lui = (hi - addiw) >> 12;
+		i.U.imm12_31 = lui;
+		u.i[3] = i.w;
+		i.w = u.i[4];
 		if (i.I.opcode == 27 && i.I.funct3 == 0) {	/* ADDIW */
-		    i.I.imm11_0 = hi << 20 >> 20;
-		    u.i[3] = i.w;
-		    i.w = u.i[4];
-		    assert(i.IS.opcode == 19);			/* SLLI */
-		    assert(i.IS.shamt == 32);
+		    i.I.imm11_0 = addiw;
+		    u.i[4] = i.w;
 		    i.w = u.i[5];
-		    assert(i.R.opcode == 51);			/* ADD */
+		    assert(i.IS.opcode == 19);			/* SLLI */
+		    assert(i.IS.funct3 == 1);
+		    assert(i.IS.shamt == 32);
+		    i.w = u.i[6];
+		    assert(i.IS.opcode == 19);			/* SRLI */
+		    assert(i.IS.funct3 == 5);
+		    assert(i.IS.shamt == 32);
+		    i.w = u.i[7];
+		    assert(i.R.opcode == 51);			/* OR */
 		}
 		else
 		    abort();
