@@ -64,7 +64,6 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 #define PROTO				1
 #  include "jit_alpha-cpu.c"
 #  include "jit_alpha-fpu.c"
-#  include "jit_fallback.c"
 #undef PROTO
 
 /*
@@ -1512,7 +1511,6 @@ _emit_code(jit_state_t *_jit)
 #define CODE				1
 #  include "jit_alpha-cpu.c"
 #  include "jit_alpha-fpu.c"
-#  include "jit_fallback.c"
 #undef CODE
 
 void

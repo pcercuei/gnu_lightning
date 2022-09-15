@@ -112,8 +112,6 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 {
 #  if defined(__arm__)
     movi(rn(_R0), i1);
-#  elif defined(__sparc__)
-    movi(rn(_O0), i1);
 #  elif defined(__ia64__)
     /* avoid confusion with pushargi patching */
     if (i1 >= -2097152 && i1 <= 2097151)
@@ -122,10 +120,6 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 	MOVL(_jitc->rout, i1);
 #  elif defined(__hppa__)
     movi(_R26_REGNO, i1);
-#  elif defined(__s390__) || defined(__s390x__)
-    movi(rn(_R2), i1);
-#  elif defined(__alpha__)
-    movi(rn(_A0), i1);
 #endif
     calli(i0);
 }
