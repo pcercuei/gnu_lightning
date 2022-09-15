@@ -72,7 +72,7 @@ _fallback_save_regs(jit_state_t *_jit, jit_int32_t r0)
 	if (!(spec & jit_class_sav)) {
 	    if (!_jitc->function->regoff[regno]) {
 		_jitc->function->regoff[regno] =
-		    jit_allocai(sizeof(jit_word_t));
+		    jit_allocai(sizeof(jit_float64_t));
 		_jitc->again = 1;
 	    }
 	    jit_regset_setbit(&_jitc->regsav, regno);
