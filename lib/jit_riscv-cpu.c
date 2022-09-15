@@ -1353,16 +1353,14 @@ static void
 _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
       jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
 {
-#if 1
-    fallback_casx(r0, r1, r2, r3, i0);
-#else
-    jit_int32_t		r1_reg, iscasi;
+    jit_int32_t		t0, r1_reg, iscasi;
     jit_word_t		retry, done, jump0, jump1;
     if ((iscasi = (r1 == _NOREG))) {
 	r1_reg = jit_get_reg(jit_class_gpr);
 	r1 = rn(r1_reg);
 	movi(r1, i0);
     }
+    t0 = jit_get_reg(jit_class_gpr);
     retry = _jit->pc.w;
 #  if __WORDSIZE == 32
     LR_W(r0, r1);
@@ -1372,19 +1370,19 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     jump0 = _jit->pc.w;
     BNE(r0, r2, 0);
 #  if __WORDSIZE == 32
-    SC_W(r0, r3, r1);
+    SC_W(rn(t0), r1, r3);
 #  else
-    SC_D(r0, r3, r1);
+    SC_D(rn(t0), r1, r3);
 #  endif
     jump1 = _jit->pc.w;
-    BNE(r0, _ZERO_REGNO, 0);
-    done = _jit->pc.pw;
-    eqi(r0, r0, 1);
-    jit_patch_at(jump0, done);
+    BNE(rn(t0), _ZERO_REGNO, 0);
+    done = _jit->pc.w;
+    eqr(r0, r0, r2);
+    patch_at(jump0, done);
     patch_at(jump1, retry);
+    jit_unget_reg(t0);
     if (iscasi)
 	jit_unget_reg(r1_reg);
-#endif
 }
 
 static void

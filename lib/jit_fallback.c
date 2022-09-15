@@ -126,9 +126,6 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
     movi(rn(_R2), i1);
 #  elif defined(__alpha__)
     movi(rn(_A0), i1);
-#  elif defined(__riscv)
-    movi(rn(JIT_RA0), i1);
-#  endif
     calli(i0);
 }
 
