@@ -4,6 +4,46 @@
 #include <unistd.h>
 #include <signal.h>
 
+#if DEBUG
+volatile
+#endif
+jit_word_t	lock;
+pthread_t	tids[4];
+
+#if DEBUG
+int debug_offset(void)
+{
+    int		i;
+    pthread_t	self = pthread_self();
+    for (i = 0; i < 4; ++i)
+	if (tids[i] == self)
+	    return i;
+    return -1;
+}
+
+void debug_spin(void)
+{
+    printf("  spin %d : %ld\n", debug_offset(), lock);
+}
+
+void debug_lock(void)
+{
+    printf("  lock %d : %ld\n", debug_offset(), lock);
+}
+
+void debug_unlock(void)
+{
+    printf("unlock %d : %ld\n", debug_offset(), lock);
+}
+#define DEBUG_SPIN()	jit_calli(debug_spin)
+#define DEBUG_LOCK()	jit_calli(debug_lock)
+#define DEBUG_UNLOCK()	jit_calli(debug_unlock)
+#else
+#define DEBUG_SPIN()	/**/
+#define DEBUG_LOCK()	/**/
+#define DEBUG_UNLOCK()	/**/
+#endif
+
 void alarm_handler(int unused)
 {
     _exit(1);
@@ -17,8 +57,6 @@ main(int argc, char *argv[])
     jit_node_t		 *jmpi_main, *label;
     jit_node_t		 *func0, *func1, *func2, *func3;
     jit_node_t		 *patch0, *patch1, *patch2, *patch3;
-    jit_word_t		  lock;
-    pthread_t		  tids[4];
 
     /* If there is any bug, do not hang in "make check" */
     signal(SIGALRM, alarm_handler);
@@ -38,26 +76,31 @@ main(int argc, char *argv[])
     jit_movi(JIT_R1, 0);					\
     jit_movi(JIT_R2, line);					\
     /* spin until get the lock */				\
+    DEBUG_SPIN();						\
     label = jit_label();					\
     jit_casr(JIT_R0, JIT_V0, JIT_R1, JIT_R2);			\
     jit_patch_at(jit_beqi(JIT_R0, 0), label);			\
     /* lock acquired */						\
+    DEBUG_LOCK();						\
     jit_prepare();						\
     /* pretend to be doing something useful for 0.01 usec
      * while holding the lock */				\
     jit_pushargi(10000);					\
     jit_finishi(usleep);					\
     /* release lock */						\
+    DEBUG_UNLOCK();						\
     jit_movi(JIT_R1, 0);					\
     jit_str(JIT_V0, JIT_R1);					\
     /* Now test casi */						\
     jit_movi(JIT_R1, 0);					\
     jit_movi(JIT_R2, line);					\
     /* spin until get the lock */				\
+    DEBUG_SPIN();						\
     label = jit_label();					\
     jit_casi(JIT_R0, (jit_word_t)&lock, JIT_R1, JIT_R2);	\
     jit_patch_at(jit_beqi(JIT_R0, 0), label);			\
     /* lock acquired */						\
+    DEBUG_LOCK();						\
     jit_prepare();						\
     /* pretend to be doing something useful for 0.01 usec
      * while holding the lock */				\
@@ -69,6 +112,7 @@ main(int argc, char *argv[])
     /*jit_pushargi((jit_word_t)#name);*/			\
     jit_finishi(puts);						\
     /* release lock */						\
+    DEBUG_UNLOCK();						\
     jit_movi(JIT_R1, 0);					\
     jit_str(JIT_V0, JIT_R1);					\
     jit_ret();							\
@@ -126,7 +170,7 @@ main(int argc, char *argv[])
 
     code = jit_emit();
 
-#if 1
+#if DEBUG
     jit_disassemble();
 #endif
 
