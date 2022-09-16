@@ -48,35 +48,25 @@ _fallback_load(jit_state_t *_jit, jit_int32_t r0)
 static void
 _fallback_save_regs(jit_state_t *_jit, jit_int32_t r0)
 {
-    jit_int32_t		offset, regno, spec;
-    for (offset = 0; offset < JIT_R_NUM; offset++) {
-	regno = JIT_R(offset);
+    jit_int32_t		regno, spec;
+    for (regno = 0; regno < _jitc->reglen; regno++) {
 	spec =  _rvs[regno].spec;
-	if (!(spec & jit_class_sav)) {
+	if ((jit_regset_tstbit(&_jitc->regarg, regno) ||
+	     jit_regset_tstbit(&_jitc->reglive, regno)) &&
+	    !(spec & jit_class_sav)) {
 	    if (!_jitc->function->regoff[regno]) {
 		_jitc->function->regoff[regno] =
-		    jit_allocai(sizeof(jit_word_t));
+		    jit_allocai(spec & jit_class_gpr ?
+				sizeof(jit_word_t) : sizeof(jit_float64_t));
 		_jitc->again = 1;
 	    }
-	    if ((spec & jit_class_gpr) && regno == r0)
+	    if ((spec & jit_class_gpr) && rn(regno) == r0)
 		continue;
 	    jit_regset_setbit(&_jitc->regsav, regno);
-	    emit_stxi(_jitc->function->regoff[regno], JIT_FP, regno);
-	}
-    }
-    /* If knew for certain float registers are not used by
-     * pthread_mutex_lock and pthread_mutex_unlock, could skip this */
-    for (offset = 0; offset < JIT_F_NUM; offset++) {
-	regno = JIT_F(offset);
-	spec =  _rvs[regno].spec;
-	if (!(spec & jit_class_sav)) {
-	    if (!_jitc->function->regoff[regno]) {
-		_jitc->function->regoff[regno] =
-		    jit_allocai(sizeof(jit_float64_t));
-		_jitc->again = 1;
-	    }
-	    jit_regset_setbit(&_jitc->regsav, regno);
-	    emit_stxi_d(_jitc->function->regoff[regno], JIT_FP, regno);
+	    if (spec & jit_class_gpr)
+		emit_stxi(_jitc->function->regoff[regno], JIT_FP, regno);
+	    else
+		emit_stxi_d(_jitc->function->regoff[regno], JIT_FP, regno);
 	}
     }
 }
@@ -84,25 +74,19 @@ _fallback_save_regs(jit_state_t *_jit, jit_int32_t r0)
 static void
 _fallback_load_regs(jit_state_t *_jit, jit_int32_t r0)
 {
-    jit_int32_t		offset, regno, spec;
-    for (offset = 0; offset < JIT_R_NUM; offset++) {
-	regno = JIT_R(offset);
+    jit_int32_t		regno, spec;
+    for (regno = 0; regno < _jitc->reglen; regno++) {
 	spec =  _rvs[regno].spec;
-	if ((spec & jit_class_gpr) && regno == r0)
-	    continue;
-	if (!(spec & jit_class_sav)) {
-	    jit_regset_clrbit(&_jitc->regsav, regno);
-	    emit_ldxi(regno, JIT_FP, _jitc->function->regoff[regno]);
-	}
-    }
-    /* If knew for certain float registers are not used by
-     * pthread_mutex_lock and pthread_mutex_unlock, could skip this */
-    for (offset = 0; offset < JIT_F_NUM; offset++) {
-	regno = JIT_F(offset);
-	spec =  _rvs[regno].spec;
-	if (!(spec & jit_class_sav)) {
-	    jit_regset_clrbit(&_jitc->regsav, regno);
-	    emit_ldxi_d(regno, JIT_FP, _jitc->function->regoff[regno]);
+	if ((jit_regset_tstbit(&_jitc->regarg, regno) ||
+	     jit_regset_tstbit(&_jitc->reglive, regno)) &&
+	    !(spec & jit_class_sav)) {
+	    if ((spec & jit_class_gpr) && rn(regno) == r0)
+		continue;
+	    jit_regset_setbit(&_jitc->regsav, regno);
+	    if (spec & jit_class_gpr)
+		emit_ldxi(regno, JIT_FP, _jitc->function->regoff[regno]);
+	    else
+		emit_ldxi_d(regno, JIT_FP, _jitc->function->regoff[regno]);
 	}
     }
 }
