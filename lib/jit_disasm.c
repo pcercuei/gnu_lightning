@@ -60,7 +60,7 @@ static int fprintf_styled(void *, enum disassembler_style, const char* fmt, ...)
   int r;
 
   va_start(args, fmt);
-  r = vprintf(fmt, args);
+  r = vfprintf(disasm_stream, fmt, args);
   va_end(args);
 
   return r;
@@ -354,7 +354,7 @@ _disassemble(jit_state_t *_jit, jit_pointer_t code, jit_int32_t length)
 	}
 	while (node && (jit_uword_t)(prevw + node->offset) == (jit_uword_t)pc) {
 	    jit_print_node(node);
-	    fputc('\n', stdout); 
+	    fputc('\n', disasm_stream);
 	    prevw += node->offset;
 	    node = node->next;
 	}
