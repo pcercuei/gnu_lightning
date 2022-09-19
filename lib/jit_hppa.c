@@ -19,6 +19,10 @@
 
 #include <lightning.h>
 #include <lightning/jit_private.h>
+#if defined(__linux__)
+#  include <sys/syscall.h>
+#  include <unistd.h>
+#endif
 
 #define jit_arg_reg_p(i)		(i >= 0 && i < 4)
 
