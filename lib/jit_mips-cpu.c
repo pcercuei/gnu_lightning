@@ -1351,6 +1351,8 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	movi(r1, i0);
     }
     SYNC();
+    /* retry: */
+    retry = _jit->pc.w;
 #  if __WORDSIZE == 32
     LL(r0, 0, r1);
 #  else
@@ -1359,10 +1361,8 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     jump0 = _jit->pc.w;
     BNE(r0, r2, 1);				/* bne done r0 r2 */
     movi(r0, 0);				/* set to 0 in delay slot */
-    movi(r0, r3);				/* after jump and delay slot */
+    movr(r0, r3);				/* after jump and delay slot */
     /* store new value */
-    /* retry: */
-    retry = _jit->pc.w;
 #  if __WORDSIZE == 32
     SC(r0, 0, r1);
 #  else
@@ -1371,9 +1371,9 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     jump1 = _jit->pc.w;
     BEQ(r0, _ZERO_REGNO, 0);			/* beqi retry r0 0 */
     movi(r0, 1);				/* set to 1 in delay slot */
+    SYNC();
     /* done: */
     done = _jit->pc.w;
-    SYNC();
     patch_at(jump0, done);
     patch_at(jump1, retry);
     if (iscasi)
