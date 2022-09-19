@@ -73,12 +73,12 @@ main(int argc, char *argv[])
     name = jit_label();						\
      jit_prolog();						\
     jit_movi(JIT_V0, (jit_word_t)&lock);			\
-    jit_movi(JIT_R1, 0);					\
-    jit_movi(JIT_R2, line);					\
+    jit_movi(JIT_V1, 0);					\
+    jit_movi(JIT_V2, line);					\
     /* spin until get the lock */				\
     DEBUG_SPIN();						\
     label = jit_label();					\
-    jit_casr(JIT_R0, JIT_V0, JIT_R1, JIT_R2);			\
+    jit_casr(JIT_R0, JIT_V0, JIT_V1, JIT_V2);			\
     jit_patch_at(jit_beqi(JIT_R0, 0), label);			\
     /* lock acquired */						\
     DEBUG_LOCK();						\
@@ -89,15 +89,15 @@ main(int argc, char *argv[])
     jit_finishi(usleep);					\
     /* release lock */						\
     DEBUG_UNLOCK();						\
-    jit_movi(JIT_R1, 0);					\
-    jit_str(JIT_V0, JIT_R1);					\
+    jit_movi(JIT_V1, 0);					\
+    jit_str(JIT_V0, JIT_V1);					\
     /* Now test casi */						\
-    jit_movi(JIT_R1, 0);					\
-    jit_movi(JIT_R2, line);					\
+    jit_movi(JIT_V1, 0);					\
+    jit_movi(JIT_V2, line);					\
     /* spin until get the lock */				\
     DEBUG_SPIN();						\
     label = jit_label();					\
-    jit_casi(JIT_R0, (jit_word_t)&lock, JIT_R1, JIT_R2);	\
+    jit_casi(JIT_R0, (jit_word_t)&lock, JIT_V1, JIT_V2);	\
     jit_patch_at(jit_beqi(JIT_R0, 0), label);			\
     /* lock acquired */						\
     DEBUG_LOCK();						\
@@ -113,8 +113,8 @@ main(int argc, char *argv[])
     jit_finishi(puts);						\
     /* release lock */						\
     DEBUG_UNLOCK();						\
-    jit_movi(JIT_R1, 0);					\
-    jit_str(JIT_V0, JIT_R1);					\
+    jit_movi(JIT_V1, 0);					\
+    jit_str(JIT_V0, JIT_V1);					\
     jit_ret();							\
     jit_epilog();
     defun(func0, __LINE__);
