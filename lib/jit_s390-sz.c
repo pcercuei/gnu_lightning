@@ -35,7 +35,7 @@
     6,	/* addxr */
     10,	/* addxi */
     6,	/* subr */
-    12	/* subi */
+    12,	/* subi */
     6,	/* subcr */
     10,	/* subci */
     8,	/* subxr */
@@ -814,5 +814,5 @@
     140,	/* bswapr_ui */
     300,	/* bswapr_ul */
     30,	/* casr */
-    36,	/* casi */
+    42,	/* casi */
 #endif /* __WORDSIZE */
