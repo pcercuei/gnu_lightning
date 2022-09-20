@@ -1515,7 +1515,7 @@ static void _epilog(jit_state_t*,jit_node_t*);
 static void _vastart(jit_state_t*, jit_int32_t);
 #  define vaarg(r0, r1)			_vaarg(_jit, r0, r1)
 static void _vaarg(jit_state_t*, jit_int32_t, jit_int32_t);
-#define patch_at(node,instr,label)	_patch_at(_jit,node,instr,label)
+#define patch_at(code,instr,label)	_patch_at(_jit,code,instr,label)
 static void _patch_at(jit_state_t*,jit_code_t,jit_word_t,jit_word_t);
 #endif
 
@@ -3493,7 +3493,8 @@ _movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
     jit_word_t	w;
     w = beqi(_jit->pc.w, r2, 0);
     movr(r0, r1);
-    patch_at(w, _jit->pc.w);
+    sync();
+    patch_at(jit_code_beqi, w, _jit->pc.w);
 #else
     CMP_EQ(PR_6, PR_7, r2, GR_0);
     MOV_p(r0, r1, PR_7);
@@ -3507,7 +3508,8 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
     jit_word_t	w;
     w = bnei(_jit->pc.w, r2, 0);
     movr(r0, r1);
-    patch_at(w, _jit->pc.w);
+    sync();
+    patch_at(jit_code_bnei, w, _jit->pc.w);
 #else
     CMP_EQ(PR_6, PR_7, r2, GR_0);
     MOV_p(r0, r1, PR_6);
