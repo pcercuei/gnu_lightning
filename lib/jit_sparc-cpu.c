@@ -1277,7 +1277,7 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
         movi(r1, i0);
     }
     /* Do not clobber r2 */
-    movr(r0, r2);
+    movr(r0, r3);
     /* The CASXA instruction compares the value in register r[rs2] with
      * the doubleword in memory pointed to by the doubleword address in
      *  r[rs1]. If the values are equal, the value in r[rd] is swapped
@@ -1287,9 +1287,9 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
      * remains unchanged.
      */
 #  if __WORDSIZE == 32
-    CASA(r1, r3, r0);
+    CASA(r1, r2, r0);
 #  else
-    CASXA(r1, r3, r0);
+    CASXA(r1, r2, r0);
 #  endif
     eqr(r0, r0, r2);
     if (iscasi)
