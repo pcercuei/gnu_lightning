@@ -3029,7 +3029,7 @@ _M29(jit_state_t *_jit, jit_word_t _p,
      jit_word_t ar, jit_word_t r2)
 {
     assert(!(_p & ~0x3fL));
-    assert(!(ar  & ~0x7L));
+    assert(!(ar & ~0x7fL));
     assert(!(r2 & ~0x7fL));
     TSTREG1(r2);
     TSTPRED(_p);
@@ -3489,40 +3489,21 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 static void
 _movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-#if 1
-    jit_word_t	w;
-    w = beqi(_jit->pc.w, r2, 0);
-    movr(r0, r1);
-    sync();
-    patch_at(jit_code_beqi, w, _jit->pc.w);
-#else
     CMP_EQ(PR_6, PR_7, r2, GR_0);
     MOV_p(r0, r1, PR_7);
-#endif
 }
 
 static void
 _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-#if 1
-    jit_word_t	w;
-    w = bnei(_jit->pc.w, r2, 0);
-    movr(r0, r1);
-    sync();
-    patch_at(jit_code_bnei, w, _jit->pc.w);
-#else
     CMP_EQ(PR_6, PR_7, r2, GR_0);
     MOV_p(r0, r1, PR_6);
-#endif
 }
 
 static void
 _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
       jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
 {
-#if 1
-    fallback_casx(r0, r1, r2, r3, i0);
-#else
     jit_int32_t		r1_reg, iscasi;
     if ((iscasi = (r1 == _NOREG))) {
 	r1_reg = jit_get_reg(jit_class_gpr);
@@ -3530,13 +3511,13 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	movi(r1, i0);
     }
     sync();
-    MOV_I_ar_rn(AR_CCV, r2);
+    MOV_M_ar_rn(AR_CCV, r2);
     CMPXCHG8_ACQ(r0, r1, r3);
-    eqr(r0, r2);
+    eqr(r0, r0, r2);
     if (iscasi)
 	jit_unget_reg(r1_reg);
-#endif
 }
+
 
 static void
 _bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
