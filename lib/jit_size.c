@@ -28,7 +28,7 @@
  */
 static jit_int16_t	_szs[jit_code_last_code] = {
 #if GET_JIT_SIZE
-#  define JIT_INSTR_MAX		256
+#  define JIT_INSTR_MAX		512
 #else
 #  if defined(__i386__) || defined(__x86_64__)
 #    include "jit_x86-sz.c"
