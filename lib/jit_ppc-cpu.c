@@ -1181,11 +1181,13 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 #  else
     STDCX_(r3, _R0_REGNO, r1);
 #  endif
-    jump1 = bnei(_jit->pc.w, r0, 0);	/* bne retry r0 0 */
+    jump1 = _jit->pc.w;
+    BNE(0);				/* BNE retry */
     /* done: */
     done = _jit->pc.w;
     ISYNC();
     MFCR(r0);
+    EXTRWI(r0, r0, 1, CR_EQ);
     patch_at(jump0, done);
     patch_at(jump1, retry);
     if (iscasi)
