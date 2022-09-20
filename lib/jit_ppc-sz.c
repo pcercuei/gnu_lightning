@@ -821,8 +821,8 @@
     20,	/* bswapr_us */
     16,	/* bswapr_ui */
     0,	/* bswapr_ul */
-    0,	/* casr */
-    0,	/* casi */
+    36,	/* casr */
+    44,	/* casi */
 #endif /* _CALL_AIX */
 #endif /* __BYTEORDER */
 #endif /* __powerpc__ */
