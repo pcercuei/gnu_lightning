@@ -2184,11 +2184,17 @@ _jit_emit(jit_state_t *_jit)
 	jit_free((jit_pointer_t *)&_jitc->data.ptr);
 #if HAVE_MMAP
     else {
-	result = mprotect(_jit->data.ptr, _jit->data.length, PROT_READ);
+	result = mprotect(_jit->data.ptr,
+			  _jit->data.length, PROT_READ);
 	assert(result == 0);
     }
     if (!_jit->user_code) {
-	result = mprotect(_jit->code.ptr, _jit->code.length,
+	result = mprotect(_jit->code.ptr,
+			   _jit->pc.uc - _jit->code.ptr
+#  if __riscv && __WORDSIZE == 64
+			  - (_jitc->consts.hash.count * sizeof(jit_word_t))
+#  endif
+			  ,
 			  PROT_READ | PROT_EXEC);
 	assert(result == 0);
     }

@@ -1,3 +1,18 @@
+2022-09-30 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning/jit_private.h: Implement new data structures
+	specific to riscv.
+	* lib/jit_disasm.c: Extra disassemble code for riscv constant pool.
+	* lib/jit_riscv-cpu.c: Modify movi to use constant pool if 3 or
+	more instructions are required to construct constant and modify
+	movi_p to use a pc relative load from a constant pool.
+	lib/jit_riscv-sz.c: Update for new constant pool code. Most
+	instructions that need 64 bit constants are significantly reduced.
+	* lib/jit_riscv.c: Implement most of the constant pool code.
+	* lib/jit_size.c: Update for estimate of code generation size.
+	* lib/lightning.c: Update for riscv specific code, and also make
+	sure to mprotect the constant pool as executable.
+
 2022-09-08 Paulo Andrade <pcpa@gnu.org>
 
 	* lib/jit_fallback.c: Implement fallback compare and swap with

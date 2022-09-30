@@ -1280,7 +1280,9 @@ _extr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
+#  if __WORDSIZE == 64
     if (simm32_p(i0)) {
+#  endif
 	jit_int32_t	lo = (jit_int32_t)i0 << 20 >> 20;
 	jit_int32_t	hi = i0 - lo;
 	if (hi) {
@@ -1290,44 +1292,26 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	}
 	else
 	    ADDIW(r0, _ZERO_REGNO, lo);
+#  if __WORDSIZE == 64
     }
-    else {
-	jit_int32_t	lo = i0 & 0xffffffff;
-	jit_int32_t	hi = i0 >> 32;
-	jit_int32_t	t0 = jit_get_reg(jit_class_gpr);
-	movi(r0, lo);
-	lshi(r0, r0, 32);
-	movi(rn(t0), hi);
-	lshi(rn(t0), rn(t0), 32);
-	rshi_u(r0, r0, 32);
-	orr(r0, r0, rn(t0));
-	jit_unget_reg(t0);
-    }
+    else
+	load_const(r0, i0);
+#  endif
 }
 
 static jit_word_t
 _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_word_t		w;
-    jit_int32_t		t0;
-    jit_int32_t		lo = i0 & 0xffffffff;
-    jit_int32_t		hi = i0 >> 32;
-    jit_int32_t		lui, addiw;
     w = _jit->pc.w;
-    t0 = jit_get_reg(jit_class_gpr);
-    addiw = lo << 20 >> 20;
-    lui = (lo - addiw) >> 12;
-    LUI(r0, lui);			// 0
-    ADDIW(r0, r0, addiw);		// 1
-    SLLI(r0, r0, 32);			// 2
-    addiw = hi << 20 >> 20;
-    lui = (hi - addiw) >> 12;
-    LUI(rn(t0), lui);			// 3
-    ADDIW(rn(t0), rn(t0), addiw);	// 4
-    SLLI(rn(t0), rn(t0), 32);		// 5
-    SRLI(r0, r0, 32);			// 6
-    OR(r0, r0, rn(t0));			// 7
-    jit_unget_reg(t0);
+#  if __WORDSIZE == 64
+    AUIPC(r0, 0);
+    ADDI(r0, r0, 0);
+    LD(r0, r0, 0);
+#  else
+    LUI(r0, 0);
+    ADDIW(r0, r0, 0);
+#  endif
     return (w);
 }
 
@@ -2330,52 +2314,44 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
     u.w = instr;
     i.w = u.i[0];
     /* movi_p? */
+#  if __WORDSIZE == 64
+    if (i.U.opcode == 23) {					/* AUIPC */
+	jit_int32_t	lo, hi;
+	jit_word_t	address, relative;
+	address = get_const(label);
+	relative = address - instr;
+	assert(simm32_p(relative));
+	lo = (jit_int32_t)relative << 20 >> 20;
+	hi = relative - lo;
+	i.U.imm12_31 = hi >> 12;
+	u.i[0] = i.w;
+	i.w = u.i[1];
+	if (i.I.opcode == 19 && i.I.funct3 == 0) {		/* ADDI */
+	    i.I.imm11_0 = lo;
+	    u.i[1] = i.w;
+	    i.w = u.i[2];
+	}
+	else
+	    abort();
+	i.w = u.i[1];
+	assert(i.I.opcode == 3 && i.I.funct3 == 3);		/* LD */
+    }
+#  else
     if (i.U.opcode == 55) {					/* LUI */
-	jit_int32_t	lo = label & 0xffffffff;;
-	jit_int32_t	hi = label >> 32;
-	jit_int32_t	lui, addiw;
-	addiw = lo << 20 >> 20;
-	lui = (lo - addiw) >> 12;
-	i.U.imm12_31 = lui;
+	jit_int32_t	lo = (jit_int32_t)label << 20 >> 20;
+	jit_int32_t	hi = label - lo;
+	i.U.imm12_31 = hi >> 12;
 	u.i[0] = i.w;
 	i.w = u.i[1];
 	if (i.I.opcode == 27 && i.I.funct3 == 0) {		/* ADDIW */
-	    i.I.imm11_0 = addiw;
+	    i.I.imm11_0 = lo;
 	    u.i[1] = i.w;
 	    i.w = u.i[2];
-	    assert(i.IS.opcode == 19);				/* SLLI */
-	    assert(i.IS.funct3 == 1);
-	    assert(i.IS.shamt == 32);
-	    i.w = u.i[3];
-	    if (i.U.opcode == 55) {				/* LUI */
-		addiw = hi << 20 >> 20;
-		lui = (hi - addiw) >> 12;
-		i.U.imm12_31 = lui;
-		u.i[3] = i.w;
-		i.w = u.i[4];
-		if (i.I.opcode == 27 && i.I.funct3 == 0) {	/* ADDIW */
-		    i.I.imm11_0 = addiw;
-		    u.i[4] = i.w;
-		    i.w = u.i[5];
-		    assert(i.IS.opcode == 19);			/* SLLI */
-		    assert(i.IS.funct3 == 1);
-		    assert(i.IS.shamt == 32);
-		    i.w = u.i[6];
-		    assert(i.IS.opcode == 19);			/* SRLI */
-		    assert(i.IS.funct3 == 5);
-		    assert(i.IS.shamt == 32);
-		    i.w = u.i[7];
-		    assert(i.R.opcode == 51);			/* OR */
-		}
-		else
-		    abort();
-	    }
-	    else
-		abort();
 	}
 	else
 	    abort();
     }
+#  endif
     /* b{lt,le,eq,ge,gt,ne}{,_u}? */
     else if (i.B.opcode == 99) {		/* B{EQ,NE,LT,GE,LTU,GEU} */
 	jit_word_t jmp = label - instr;
