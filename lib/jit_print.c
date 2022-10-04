@@ -20,8 +20,21 @@
 #include <lightning.h>
 #include <lightning/jit_private.h>
 
+#if __WORDSIZE == 32
+#  define MININT                0x80000000
+#else
+#  define MININT                0x8000000000000000
+#endif
+
+
 #define print_chr(value)		fputc(value, print_stream)
-#define print_hex(value)		fprintf(print_stream, "0x%lx", value)
+#define print_hex(value)						\
+    do {								\
+	if (value < 0 && value != MININT)				\
+	    fprintf(print_stream, "-0x%lx", -value);			\
+	else								\
+	    fprintf(print_stream, "0x%lx", value);			\
+    } while (0)
 #define print_dec(value)		fprintf(print_stream, "%ld", value)
 #define print_flt(value)		fprintf(print_stream, "%g", value)
 #define print_str(value)		fprintf(print_stream, "%s", value)
