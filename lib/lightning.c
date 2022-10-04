@@ -1700,9 +1700,16 @@ _check_block_again(jit_state_t *_jit)
 		continue;
 
 	    /* Remember current label */
-	    if (node->code == jit_code_label || node->code == jit_code_prolog) {
+	    if (node->code == jit_code_label ||
+		node->code == jit_code_prolog ||
+		node->code == jit_code_epilog) {
+
+		/* If previous block does not pass through */
+		if (!(node->flag & jit_flag_head))
+		    block = NULL;
+
 		target = _jitc->blocks.ptr + node->v.w;
-		/* Code just start in a new block */
+		/* Update if previous block pass through */
 		if (block && block->again && block_update_set(target, block))
 		    todo = 1;
 		block = target;
@@ -1711,7 +1718,7 @@ _check_block_again(jit_state_t *_jit)
 	    }
 	    /* If not the first jmpi */
 	    else if (block) {
-		/* If not a jump or if a jump to raw address */
+		/* If a jump to dynamic address or if a jump to raw address */
 		if (!(jit_classify(node->code) & jit_cc_a0_jmp) ||
 		    !(node->flag & jit_flag_node))
 		    continue;
