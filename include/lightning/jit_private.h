@@ -416,6 +416,9 @@ struct jit_block {
     jit_node_t		*label;
     jit_regset_t	 reglive;
     jit_regset_t	 regmask;
+    jit_bool_t		 again;		/* Flag need to rebuild regset masks
+					 * due to changes in live and unknown
+					 * state. */
 };
 
 struct jit_value {

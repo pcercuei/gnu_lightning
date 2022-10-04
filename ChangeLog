@@ -1,3 +1,13 @@
+2022-10-04 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning/jit_private.h: Add new flag to jit_block_t.
+	* lib/lightning.c: Rewrite register liveness and state at block
+	entry code to avoid a very expensive and non scaling code path.
+	Now it attempts to do as few as possible recomputations when
+	merging state of adjacent blocks, still doing one extra nop pass
+	(in the sense that it will not find any changes) to make sure the
+	logic is correct.
+
 2022-09-30 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning/jit_private.h: Implement new data structures
