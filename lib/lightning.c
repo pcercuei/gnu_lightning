@@ -78,7 +78,7 @@ static void
 _jit_setup(jit_state_t *_jit, jit_block_t *block);
 
 #define do_follow(always)		_do_follow(_jit, always)
-static jit_bool_t _do_follow(jit_state_t*, jit_bool_t);
+static void _do_follow(jit_state_t*, jit_bool_t);
 
 #define jit_follow(block)		_jit_follow(_jit, block)
 static void
@@ -1735,7 +1735,7 @@ _check_block_again(jit_state_t *_jit)
     return (1);
 }
 
-static jit_bool_t
+static void
 _do_follow(jit_state_t *_jit, jit_bool_t always)
 {
     jit_block_t		*block;
@@ -3218,6 +3218,8 @@ _redundant_store(jit_state_t *_jit, jit_node_t *node, jit_bool_t jump)
 		break;
 	}
     }
+
+    return (result);
 }
 
 static jit_bool_t
