@@ -83,7 +83,7 @@ main(int argc, char *argv[])
     /* lock acquired */						\
     DEBUG_LOCK();						\
     jit_prepare();						\
-    /* pretend to be doing something useful for 0.01 usec
+    /* pretend to be doing something useful for 0.01 sec
      * while holding the lock */				\
     jit_pushargi(10000);					\
     jit_finishi(usleep);					\
@@ -102,7 +102,7 @@ main(int argc, char *argv[])
     /* lock acquired */						\
     DEBUG_LOCK();						\
     jit_prepare();						\
-    /* pretend to be doing something useful for 0.01 usec
+    /* pretend to be doing something useful for 0.01 sec
      * while holding the lock */				\
     jit_pushargi(10000);					\
     jit_finishi(usleep);					\
