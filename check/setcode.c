@@ -37,7 +37,10 @@ main(int argc, char *argv[])
 #endif
 
     ptr = mmap(NULL, 1024 * 1024,
-	       PROT_EXEC | PROT_READ | PROT_WRITE,
+#if !__OpenBSD__
+	       PROT_EXEC |
+#endif
+	       PROT_READ | PROT_WRITE,
 	       MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
     assert(ptr != MAP_FAILED);
 #if defined(__sgi)
@@ -79,6 +82,11 @@ main(int argc, char *argv[])
 	abort();
 
     jit_clear_state();
+#if __OpenBSD__
+    /* Need to remove PROT_EXEC if reusing the memory, and
+     * set again PROT_EXEC before executing jit code.*/
+    assert(mprotect(ptr, 1024 * 1024, PROT_READ | PROT_EXEC) == 0);
+#endif
     (*function)();
     jit_destroy_state();
     finish_jit();
