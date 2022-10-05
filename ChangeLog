@@ -1,3 +1,12 @@
+2022-10-05 Paulo Andrade <pcpa@gnu.org>
+
+	* check/lightning.c: Remove -Dmacro=value from usage and attempt
+	to parse it. It was buggy and not properly implemented. Now
+	it pass any extra options to the generated jit. To pass any
+	option starting with '-' need to also use '--'.
+	* check/collatz.e: New sample file showing an example of jit
+	generation.
+
 2022-10-04 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning/jit_private.h: Add new flag to jit_block_t.
