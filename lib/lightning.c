@@ -1674,21 +1674,20 @@ static jit_bool_t
 _check_block_again(jit_state_t *_jit)
 {
     jit_int32_t		 todo;
-    jit_int32_t		 result;
     jit_word_t		 offset;
     jit_node_t		*node, *label;
     jit_block_t		*block, *target;
 
-    result = 0;
+    todo = 0;
     for (offset = 0; offset < _jitc->blocks.offset; offset++) {
 	block = _jitc->blocks.ptr + offset;
 	if (block->again) {
-	    result = 1;
+	    todo = 1;
 	    break;
 	}
     }
     /* If no block changed state */
-    if (!result)
+    if (!todo)
 	return (0);
 
     do {
