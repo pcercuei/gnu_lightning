@@ -2210,6 +2210,7 @@ _jit_emit(jit_state_t *_jit)
 #if defined(__sgi)
     int			 mmap_fd;
 #endif
+    int			 mmap_prot, mmap_flags;
 
     if (!_jitc->realize)
 	jit_realize();
@@ -2223,15 +2224,22 @@ _jit_emit(jit_state_t *_jit)
     assert(_jit->user_code);
 #else
     if (!_jit->user_code) {
+	mmap_prot = PROT_READ | PROT_WRITE;
+#if !__OpenBSD__
+	mmap_prot |= PROT_EXEC;
+#endif
+#if __NetBSD__
+	mmap_prot = PROT_MPROTECT(mmap_prot);
+	mmap_flags = 0;
+#else
+	mmap_flags = MAP_PRIVATE;
+#endif
+	mmap_flags |= MAP_ANON;
 #if defined(__sgi)
 	mmap_fd = open("/dev/zero", O_RDWR);
 #endif
 	_jit->code.ptr = mmap(NULL, _jit->code.length,
-#if !__OpenBSD__
-			      PROT_EXEC |
-#endif
-			      PROT_READ | PROT_WRITE,
-			      MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
+			      mmap_prot, mmap_flags, mmap_fd, 0);
 	assert(_jit->code.ptr != MAP_FAILED);
     }
 #endif /* !HAVE_MMAP */
@@ -2240,6 +2248,11 @@ _jit_emit(jit_state_t *_jit)
     _jit->pc.uc = _jit->code.ptr;
 
     for (;;) {
+#if __NetBSD__
+	result = mprotect(_jit->code.ptr, _jit->code.length,
+			  PROT_READ | PROT_WRITE);
+	assert(result == 0);
+#endif
 	if ((code = emit_code()) == NULL) {
 	    _jitc->patches.offset = 0;
 	    for (node = _jitc->head; node; node = node->next) {
@@ -2308,13 +2321,12 @@ _jit_emit(jit_state_t *_jit)
 	assert(result == 0);
     }
     if (!_jit->user_code) {
-	result = mprotect(_jit->code.ptr,
-			   _jit->pc.uc - _jit->code.ptr
+	length = _jit->pc.uc - _jit->code.ptr;
 #  if __riscv && __WORDSIZE == 64
-			  - (_jitc->consts.hash.count * sizeof(jit_word_t))
+	/* FIXME should start adding consts at a page boundary */
+	length -= _jitc->consts.hash.count * sizeof(jit_word_t);
 #  endif
-			  ,
-			  PROT_READ | PROT_EXEC);
+	result = mprotect(_jit->code.ptr, length, PROT_READ | PROT_EXEC);
 	assert(result == 0);
     }
 #endif /* HAVE_MMAP */
