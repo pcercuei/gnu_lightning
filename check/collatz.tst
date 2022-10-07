@@ -4,7 +4,7 @@ str:
 .code
 	jmpi main
 /*
- *	unsigned long collatz(long n) {
+ *	unsigned long collatz(unsigned long n) {
  *		unsigned long r = n;
  *		if (!(r & 1)) {
  *			r = r / 2;
@@ -69,7 +69,6 @@ loop:
 		pushargr %v0
 	finishi @printf
 	blei_u done %v0 1
-call:
 	prepare
 		pushargr %v0
 	finishi collatz
