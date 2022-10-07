@@ -1175,6 +1175,8 @@ static void _X5(jit_state_t*,jit_word_t,
 #define ZXT2(r1,r3)			I29(0x11,r3,r1)
 #define ZXT4(r1,r3)			I29(0x12,r3,r1)
 
+#  define nop(i0)			_nop(_jit,i0)
+static void _nop(jit_state_t*, jit_int32_t);
 #define addr(r0,r1,r2)			ADD(r0,r1,r2)
 #define addi(r0,r1,i0)			_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -3451,6 +3453,16 @@ _X5(jit_state_t *_jit, jit_word_t _p,
     TSTPRED(_p);
     inst(i41, INST_L);
     inst((i1<<36)|(1L<<27)|(y<<26)|(i20<<6)|_p, INST_X);
+}
+
+static void
+_nop(jit_state_t *_jit, jit_int32_t i0)
+{
+    for (; i0 > 0; i0 -= 8) {
+	NOP_M(0);
+	sync();
+    }
+    assert(i0 == 0);
 }
 
 static void

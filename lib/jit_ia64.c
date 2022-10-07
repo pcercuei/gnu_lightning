@@ -1117,9 +1117,10 @@ _emit_code(jit_state_t *_jit)
 	jit_regarg_set(node, value);
 	switch (node->code) {
 	    case jit_code_align:
-		assert(!(node->u.w & (node->u.w - 1)) &&
-		       node->u.w <= sizeof(jit_word_t));
-		/* nothing done */
+		assert(!(node->u.w & (node->u.w - 1)));
+		sync();
+		if (node->u.w > 8)
+		    nop(node->u.w - 8);
 		break;
 	    case jit_code_note:		case jit_code_name:
 		sync();
