@@ -675,183 +675,113 @@ _movi_f_w(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
 static void
 _ltr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLT_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(lt)
 
 static void
 _ler_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLE_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(le)
 
 static void
 _eqr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CEQ_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(eq)
 
 static void
 _ger_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLE_S(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(ge)
 
 static void
 _gtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLT_S(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(gt)
 
 static void
 _ner_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CUNE_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
-
+    MOVCF2GR(r0, 0);
 }
 fopi(ne)
 
 static void
 _unltr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULT_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(unlt)
 
 static void
 _unler_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULE_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(unle)
 
 static void
 _uneqr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CUEQ_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(uneq)
 
 static void
 _unger_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULE_S(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(unge)
 
 static void
 _ungtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULT_S(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(ungt)
 
 static void
 _ltgtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CNE_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(ltgt)
 
 static void
 _ordr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_COR_S(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 fopi(ord)
 
 static void
 _unordr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_COR_S(0, r1, r2);
-    movi(r0, 0);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 1);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
+    XORI(r0, r0, 1);
 }
 fopi(unord)
 
@@ -1111,182 +1041,113 @@ _movi_d_w(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
 static void
 _ltr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLT_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(lt)
 
 static void
 _ler_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLE_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(le)
 
 static void
 _eqr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CEQ_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(eq)
 
 static void
 _ger_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLE_D(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(ge)
 
 static void
 _gtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_SLT_D(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(gt)
 
 static void
 _ner_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CUNE_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(ne)
 
 static void
 _unltr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULT_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(unlt)
 
 static void
 _unler_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULE_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(unle)
 
 static void
 _uneqr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CUEQ_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(uneq)
 
 static void
 _unger_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULE_D(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(unge)
 
 static void
 _ungtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CULT_D(0, r2, r1);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(ungt)
 
 static void
 _ltgtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_CNE_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(ltgt)
 
 static void
 _ordr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_COR_D(0, r1, r2);
-    movi(r0, 1);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 0);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
 }
 dopi(ord)
 
 static void
 _unordr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    jit_word_t		w;
     FCMP_COR_D(0, r1, r2);
-    movi(r0, 0);
-    w = _jit->pc.w;
-    BCNEZ(0, 0);
-    movi(r0, 1);
-    patch_at(w, _jit->pc.w);
+    MOVCF2GR(r0, 0);
+    XORI(r0, r0, 1);
 }
 dopi(unord)
 

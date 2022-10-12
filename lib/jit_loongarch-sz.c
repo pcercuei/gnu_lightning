@@ -2,7 +2,7 @@
 #define JIT_INSTR_MAX 88
     0,	/* data */
     0,	/* live */
-    4,	/* align */
+    28,	/* align */
     0,	/* save */
     0,	/* load */
     0,	/* #name */
@@ -225,34 +225,34 @@
     4,	/* negr_f */
     4,	/* absr_f */
     4,	/* sqrtr_f */
-    16,	/* ltr_f */
-    32,	/* lti_f */
-    16,	/* ler_f */
-    32,	/* lei_f */
-    16,	/* eqr_f */
-    32,	/* eqi_f */
-    16,	/* ger_f */
-    32,	/* gei_f */
-    16,	/* gtr_f */
-    32,	/* gti_f */
-    16,	/* ner_f */
-    32,	/* nei_f */
-    16,	/* unltr_f */
-    32,	/* unlti_f */
-    16,	/* unler_f */
-    32,	/* unlei_f */
-    16,	/* uneqr_f */
-    32,	/* uneqi_f */
-    16,	/* unger_f */
-    32,	/* ungei_f */
-    16,	/* ungtr_f */
-    32,	/* ungti_f */
-    16,	/* ltgtr_f */
-    32,	/* ltgti_f */
-    16,	/* ordr_f */
-    32,	/* ordi_f */
-    16,	/* unordr_f */
-    32,	/* unordi_f */
+    8,	/* ltr_f */
+    24,	/* lti_f */
+    8,	/* ler_f */
+    24,	/* lei_f */
+    8,	/* eqr_f */
+    24,	/* eqi_f */
+    8,	/* ger_f */
+    24,	/* gei_f */
+    8,	/* gtr_f */
+    24,	/* gti_f */
+    8,	/* ner_f */
+    24,	/* nei_f */
+    8,	/* unltr_f */
+    24,	/* unlti_f */
+    8,	/* unler_f */
+    24,	/* unlei_f */
+    8,	/* uneqr_f */
+    24,	/* uneqi_f */
+    8,	/* unger_f */
+    24,	/* ungei_f */
+    8,	/* ungtr_f */
+    24,	/* ungti_f */
+    8,	/* ltgtr_f */
+    24,	/* ltgti_f */
+    8,	/* ordr_f */
+    24,	/* ordi_f */
+    12,	/* unordr_f */
+    28,	/* unordi_f */
     8,	/* truncr_f_i */
     8,	/* truncr_f_l */
     8,	/* extr_f */
@@ -316,34 +316,34 @@
     4,	/* negr_d */
     4,	/* absr_d */
     4,	/* sqrtr_d */
-    16,	/* ltr_d */
-    32,	/* lti_d */
-    16,	/* ler_d */
-    32,	/* lei_d */
-    16,	/* eqr_d */
-    32,	/* eqi_d */
-    16,	/* ger_d */
-    32,	/* gei_d */
-    16,	/* gtr_d */
-    32,	/* gti_d */
-    16,	/* ner_d */
-    32,	/* nei_d */
-    16,	/* unltr_d */
-    32,	/* unlti_d */
-    16,	/* unler_d */
-    32,	/* unlei_d */
-    16,	/* uneqr_d */
-    32,	/* uneqi_d */
-    16,	/* unger_d */
-    32,	/* ungei_d */
-    16,	/* ungtr_d */
-    32,	/* ungti_d */
-    16,	/* ltgtr_d */
-    32,	/* ltgti_d */
-    16,	/* ordr_d */
-    32,	/* ordi_d */
-    16,	/* unordr_d */
-    32,	/* unordi_d */
+    8,	/* ltr_d */
+    24,	/* lti_d */
+    8,	/* ler_d */
+    24,	/* lei_d */
+    8,	/* eqr_d */
+    24,	/* eqi_d */
+    8,	/* ger_d */
+    24,	/* gei_d */
+    8,	/* gtr_d */
+    24,	/* gti_d */
+    8,	/* ner_d */
+    24,	/* nei_d */
+    8,	/* unltr_d */
+    24,	/* unlti_d */
+    8,	/* unler_d */
+    24,	/* unlei_d */
+    8,	/* uneqr_d */
+    24,	/* uneqi_d */
+    8,	/* unger_d */
+    24,	/* ungei_d */
+    8,	/* ungtr_d */
+    24,	/* ungti_d */
+    8,	/* ltgtr_d */
+    24,	/* ltgti_d */
+    8,	/* ordr_d */
+    24,	/* ordi_d */
+    12,	/* unordr_d */
+    28,	/* unordi_d */
     8,	/* truncr_d_i */
     8,	/* truncr_d_l */
     8,	/* extr_d */
