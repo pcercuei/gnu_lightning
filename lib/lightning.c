@@ -3841,6 +3841,8 @@ generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
 #  include "jit_alpha.c"
 #elif defined(__riscv)
 #  include "jit_riscv.c"
+#elif defined(__loongarch__)
+#  include "jit_loongarch.c"
 #endif
 
 static maybe_unused void
