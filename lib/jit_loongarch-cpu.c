@@ -23,7 +23,10 @@
 # define can_zero_extend_u12_p(u12)	((u12) <= 4095 && (u12) >= 0)
 # define can_sign_extend_si16_p(s16)	((s16) <= 32767 && (s16) >= -32768)
 # define can_sign_extend_si21_p(s21)	((s21) <= 1048575 && (s21) >= -1048576)
-# define can_sign_extend_si26_p(s26)	((s26) <= 33554431 && (s26) >= -33554432)
+# define can_sign_extend_si26_p(s26)					\
+	((s26) <= 33554431 && (s26) >= -33554432)
+# define can_sign_extend_si32_p(s32)					\
+	((s32) <= 2147483647LL && (s32) >= -2147483648LL)
 # define _ZERO_REGNO			0
 # define _RA_REGNO			1
 # define _SP_REGNO			3
@@ -957,22 +960,33 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     else if (can_sign_extend_si12_p(i0))
 	ADDI_D(r0, _ZERO_REGNO, i0);
     else {
-	jit_int32_t	_00_11, _12_31, _32_51, _52_63;
-	_00_11 =  i0        &   0xfff;
-	_12_31 = (i0 >> 12) & 0xfffff;
-	_32_51 = (i0 >> 32) & 0xfffff;
-	_52_63 = (i0 >> 52) &   0xfff;
-	if (_12_31) {
-	    LU12I_W(r0, _12_31 << 12 >> 12);
-	    if (_00_11)
-		ORI(r0, r0, _00_11);
+	jit_word_t		w = i0 - _jit->pc.w;
+	/* If loading some constant reachable address */
+	if (can_sign_extend_si32_p(w)) {
+	    jit_int32_t		lo = (jit_int32_t)w << 20 >> 20;
+	    jit_int32_t		hi = w - lo;
+	    PCADDU12I(r0, hi >> 12);
+	    if (lo)
+		ADDI_D(r0, r0, lo);
 	}
-	else
-	    ORI(r0, _ZERO_REGNO, _00_11);
-	if (_32_51 || (_12_31 & 0x80000))
-	    LU32I_D(r0, _32_51 << 12 >> 12);
-	if (_52_63 || (_12_31 & 0x80000) || (_32_51 & 0x80000))
-	    LU52I_D(r0, r0, _52_63 << 20 >> 20);
+	else {
+	    jit_int32_t     _00_11, _12_31, _32_51, _52_63;
+	    _00_11 =  i0	&   0xfff;
+	    _12_31 = (i0 >> 12) & 0xfffff;
+	    _32_51 = (i0 >> 32) & 0xfffff;
+	    _52_63 = (i0 >> 52) &   0xfff;
+	    if (_12_31) {
+		LU12I_W(r0, _12_31 << 12 >> 12);
+		if (_00_11)
+		    ORI(r0, r0, _00_11);
+	    }
+	    else
+		ORI(r0, _ZERO_REGNO, _00_11);
+	    if (_32_51 || (_12_31 & 0x80000))
+		LU32I_D(r0, _32_51 << 12 >> 12);
+	    if (_52_63 || (_12_31 & 0x80000) || (_32_51 & 0x80000))
+		LU52I_D(r0, r0, _52_63 << 20 >> 20);
+	}
     }
 }
 
