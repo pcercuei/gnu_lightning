@@ -826,7 +826,7 @@ _ou5rru2u3(jit_state_t *_jit,jit_int32_t op, jit_int32_t u5,
 
 static void
 _os16rr(jit_state_t *_jit,
-	jit_int32_t op, jit_int32_t s16, jit_int32_t rd, jit_int32_t rj)
+	jit_int32_t op, jit_int32_t s16, jit_int32_t rj, jit_int32_t rd)
 {
     assert(!(op &   ~0x3f));
     assert(s16 <=    32767 && s16 >= -32768);		s16 &= 0xffff;
@@ -959,6 +959,8 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	OR(r0, _ZERO_REGNO, _ZERO_REGNO);
     else if (can_sign_extend_si12_p(i0))
 	ADDI_D(r0, _ZERO_REGNO, i0);
+    else if (!(i0 & 0xffff) && can_sign_extend_si16_p(i0 >> 16))
+	ADDU16I_D(r0, _ZERO_REGNO, i0 >> 16);
     else {
 	jit_word_t		w = i0 - _jit->pc.w;
 	/* If loading some constant reachable address */
@@ -1015,6 +1017,8 @@ _addi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	movr(r0, r1);
     else if (can_sign_extend_si12_p(i0))
 	ADDI_D(r0, r1, i0);
+    else if (!(i0 & 0xffff) && can_sign_extend_si16_p(i0 >> 16))
+	ADDU16I_D(r0, r1, i0 >> 16);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
@@ -1052,6 +1056,8 @@ _addci(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     if (r0 == r1) {
 	if (can_sign_extend_si12_p(i0))
 	    ADDI_D(rn(t0), r1, i0);
+	else if (!(i0 & 0xffff) && can_sign_extend_si16_p(i0 >> 16))
+	    ADDU16I_D(rn(t0), r1, i0 >> 16);
 	else {
 	    movi(rn(t0), i0);
 	    addr(rn(t0), r1, rn(t0));
@@ -1062,6 +1068,8 @@ _addci(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     else {
 	if (can_sign_extend_si12_p(i0))
 	    ADDI_D(r0, r1, i0);
+	else if (!(i0 & 0xffff) && can_sign_extend_si16_p(i0 >> 16))
+	    ADDU16I_D(r0, r1, i0 >> 16);
 	else {
 	    movi(rn(t0), i0);
 	    addr(r0, r1, rn(t0));
@@ -1103,6 +1111,8 @@ _subi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	movr(r0, r1);
     else if (can_sign_extend_si12_p(-i0))
 	ADDI_D(r0, r1, -i0);
+    else if (!(-i0 & 0xffff) && can_sign_extend_si16_p(-i0 >> 16))
+	ADDU16I_D(r0, r1, -i0 >> 16);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
@@ -1140,6 +1150,8 @@ _subci(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     if (r0 == r1) {
 	if (can_sign_extend_si12_p(-i0))
 	    ADDI_D(rn(t0), r1, -i0);
+	else if (!(-i0 & 0xffff) && can_sign_extend_si16_p(-i0 >> 16))
+	    ADDU16I_D(rn(t0), r1, -i0 >> 16);
 	else {
 	    movi(rn(t0), i0);
 	    subr(rn(t0), r1, rn(t0));
@@ -1150,6 +1162,8 @@ _subci(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     else {
 	if (can_sign_extend_si12_p(-i0))
 	    ADDI_D(r0, r1, -i0);
+	else if (!(-i0 & 0xffff) && can_sign_extend_si16_p(-i0 >> 16))
+	    ADDU16I_D(r0, r1, -i0 >> 16);
 	else {
 	    movi(rn(t0), i0);
 	    subr(r0, r1, rn(t0));

@@ -217,7 +217,7 @@
     12,	/* addi_f */
     4,	/* subr_f */
     12,	/* subi_f */
-    20,	/* rsbi_f */
+    12,	/* rsbi_f */
     4,	/* mulr_f */
     12,	/* muli_f */
     4,	/* divr_f */
@@ -226,39 +226,39 @@
     4,	/* absr_f */
     4,	/* sqrtr_f */
     8,	/* ltr_f */
-    24,	/* lti_f */
+    16,	/* lti_f */
     8,	/* ler_f */
-    24,	/* lei_f */
+    16,	/* lei_f */
     8,	/* eqr_f */
-    24,	/* eqi_f */
+    16,	/* eqi_f */
     8,	/* ger_f */
-    24,	/* gei_f */
+    16,	/* gei_f */
     8,	/* gtr_f */
-    24,	/* gti_f */
+    16,	/* gti_f */
     8,	/* ner_f */
-    24,	/* nei_f */
+    16,	/* nei_f */
     8,	/* unltr_f */
-    24,	/* unlti_f */
+    16,	/* unlti_f */
     8,	/* unler_f */
-    24,	/* unlei_f */
+    16,	/* unlei_f */
     8,	/* uneqr_f */
-    24,	/* uneqi_f */
+    16,	/* uneqi_f */
     8,	/* unger_f */
-    24,	/* ungei_f */
+    16,	/* ungei_f */
     8,	/* ungtr_f */
-    24,	/* ungti_f */
+    16,	/* ungti_f */
     8,	/* ltgtr_f */
-    24,	/* ltgti_f */
+    16,	/* ltgti_f */
     8,	/* ordr_f */
-    24,	/* ordi_f */
+    16,	/* ordi_f */
     12,	/* unordr_f */
-    28,	/* unordi_f */
+    20,	/* unordi_f */
     8,	/* truncr_f_i */
     8,	/* truncr_f_l */
     8,	/* extr_f */
     4,	/* extr_d_f */
     4,	/* movr_f */
-    16,	/* movi_f */
+    8,	/* movi_f */
     4,	/* ldr_f */
     16,	/* ldi_f */
     4,	/* ldxr_f */
@@ -270,15 +270,15 @@
     8,	/* bltr_f */
     16,	/* blti_f */
     8,	/* bler_f */
-    24,	/* blei_f */
+    16,	/* blei_f */
     8,	/* beqr_f */
-    24,	/* beqi_f */
+    16,	/* beqi_f */
     8,	/* bger_f */
-    24,	/* bgei_f */
+    16,	/* bgei_f */
     8,	/* bgtr_f */
-    24,	/* bgti_f */
+    16,	/* bgti_f */
     8,	/* bner_f */
-    24,	/* bnei_f */
+    16,	/* bnei_f */
     8,	/* bunltr_f */
     16,	/* bunlti_f */
     8,	/* bunler_f */
@@ -286,13 +286,13 @@
     8,	/* buneqr_f */
     16,	/* buneqi_f */
     8,	/* bunger_f */
-    24,	/* bungei_f */
+    16,	/* bungei_f */
     8,	/* bungtr_f */
-    24,	/* bungti_f */
+    16,	/* bungti_f */
     8,	/* bltgtr_f */
-    24,	/* bltgti_f */
+    16,	/* bltgti_f */
     8,	/* bordr_f */
-    24,	/* bordi_f */
+    16,	/* bordi_f */
     8,	/* bunordr_f */
     16,	/* bunordi_f */
     0,	/* pushargr_f */
