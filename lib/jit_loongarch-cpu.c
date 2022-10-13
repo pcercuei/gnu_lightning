@@ -1651,13 +1651,15 @@ _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 static void
 _bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    generic_bswapr_us(_jit, r0, r1);
+    REVB_2H(r0, r1);
+    extr_us(r0, r0);
 }
 
 static void
 _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    generic_bswapr_ui(_jit, r0, r1);
+    REVB_2W(r0, r1);
+    extr_ui(r0, r0);
 }
 
 static void

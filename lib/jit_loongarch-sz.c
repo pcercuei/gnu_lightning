@@ -102,8 +102,8 @@
     4,	/* extr_us */
     4,	/* extr_i */
     4,	/* extr_ui */
-    20,	/* htonr_us */
-    52,	/* htonr_ui */
+    8,	/* htonr_us */
+    8,	/* htonr_ui */
     4,	/* htonr_ul */
     4,	/* ldr_c */
     16,	/* ldi_c */
@@ -400,8 +400,8 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
-    20,	/* bswapr_us */
-    52,	/* bswapr_ui */
+    8,	/* bswapr_us */
+    8,	/* bswapr_ui */
     4,	/* bswapr_ul */
     32,	/* casr */
     44,	/* casi */
