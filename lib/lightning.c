@@ -67,6 +67,12 @@ _jit_dataset(jit_state_t *_jit);
 #define block_update_set(block, target)	_block_update_set(_jit, block, target)
 static jit_bool_t _block_update_set(jit_state_t*, jit_block_t*, jit_block_t*);
 
+#define propagate_backward(block)	_propagate_backward(_jit, block)
+static void _propagate_backward(jit_state_t*, jit_block_t*);
+
+#define propagate_forward(block)	_propagate_forward(_jit, block)
+static void _propagate_forward(jit_state_t*, jit_block_t*);
+
 #define check_block_again()		_check_block_again(_jit)
 static jit_bool_t _check_block_again(jit_state_t*);
 
@@ -1670,6 +1676,36 @@ _block_update_set(jit_state_t *_jit,
     return (0);
 }
 
+static void
+_propagate_backward(jit_state_t *_jit, jit_block_t *block)
+{
+    jit_block_t		*prev;
+    jit_word_t		 offset;
+
+    for (offset = block->label->v.w - 1;
+	 offset >= 0; --offset)  {
+	prev = _jitc->blocks.ptr + offset;
+	if (!block_update_set(prev, block) ||
+	    !(prev->label->flag & jit_flag_head))
+	    break;
+    }
+}
+
+static void
+_propagate_forward(jit_state_t *_jit, jit_block_t *block)
+{
+    jit_block_t		*next;
+    jit_word_t		 offset;
+
+    for (offset = block->label->v.w + 1;
+	 offset < _jitc->blocks.offset; ++offset)  {
+	next = _jitc->blocks.ptr + offset;
+	if (!(next->label->flag & jit_flag_head) ||
+	    !block_update_set(next, block))
+	    break;
+    }
+}
+
 static jit_bool_t
 _check_block_again(jit_state_t *_jit)
 {
@@ -1710,13 +1746,17 @@ _check_block_again(jit_state_t *_jit)
 		target = _jitc->blocks.ptr + node->v.w;
 		if (block) {
 		    /* Update if previous block pass through */
-		    if (block->again && block_update_set(target, block))
+		    if (block->again && block_update_set(target, block)) {
+			propagate_forward(target);
 			todo = 1;
+		    }
 		    /* Check and update backwards normal flow.
 		     * This may happen in code with jumps to raw adresses
 		     * or usage of jmpr */
-		    else if (target->again && block_update_set(block, target))
+		    else if (target->again && block_update_set(block, target)) {
+			propagate_backward(block);
 			todo = 1;
+		    }
 		}
 		block = target;
 	    }
@@ -1729,11 +1769,15 @@ _check_block_again(jit_state_t *_jit)
 		label = node->u.n;
 		/* Mark predecessor needs updating due to target change */
 		target = _jitc->blocks.ptr + label->v.w;
-		if (target->again && block_update_set(block, target))
+		if (target->again && block_update_set(block, target)) {
+		    propagate_backward(block);
 		    todo = 1;
+		}
 		/* Also mark successor needs updating due to source change */
-		else if (block->again && block_update_set(target, block))
+		else if (block->again && block_update_set(target, block)) {
+		    propagate_forward(target);
 		    todo = 1;
+		}
 	    }
 	}
     }
