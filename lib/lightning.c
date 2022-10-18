@@ -1708,9 +1708,16 @@ _check_block_again(jit_state_t *_jit)
 		    block = NULL;
 
 		target = _jitc->blocks.ptr + node->v.w;
-		/* Update if previous block pass through */
-		if (block && block->again && block_update_set(target, block))
-		    todo = 1;
+		if (block) {
+		    /* Update if previous block pass through */
+		    if (block->again && block_update_set(target, block))
+			todo = 1;
+		    /* Check and update backwards normal flow.
+		     * This may happen in code with jumps to raw adresses
+		     * or usage of jmpr */
+		    else if (target->again && block_update_set(block, target))
+			todo = 1;
+		}
 		block = target;
 	    }
 	    /* If not the first jmpi */
