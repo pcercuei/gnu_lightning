@@ -1712,8 +1712,6 @@ _check_block_again(jit_state_t *_jit)
 		if (block && block->again && block_update_set(target, block))
 		    todo = 1;
 		block = target;
-		if (!block->again)
-		    continue;
 	    }
 	    /* If not the first jmpi */
 	    else if (block) {
@@ -3380,7 +3378,6 @@ _simplify_stxi(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node)
     /* no multiple information, so, if set to a constant,
      * prefer to keep that information */
     if (value->kind == 0) {
-	value->kind = jit_kind_code;
 	switch (node->code) {
 	    /* no information about signed/unsigned either */
 	    case jit_code_stxi_c:	value->code = jit_code_ldxi_c;	break;
