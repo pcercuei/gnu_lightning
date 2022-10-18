@@ -2871,36 +2871,51 @@ _split_branches(jit_state_t *_jit)
     jit_node_t		*next;
     jit_node_t		*label;
     jit_block_t		*block;
+    jit_block_t		*blocks;
+    jit_word_t		 offset;
+    jit_word_t		 length;
 
+    offset = 0;
+    length = _jitc->blocks.length;
+    jit_alloc((jit_pointer_t *)&blocks, length * sizeof(jit_block_t));
     for (node = _jitc->head; node; node = next) {
 	if ((next = node->next)) {
 	    if (next->code == jit_code_label ||
 		next->code == jit_code_prolog ||
-		next->code == jit_code_epilog)
-		continue;
+		next->code == jit_code_epilog) {
+		if (offset >= length) {
+		    jit_realloc((jit_pointer_t *)&blocks,
+				length * sizeof(jit_block_t),
+				(length + 16) * sizeof(jit_block_t));
+		    length += 16;
+		}
+		block = _jitc->blocks.ptr + next->v.w;
+		memcpy(blocks + offset, block, sizeof(jit_block_t));
+		next->v.w = offset++;
+	    }
 	    /* split block on branches */
-	    if (jit_classify(node->code) & jit_cc_a0_jmp) {
+	    else if (jit_classify(node->code) & jit_cc_a0_jmp) {
 		label = new_node(jit_code_label);
 		label->next = next;
 		node->next = label;
-		if (_jitc->blocks.offset >= _jitc->blocks.length) {
-		    jit_word_t	  length;
-
-		    length = _jitc->blocks.length + 16;
-		    jit_realloc((jit_pointer_t *)&_jitc->blocks.ptr,
-				_jitc->blocks.length * sizeof(jit_block_t),
-				length * sizeof(jit_block_t));
-		    _jitc->blocks.length = length;
+		if (offset >= length) {
+		    jit_realloc((jit_pointer_t *)&blocks,
+				length * sizeof(jit_block_t),
+				(length + 16) * sizeof(jit_block_t));
+		    length += 16;
 		}
-		block = _jitc->blocks.ptr + _jitc->blocks.offset;
+		block = blocks + offset;
 		block->label = label;
-		label->v.w = _jitc->blocks.offset;
+		label->v.w = offset++;
 		jit_regset_new(&block->reglive);
 		jit_regset_new(&block->regmask);
-		++_jitc->blocks.offset;
 	    }
 	}
     }
+    jit_free((jit_pointer_t *)&_jitc->blocks.ptr);
+    _jitc->blocks.ptr = blocks;
+    _jitc->blocks.offset = offset;
+    _jitc->blocks.length = length;
 }
 
 static jit_bool_t
