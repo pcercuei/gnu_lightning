@@ -1724,6 +1724,9 @@ _check_block_again(jit_state_t *_jit)
 		target = _jitc->blocks.ptr + label->v.w;
 		if (target->again && block_update_set(block, target))
 		    todo = 1;
+		/* Also mark successor needs updating due to source change */
+		else if (block->again && block_update_set(target, block))
+		    todo = 1;
 	    }
 	}
     }
