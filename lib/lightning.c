@@ -2926,9 +2926,17 @@ _split_branches(jit_state_t *_jit)
     jit_word_t		 offset;
     jit_word_t		 length;
 
-    offset = 0;
     length = _jitc->blocks.length;
     jit_alloc((jit_pointer_t *)&blocks, length * sizeof(jit_block_t));
+    if ((node = _jitc->head) &&
+	(node->code == jit_code_label || node->code == jit_code_prolog)) {
+	block = _jitc->blocks.ptr + node->v.w;
+	memcpy(blocks, block, sizeof(jit_block_t));
+	node->v.w = 0;
+	offset = 1;
+    }
+    else
+	offset = 0;
     for (node = _jitc->head; node; node = next) {
 	if ((next = node->next)) {
 	    if (next->code == jit_code_label ||
