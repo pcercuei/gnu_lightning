@@ -2074,6 +2074,15 @@ _jit_regarg_set(jit_state_t *_jit, jit_node_t *node, jit_int32_t value)
 	else
 	    jit_regset_setbit(&_jitc->regarg, jit_regno(node->w.w));
     }
+    /* Prevent incorrect detection of running out of registers
+     * if will need to patch jump, and all registers have been
+     * used in the current block. */
+    if (node->code == jit_code_jmpi && node->flag & jit_flag_node) {
+	jit_node_t	*label = node->u.n;
+	jit_block_t	*block = _jitc->blocks.ptr + label->v.w;
+	jit_regset_set(&_jitc->reglive, &block->reglive);
+	jit_regset_set(&_jitc->regmask, &block->regmask);
+    }
 }
 
 void
