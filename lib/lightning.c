@@ -227,8 +227,22 @@ _jit_get_reg(jit_state_t *_jit, jit_int32_t regspec)
 	for (regno = 0; regno < _jitc->reglen; regno++) {
 	    if ((jit_class(_rvs[regno].spec) & spec) == spec &&
 		!jit_regset_tstbit(&_jitc->regarg, regno) &&
-		!jit_regset_tstbit(&_jitc->reglive, regno))
+		!jit_regset_tstbit(&_jitc->reglive, regno)) {
+		/* search further, attempting to find a truly known
+		 * free register, not just one in unknown state. */
+		jit_int32_t	regfree;
+
+		for (regfree = regno + 1; regfree < _jitc->reglen; regfree++) {
+		    if ((jit_class(_rvs[regfree].spec) & spec) == spec &&
+			!jit_regset_tstbit(&_jitc->regarg, regfree) &&
+			!jit_regset_tstbit(&_jitc->reglive, regfree) &&
+			!jit_regset_tstbit(&_jitc->regmask, regfree)) {
+			regno = regfree;
+			break;
+		    }
+		}
 		goto regarg;
+	    }
 	}
 
 	/* search for a register matching spec that is not an argument
@@ -1781,6 +1795,7 @@ _jit_optimize(jit_state_t *_jit)
     jit_node_t		*node;
     jit_block_t		*block;
     jit_word_t		 offset;
+    jit_regset_t	 regmask;
 
     todo = 0;
     _jitc->function = NULL;
@@ -1795,15 +1810,31 @@ _jit_optimize(jit_state_t *_jit)
     if (simplify())
 	todo = 1;
 
-    /* Figure out labels that are only reached with a jump
-     * and is required to do a simple redundant_store removal
-     * on jit_beqi below */
+    jit_regset_set_ui(&regmask, 0);
+    for (offset = 0; offset < _jitc->reglen; offset++) {
+	if ((jit_class(_rvs[offset].spec) & (jit_class_gpr|jit_class_fpr)) &&
+	    (jit_class(_rvs[offset].spec) & jit_class_sav) == jit_class_sav)
+	    jit_regset_setbit(&regmask, offset);
+    }
+
+    /* Figure out labels that are only reached with a jump */
     jump = 1;
     for (node = _jitc->head; node; node = node->next) {
 	switch (node->code) {
 	    case jit_code_label:
-		if (!jump)
+		if (!jump) {
 		    node->flag |= jit_flag_head;
+		    if (!node->link) {
+			/* Block is dead code or only reachable with an
+			 * indirect jumps. In such condition, must assume
+			 * all callee save registers are live. */
+			block = _jitc->blocks.ptr + node->v.w;
+			jit_regset_ior(&block->reglive,
+				       &block->reglive, &regmask);
+			/* Cleanup regmask */
+			block_update_set(block, block);
+		    }
+		}
 		break;
 	    case jit_code_jmpi:		case jit_code_jmpr:
 	    case jit_code_epilog:
