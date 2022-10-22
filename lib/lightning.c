@@ -228,17 +228,20 @@ _jit_get_reg(jit_state_t *_jit, jit_int32_t regspec)
 	    if ((jit_class(_rvs[regno].spec) & spec) == spec &&
 		!jit_regset_tstbit(&_jitc->regarg, regno) &&
 		!jit_regset_tstbit(&_jitc->reglive, regno)) {
-		/* search further, attempting to find a truly known
-		 * free register, not just one in unknown state. */
-		jit_int32_t	regfree;
+		if (jit_regset_tstbit(&_jitc->regmask, regno)) {
+		    /* search further, attempting to find a truly known
+		    * free register, not just one in unknown state. */
+		    jit_int32_t	regfree;
 
-		for (regfree = regno + 1; regfree < _jitc->reglen; regfree++) {
-		    if ((jit_class(_rvs[regfree].spec) & spec) == spec &&
-			!jit_regset_tstbit(&_jitc->regarg, regfree) &&
-			!jit_regset_tstbit(&_jitc->reglive, regfree) &&
-			!jit_regset_tstbit(&_jitc->regmask, regfree)) {
-			regno = regfree;
-			break;
+		    for (regfree = regno + 1;
+			 regfree < _jitc->reglen; regfree++) {
+			if ((jit_class(_rvs[regfree].spec) & spec) == spec &&
+			    !jit_regset_tstbit(&_jitc->regarg, regfree) &&
+			    !jit_regset_tstbit(&_jitc->reglive, regfree) &&
+			    !jit_regset_tstbit(&_jitc->regmask, regfree)) {
+			    regno = regfree;
+			    break;
+			}
 		    }
 		}
 		goto regarg;
