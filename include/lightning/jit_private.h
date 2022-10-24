@@ -248,8 +248,8 @@ extern jit_node_t *_jit_data(jit_state_t*, const void*,
 #define jit_class_xpr		0x80000000	/* float / vector */
 /* Used on sparc64 where %f0-%f31 can be encode for single float
  * but %f32 to %f62 only as double precision */
-#define jit_class_sng		0x10000000	/* Single precision float */
-#define jit_class_dbl		0x20000000	/* Only double precision float */
+#define jit_class_sng		0x00010000	/* Single precision float */
+#define jit_class_dbl		0x00020000	/* Only double precision float */
 #define jit_regno_patch		0x00008000	/* this is a register
 						 * returned by a "user" call
 						 * to jit_get_reg() */

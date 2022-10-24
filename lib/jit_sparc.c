@@ -184,7 +184,7 @@ _jit_prolog(jit_state_t *_jit)
     _jitc->function = _jitc->functions.ptr + _jitc->functions.offset++;
     _jitc->function->self.size = stack_framesize;
     _jitc->function->self.argi = _jitc->function->self.argf =
-	_jitc->function->self.aoff = _jitc->function->self.alen = 0;
+	_jitc->function->self.alen = 0;
     /* float conversion */
 #  if __WORDSIZE == 32
     _jitc->function->self.aoff = -8;
