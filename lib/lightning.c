@@ -891,6 +891,7 @@ jit_new_state(void)
     jit_regset_new(&_jitc->regsav);
     jit_regset_new(&_jitc->reglive);
     jit_regset_new(&_jitc->regmask);
+    jit_regset_new(&_jitc->explive);
 
     jit_init();
 
@@ -1665,8 +1666,14 @@ _do_setup(jit_state_t *_jit)
      * at the start of a basic block */
     for (offset = 0; offset < _jitc->blocks.offset; offset++) {
 	block = _jitc->blocks.ptr + offset;
-	if (!block->label || block->label->code == jit_code_epilog)
+	if (!block->label)
 	    continue;
+	if (block->label->code == jit_code_epilog) {
+	    jit_regset_setbit(&block->reglive, JIT_RET);
+	    jit_regset_setbit(&block->reglive, JIT_FRET);
+	    jit_regset_com(&block->regmask, &block->reglive);
+	    continue;
+	}
 	jit_setup(block);
     }
 }
@@ -1767,7 +1774,7 @@ _check_block_again(jit_state_t *_jit)
     }
     while (todo);
 
-    return (1);
+    return (todo);
 }
 
 static void
@@ -1966,6 +1973,10 @@ _jit_reglive(jit_state_t *_jit, jit_node_t *node)
 	case jit_code_label:	case jit_code_prolog:	case jit_code_epilog:
 	    block = _jitc->blocks.ptr + node->v.w;
 	    jit_regset_set(&_jitc->reglive, &block->reglive);
+	    jit_regset_set_ui(&_jitc->explive, 0);
+	    break;
+	case jit_code_live:
+	    jit_regset_setbit(&_jitc->explive, node->u.w);
 	    break;
 	case jit_code_callr:
 	    value = jit_regno(node->u.w);
@@ -2085,6 +2096,10 @@ _jit_regarg_set(jit_state_t *_jit, jit_node_t *node, jit_int32_t value)
 	jit_block_t	*block = _jitc->blocks.ptr + label->v.w;
 	jit_regset_set(&_jitc->reglive, &block->reglive);
 	jit_regset_set(&_jitc->regmask, &block->regmask);
+	if (jit_regset_set_p(&_jitc->explive)) {
+	    jit_regset_ior(&_jitc->reglive, &block->reglive, &_jitc->explive);
+	    jit_regset_xor(&_jitc->regmask, &_jitc->regmask, &_jitc->explive);
+	}
     }
 }
 

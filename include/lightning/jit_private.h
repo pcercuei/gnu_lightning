@@ -533,6 +533,7 @@ struct jit_compiler {
     jit_regset_t	  regsav;	/* automatic spill only once */
     jit_regset_t	  reglive;	/* known live registers at some point */
     jit_regset_t	  regmask;	/* register mask to update reglive */
+    jit_regset_t	  explive;	/* explicitly marked as live */
     struct {
 	jit_uint8_t	 *end;
     } code;
