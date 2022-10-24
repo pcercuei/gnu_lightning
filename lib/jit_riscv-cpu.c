@@ -2333,7 +2333,6 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	}
 	else
 	    abort();
-	i.w = u.i[1];
 	assert(i.I.opcode == 3 && i.I.funct3 == 3);		/* LD */
     }
 #  else
