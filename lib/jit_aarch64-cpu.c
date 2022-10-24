@@ -1850,7 +1850,7 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     retry = _jit->pc.w;
     LDAXR(r0, r1);
     eqr(r0, r0, r2);
-    jump0 = beqi(_jit->pc.w r0, 0);	/* beqi done r0 0 */
+    jump0 = beqi(_jit->pc.w, r0, 0);	/* beqi done r0 0 */
     STLXR(r3, r0, r1);
     jump1 = bnei(_jit->pc.w, r0, 0);	/* bnei retry r0 0 */
     /* done: */
