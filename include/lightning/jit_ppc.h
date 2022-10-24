@@ -22,6 +22,9 @@
 
 #define JIT_HASH_CONSTS		1
 #define JIT_NUM_OPERANDS	3
+#if defined(_AIX) && !defined(_CALL_AIX) && !defined(_CALL_LINUX)
+#  define _CALL_AIXDESC		1
+#endif
 
 /*
  * Types
