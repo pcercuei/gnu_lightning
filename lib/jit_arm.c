@@ -1148,6 +1148,7 @@ _emit_code(jit_state_t *_jit)
 	jit_node_t	*node;
 	jit_uint8_t	*data;
 	jit_word_t	 word;
+	jit_function_t	 func;
 #if DEVEL_DISASSEMBLER
 	jit_word_t	 prevw;
 #endif
@@ -1806,6 +1807,7 @@ _emit_code(jit_state_t *_jit)
 		_jitc->function = _jitc->functions.ptr + node->w.w;
 		undo.node = node;
 		undo.word = _jit->pc.w;
+		memcpy(&undo.func, _jitc->function, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		undo.prevw = prevw;
 #endif
@@ -1833,6 +1835,13 @@ _emit_code(jit_state_t *_jit)
 		    temp->flag &= ~jit_flag_patch;
 		    node = undo.node;
 		    _jit->pc.w = undo.word;
+		    /* undo.func.self.aoff and undo.func.regset should not
+		     * be undone, as they will be further updated, and are
+		     * the reason of the undo. */
+		    undo.func.self.aoff = _jitc->function->frame +
+			_jitc->function->self.aoff;
+		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
+		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;
 #endif
