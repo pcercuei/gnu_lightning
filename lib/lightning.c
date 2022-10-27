@@ -2846,7 +2846,7 @@ _jit_update(jit_state_t *_jit, jit_node_t *node,
 			jit_regset_ior(live, live, mask);
 			/*   Prevent explicitly set as live registers to
 			 * be used as a temporary for the jmpi. */
-			jit_regset_ior(live, live, _jitc->explive);
+			jit_regset_ior(live, live, &_jitc->explive);
 			/* Treat anything else as dead. */
 			return;
 		    }
