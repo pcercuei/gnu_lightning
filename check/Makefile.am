@@ -114,7 +114,8 @@ EXTRA_DIST =				\
 	check.arm4.swf.sh		\
 	check.nodata.sh			\
 	check.x87.nodata.sh		\
-	run-test	all.tst
+	run-test	all.tst		\
+	collatz.tst	factorial.tst
 
 base_TESTS =				\
 	3to2 add align allocai		\
