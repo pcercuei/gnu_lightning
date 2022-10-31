@@ -1,3 +1,17 @@
+2022-10-30  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	Add user-visible functions jit_protect and jit_unprotect.
+	* check/Makefile.am: Add test for jit_protect and jit_unprotect.
+	* check/protect.c: New test.
+	* doc/body.texi: Add documentation for jit_protect and
+	jit_unprotect.
+	* include/lightning.h.in: Add prototypes for jit_protect and
+	jit_unprotect.
+	* include/lightning/jit_private.h: Add a field to store the size
+	of the protected memory.
+	* lib/lightning.c: Remember the size of the protected memory and
+	implement the two new functions.
+
 2022-10-12 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning/jit_loongarch.h, lib/jit_loongarch-cpu.c,

@@ -1016,6 +1016,10 @@ extern void _jit_frame(jit_state_t*, jit_int32_t);
 extern void _jit_tramp(jit_state_t*, jit_int32_t);
 #define jit_emit()		_jit_emit(_jit)
 extern jit_pointer_t _jit_emit(jit_state_t*);
+#define jit_unprotect()         _jit_unprotect(_jit)
+extern void _jit_unprotect(jit_state_t*);
+#define jit_protect()           _jit_protect(_jit)
+extern void _jit_protect(jit_state_t*);
 
 #define jit_print()		_jit_print(_jit)
 extern void _jit_print(jit_state_t*);

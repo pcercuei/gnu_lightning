@@ -2398,12 +2398,12 @@ _jit_emit(jit_state_t *_jit)
 	assert(result == 0);
     }
     if (!_jit->user_code) {
-	length = _jit->pc.uc - _jit->code.ptr;
+	_jit->code.protected = _jit->pc.uc - _jit->code.ptr;
 #  if __riscv && __WORDSIZE == 64
 	/* FIXME should start adding consts at a page boundary */
-	length -= _jitc->consts.hash.count * sizeof(jit_word_t);
+	_jit->code.protected -= _jitc->consts.hash.count * sizeof(jit_word_t);
 #  endif
-	result = mprotect(_jit->code.ptr, length, PROT_READ | PROT_EXEC);
+	result = mprotect(_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
 	assert(result == 0);
     }
 #endif /* HAVE_MMAP */
@@ -2411,6 +2411,32 @@ _jit_emit(jit_state_t *_jit)
     return (_jit->code.ptr);
 fail:
     return (NULL);
+}
+
+void
+_jit_protect(jit_state_t *_jit)
+{
+#if !HAVE_MMAP
+  assert (_jit->user_code);
+#else
+  int result;
+  if (_jit->user_code) return;
+  result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
+  assert (result == 0);
+#endif
+}
+
+void
+_jit_unprotect(jit_state_t *_jit)
+{
+#if !HAVE_MMAP
+  assert (_jit->user_code);
+#else
+  int result;
+  if (_jit->user_code) return;
+  result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_WRITE);
+  assert (result == 0);
+#endif
 }
 
 void

@@ -1680,6 +1680,28 @@ Get the current memory allocation function. Also, unlike the GNU GMP
 counterpart, it is an error to pass @code{NULL} pointers as arguments.
 @end deftypefun
 
+@section Protection
+Unless an alternate code buffer is used (see below), @code{jit_emit}
+set the access protections that the code buffer's memory can be read and
+executed, but not modified.  One can use the following functions after
+@code{jit_emit} but before @code{jit_clear} to temporarily lift the
+protection:
+
+@deftypefun void jit_unprotect ()
+Changes the access protection that the code buffer's memory can be read and
+modified.  Before the emitted code can be invoked, @code{jit_protect}
+has to be called to reset the change.
+
+This procedure has no effect when an alternate code buffer (see below) is used.
+@end deftypefun
+
+@deftypefun void jit_protect ()
+Changes the access protection that the code buffer's memory can be read and
+executed.
+
+This procedure has no effect when an alternate code buffer (see below) is used.
+@end deftypefun
+
 @section Alternate code buffer
 To instruct @lightning{} to use an alternate code buffer it is required
 to call @code{jit_realize} before @code{jit_emit}, and then query states
