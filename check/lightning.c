@@ -270,6 +270,7 @@ static jit_pointer_t get_arg(void);
 static jit_word_t get_imm(void);
 static void live(void);
 static void align(void);	static void name(void);
+static void skip(void);
 static void prolog(void);
 static void frame(void);	static void tramp(void);
 static void ellipsis(void);
@@ -591,6 +592,7 @@ static instr_t		  instr_vector[] = {
 #define entry2(name, function)	{ NULL, name, function }
     entry(live),
     entry(align),	entry(name),
+    entry(skip),
     entry(prolog),
     entry(frame),	entry(tramp),
     entry(ellipsis),
@@ -1400,6 +1402,7 @@ live(void) {
     jit_live(parser.regval);
 }
 entry_im(align)
+entry_im(skip)
 entry(prolog)
 entry_im(frame)			entry_im(tramp)
 entry(ellipsis)

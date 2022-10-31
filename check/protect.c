@@ -29,17 +29,15 @@ main(int argc, char *argv[])
     jit_prepare();
     jit_pushargi(1);
     jit_finishi(exit);
+    label = jit_indirect();
+    jit_skip(1);	      /* Reserves enough space for a byte.  */
+    jit_patch_at(load, label);
     jit_link(ok);
     jit_prepare();
     jit_pushargi((jit_word_t)"%s\n");
     jit_ellipsis();
     jit_pushargi((jit_word_t)"ok");
     jit_finishi(printf);
-
-    jit_epilog();
-    label = jit_indirect();
-    jit_prolog();               /* Reserves enough space for a byte.  */
-    jit_patch_at(load, label);
 
     function = jit_emit();
     if (function == NULL)

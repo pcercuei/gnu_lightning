@@ -1360,7 +1360,8 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    mask = jit_cc_a0_reg;
 	    break;
 	case jit_code_align:	case jit_code_reti:	case jit_code_pushargi:
-	case jit_code_finishi:	/* synthesized will set jit_cc_a0_jmp */
+        case jit_code_skip:
+        case jit_code_finishi:	/* synthesized will set jit_cc_a0_jmp */
 	    mask = jit_cc_a0_int;
 	    break;
 	case jit_code_reti_f:	case jit_code_pushargi_f:

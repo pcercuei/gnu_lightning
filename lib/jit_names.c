@@ -21,6 +21,7 @@ static char *code_name[] = {
     "data",
     "live",		"align",
     "save",		"load",
+    "skip",
     "#name",		"#note",
     "label",
     "prolog",

@@ -121,7 +121,15 @@ _jit_get_size(jit_state_t *_jit)
 		break;
 	}
 #  endif
-	size += _szs[node->code];
+	switch (node->code) {
+	    /* The instructions are special because they can be arbitrarily long.  */
+	    case jit_code_align:
+	    case jit_code_skip:
+	        size += node->u.w;
+	        break;
+	    default:
+	        size += _szs[node->code];
+	}
     }
 #  if __riscv && __WORDSIZE == 64
     /* Heuristically only 20% of constants are unique. */

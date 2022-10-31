@@ -1406,6 +1406,9 @@ _emit_code(jit_state_t *_jit)
 		if ((word = _jit->pc.w & (node->u.w - 1)))
 		    nop(node->u.w - word);
 		break;
+	    case jit_code_skip:
+	        nop(node->u.w);
+		break;
 	    case jit_code_note:		case jit_code_name:
 		if (must_align_p(node->next))
 		    nop(2);

@@ -1123,6 +1123,10 @@ _emit_code(jit_state_t *_jit)
 		if (node->u.w > 8)
 		    nop(node->u.w - 8);
 		break;
+	    case jit_code_skip:
+	        sync();
+	        nop(node->u.w);
+		break;
 	    case jit_code_note:		case jit_code_name:
 		sync();
 		node->u.w = _jit->pc.w;

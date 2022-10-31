@@ -1,3 +1,42 @@
+2022-10-31  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	Add new skip instruction.
+	* .gitignore: Update from Gnulib.
+	* check/Makefile.am: Add tests.
+	* check/lightning.c: Handle skip instructions.
+	* check/protect.c: Rewrite with skip.
+	* check/skip.ok: New test.
+	* check/skip.tst: New test.
+	* doc/body.texi: Document the skip instruction.
+	* include/lightning.h.in: Add the skip instruction.
+	* lib/jit_aarch64-sz.c: Update for skip instruction.
+	* lib/jit_aarch64.c: Implement skip instruction.
+	* lib/jit_alpha-sz.c: Update for skip instruction.
+	* lib/jit_alpha.c: Implement skip instruction.
+	* lib/jit_arm-sz.c: Update for skip instruction.
+	* lib/jit_arm.c: Implement skip instruction.
+	* lib/jit_hppa-sz.c: Update for skip instruction.
+	* lib/jit_hppa.c: Implement skip instruction.
+	* lib/jit_ia64-sz.c: Update for skip instruction.
+	* lib/jit_ia64.c: Implement skip instruction.
+	* lib/jit_loongarch-sz.c: Update for skip instruction.
+	* lib/jit_loongarch.c: Implement skip instruction.
+	* lib/jit_mips-sz.c: Update for skip instruction.
+	* lib/jit_mips.c: Implement skip instruction.
+	* lib/jit_names.c: Update for skip instruction.
+	* lib/jit_ppc-sz.c: Update for skip instruction.
+	* lib/jit_ppc.c: Implement skip instruction.
+	* lib/jit_riscv-sz.c: Update for skip instruction.
+	* lib/jit_riscv.c: Implement skip instruction.
+	* lib/jit_s390-sz.c: Update for skip instruction.
+	* lib/jit_s390.c: Implement skip instruction.
+	* lib/jit_size.c: Treat align and skip in a special way.
+	* lib/jit_sparc-sz.c: Update for skip instruction.
+	* lib/jit_sparc.c: Implement skip instruction.
+	* lib/jit_x86-sz.c: Update for skip instruction.
+	* lib/jit_x86.c: Implement skip instruction.
+	* lib/lightning.c: Classify skip instruction.
+
 2022-10-30  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
 
 	Add user-visible functions jit_protect and jit_unprotect.

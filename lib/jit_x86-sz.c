@@ -6,6 +6,7 @@
     3,	/* align */
     0,	/* save */
     0,	/* load */
+    0,  /* skip */
     0,	/* #name */
     0,	/* #note */
     3,	/* label */
@@ -416,6 +417,7 @@
     6,	/* align */
     0,	/* save */
     0,	/* load */
+    0,  /* skip */
     0,	/* #name */
     0,	/* #note */
     7,	/* label */
@@ -825,6 +827,7 @@
     3,	/* align */
     0,	/* save */
     0,	/* load */
+    0,  /* skip */
     0,	/* #name */
     0,	/* #note */
     3,	/* label */
@@ -1233,6 +1236,7 @@
     6,	/* align */
     0,	/* save */
     0,	/* load */
+    0,  /* skip */
     0,	/* #name */
     0,	/* #note */
     7,	/* label */

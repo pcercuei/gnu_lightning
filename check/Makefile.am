@@ -108,6 +108,7 @@ EXTRA_DIST =				\
 	range.tst	range.ok	\
 	ranger.tst	ranger.ok	\
 	ret.tst		ret.ok		\
+	skip.tst	skip.ok		\
 	tramp.tst	tramp.ok	\
 	va_list.tst	va_list.ok	\
 	check.sh			\
@@ -139,7 +140,7 @@ base_TESTS =				\
 	clobber carry call		\
 	float jmpr live put		\
 	qalu_mul qalu_div		\
-	range ranger ret tramp		\
+	range ranger ret skip tramp	\
 	va_list
 
 $(base_TESTS):	check.sh

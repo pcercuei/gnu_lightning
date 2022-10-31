@@ -603,6 +603,14 @@ the next instruction, usually with a label:
 align     (not specified)                @r{align code}
 @end example
 
+Similar to @code{align} is the next instruction, also usually used with
+a label:
+@example
+skip      (not specified)                @r{skip code}
+@end example
+It is used to specify a minimal number of bytes of nops to be inserted
+before the next instruction.
+
 @code{label} is normally used as @code{patch_at} argument for backward
 jumps.
 
@@ -686,6 +694,10 @@ label2  = jit_indirect();                @rem{/* second entry point */}
           addr2 = jit_address(label2);
           assert(addr2 - addr1 == 16);   @rem{/* only one of the addresses needs to be remembered */}
 @end example
+
+@code{skip} is useful for reserving space in the code buffer that can
+later be filled (possibly with the help of the pair of functions
+@code{jit_unprotect} and @code{jit_protect}).
 
 @item Function prolog
 

@@ -6,6 +6,7 @@
     2,	/* align */
     0,	/* save */
     0,	/* load */
+    0,  /* skip */
     0,	/* #name */
     0,	/* #note */
     2,	/* label */
