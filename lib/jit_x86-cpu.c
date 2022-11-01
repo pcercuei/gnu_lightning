@@ -3519,7 +3519,7 @@ _calli(jit_state_t *_jit, jit_word_t i0)
     jit_word_t		d;
     d = i0 - (_jit->pc.w + 5);
 #if __X64
-    if ((jit_int32_t)w == w) {
+    if ((jit_int32_t)d == d) {
 #endif
 	w = _jit->pc.w;
 	ic(0xe8);
@@ -3561,7 +3561,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
     jit_word_t		w;
     d = i0 - (_jit->pc.w + 5);
 #if __X64
-    if ((jit_int32_t)w == w) {
+    if ((jit_int32_t)d == d) {
 #endif
 	w = _jit->pc.w;
 	ic(0xe9);

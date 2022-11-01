@@ -1212,23 +1212,19 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
 #if __X64
-    /* FIXME preventing %rax allocation is good enough, but for consistency
-     * it should automatically detect %rax is dead, in case it has run out
-     * registers, and not save/restore it, what would be wrong if using the
-     * the return value, otherwise, just a needless noop */
-    /* >> prevent %rax from being allocated as the function pointer */
-    jit_regset_setbit(&_jitc->regarg, _RAX);
-    reg = jit_get_reg(jit_class_gpr);
-    node = jit_movi(reg, (jit_word_t)i0);
-    jit_finishr(reg);
-    jit_unget_reg(reg);
-    /* << prevent %rax from being allocated as the function pointer */
-    jit_regset_clrbit(&_jitc->regarg, _RAX);
-#else
+#  if !(__CYGWIN__ || _WIN32)
+    if (_jitc->function->call.call & jit_call_varargs) {
+	if (_jitc->function->call.argf)
+	    jit_movi(_RAX, _jitc->function->call.argf);
+	else
+	    jit_movi(_RAX, 0);
+	jit_live(_RAX);
+    }
+#  endif
+#endif
     node = jit_calli(i0);
     node->v.w = _jitc->function->call.argi;
     node->w.w = _jitc->function->call.argf;
-#endif
     _jitc->function->call.argi = _jitc->function->call.argf =
 	_jitc->function->call.size = 0;
     _jitc->prepare = 0;
@@ -2031,7 +2027,14 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			word = jmpi_p(_jit->pc.w);
+#if __X64
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if ((jit_int32_t)word == word)
+			    word = jmpi(_jit->pc.w);
+			else
+#endif
+			    word = jmpi_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
@@ -2049,7 +2052,14 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			calli(temp->u.w);
 		    else {
-			word = calli_p(_jit->pc.w);
+#if __X64
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if ((jit_int32_t)word == word)
+			    word = calli(_jit->pc.w);
+			else
+#endif
+			    word = calli_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
