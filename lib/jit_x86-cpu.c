@@ -2553,7 +2553,11 @@ _ldi_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
+#  if __X64_32
+	ldr_i(r0, rn(reg));
+#  else
 	ldr_ui(r0, rn(reg));
+#  endif
 	jit_unget_reg(reg);
     }
 }
@@ -2776,7 +2780,11 @@ _ldxi_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
+#  if __X64_32
+	ldxr_i(r0, r1, rn(reg));
+#  else
 	ldxr_ui(r0, r1, rn(reg));
+#  endif
 	jit_unget_reg(reg);
     }
 }
@@ -3516,10 +3524,15 @@ static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
-    jit_word_t		d;
-    d = i0 - (_jit->pc.w + 5);
 #if __X64
-    if ((jit_int32_t)d == d) {
+    jit_word_t		d;
+    jit_word_t		l = _jit->pc.w + 5;
+    d = i0 - l;
+    if (
+#  if __X64_32
+	!((d < 0) ^ (l < 0)) &&
+#  endif
+	(jit_int32_t)d == d) {
 #endif
 	w = _jit->pc.w;
 	ic(0xe8);
@@ -3557,11 +3570,16 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0)
 static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		d;
     jit_word_t		w;
-    d = i0 - (_jit->pc.w + 5);
 #if __X64
-    if ((jit_int32_t)d == d) {
+    jit_word_t		d;
+    jit_word_t		l = _jit->pc.w + 5;
+    d = i0 - l;
+    if (
+#  if __X64_32
+	!((d < 0) ^ (l < 0)) &&
+#  endif
+	(jit_int32_t)d == d) {
 #endif
 	w = _jit->pc.w;
 	ic(0xe9);
