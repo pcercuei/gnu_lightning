@@ -2194,7 +2194,7 @@ _emit_code(jit_state_t *_jit)
     for (offset = 0; offset < _jitc->patches.offset; offset++) {
 	node = _jitc->patches.ptr[offset].node;
 	word = node->code == jit_code_movi ? node->v.n->u.w : node->u.n->u.w;
-	patch_at(node, _jitc->patches.ptr[offset].inst, word);
+	patch_at(_jitc->patches.ptr[offset].inst, word);
     }
 
     jit_flush(_jit->code.ptr, _jit->pc.uc);
