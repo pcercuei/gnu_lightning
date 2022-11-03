@@ -1500,7 +1500,7 @@ static void _stxi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #define jmpr(r0)			_jmpr(_jit,r0)
 static void _jmpr(jit_state_t*,jit_int32_t);
 #define jmpi(i0)			_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #define jmpi_p(i0)			_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #define callr(r0)			_callr(_jit,r0)
@@ -5145,16 +5145,18 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0)
     BR(BR_6);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		d;
+    jit_word_t		d, w;
     sync();
-    d = ((jit_word_t)i0 - _jit->pc.w) >> 4;
+    w = _jit->pc.w;
+    d = ((jit_word_t)i0 - w) >> 4;
     if (d >= -16777216 && d <= 16777215)
 	BRI(d);
     else
 	BRL(d);
+    return (w);
 }
 
 static jit_word_t
@@ -5400,14 +5402,16 @@ _patch_at(jit_state_t *_jit, jit_code_t code,
 	    i1  = (ic >> 61) &           0x1L;
 	    i41 = (ic >> 22) & 0x1ffffffffffL;
 	    i20 =  ic        &       0xfffffL;
-	    assert((tm & ~1) == TM_M_L_X_ &&
+	    if (!((tm & ~1) == TM_M_L_X_ &&
 		   (s2 & 0xfL<<37) == (0xcL<<37) &&
-		   s0 == nop_m);
+		  s0 == nop_m))
+		goto short_jump;
 	    s1 = i41;
 	    s2 &= (0xcL<<37)|(0x7L<<33)|(1L<<12);
 	    s2 |= (i1<<36)|(i20<<13);
 	    break;
 	default:
+	short_jump:
 	    /* Only B1 in slot 0 expected due to need to either
 	     * a stop to update predicates, or a sync before
 	     * unconditional short branch */
