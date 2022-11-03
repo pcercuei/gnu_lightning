@@ -1295,7 +1295,7 @@ _emit_code(jit_state_t *_jit)
 		    nop(node->u.w - word);
 		break;
 	    case jit_code_skip:
-	        nop(node->u.w);
+	        nop((node->u.w + 3) & ~3);
 		break;
 	    case jit_code_note:		case jit_code_name:
 		node->u.w = _jit->pc.w;
@@ -1695,7 +1695,12 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			word = jmpi(_jit->pc.w);
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (can_sign_extend_jump_p(word))
+			    word = jmpi(_jit->pc.w);
+			else
+			    word = jmpi_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
@@ -1703,31 +1708,39 @@ _emit_code(jit_state_t *_jit)
 		    jmpi(node->u.w);
 		break;
 	    case jit_code_callr:
-		callr(rn(node->u.w)
 #if _CALL_SYSV
-		      , !!(node->flag & jit_flag_varargs)
+#  define xcallr(u, v)		callr(u, v)
+#  define xcalli_p(u, v)	calli_p(u, v)
+#  define xcalli(u, v)		calli(u, v)
+#else
+#  define xcallr(u, v)		callr(u)
+#  define xcalli_p(u, v)	calli_p(u)
+#  define xcalli(u, v)		calli(u)
 #endif
-		      );
+		xcallr(rn(node->u.w), !!(node->flag & jit_flag_varargs));
 		break;
 	    case jit_code_calli:
+		value = !!(node->flag & jit_flag_varargs);
 		if (node->flag & jit_flag_node) {
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
-		    word = calli_p(temp->u.w
+		    if (temp->flag & jit_flag_patch)
+			xcalli(temp->u.w, value);
+		    else {
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
 #if _CALL_SYSV
-				   , !!(node->flag & jit_flag_varargs)
+			if (can_sign_extend_jump_p(word + value * 4))
+			    word = xcalli(_jit->pc.w, value);
+			else
 #endif
-				   );
-		    if (!(temp->flag & jit_flag_patch))
+			    word = xcalli_p(_jit->pc.w, value);
 			patch(word, node);
+		    }
 		}
 		else
-		    calli(node->u.w
-#if _CALL_SYSV
-			  , !!(node->flag & jit_flag_varargs)
-#endif
-			  );
+		    xcalli(node->u.w, value);
 		break;
 	    case jit_code_prolog:
 		_jitc->function = _jitc->functions.ptr + node->w.w;

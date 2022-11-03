@@ -858,14 +858,14 @@ static jit_word_t _jmpi_p(jit_state_t*,jit_word_t) maybe_unused;
 #    define callr(r0,i0)		_callr(_jit,r0,i0)
 static void _callr(jit_state_t*,jit_int32_t,jit_int32_t);
 #    define calli(i0,i1)		_calli(_jit,i0,i1)
-static void _calli(jit_state_t*,jit_word_t,jit_int32_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t,jit_int32_t);
 #  define calli_p(i0,i1)		_calli_p(_jit,i0,i1)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t,jit_int32_t);
 #  else
 #    define callr(r0)			_callr(_jit,r0)
 static void _callr(jit_state_t*,jit_int32_t);
 #    define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t);
 #    define calli_p(i0)			_calli_p(_jit,i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #endif
@@ -3301,24 +3301,28 @@ _callr(jit_state_t *_jit, jit_int32_t r0
 }
 
 /* assume fixed address or reachable address */
-static void
+static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0
 #  if _CALL_SYSV
        , jit_int32_t varargs
 #  endif
        )
 {
+    jit_word_t		w;
 #  if _CALL_SYSV
     jit_word_t		d;
     d = (i0 - _jit->pc.w - !!varargs * 4) & ~3;
     if (can_sign_extend_jump_p(d)) {
-        /* Tell double arguments were passed in registers. */
-        if (varargs)
-            CREQV(6, 6, 6);
-        BL(d);
-    } else
+	/* Tell double arguments were passed in registers. */
+	if (varargs)
+	    CREQV(6, 6, 6);
+	w = _jit->pc.w;
+	BL(d);
+    }
+    else
 #  endif
     {
+	w = _jit->pc.w;
 	movi(_R12_REGNO, i0);
 	callr(_R12_REGNO
 #  if _CALL_SYSV
@@ -3326,6 +3330,7 @@ _calli(jit_state_t *_jit, jit_word_t i0
 #  endif
 	      );
     }
+    return (w);
 }
 
 /* absolute jump */
