@@ -211,6 +211,7 @@ typedef union {
 #  undef ui
 } instr_t;
 #  define stack_framesize		160
+#  define s26_p(d)			((d) >= -33554432 && (d) <= 33554431)
 #  define ii(i)				*_jit->pc.ui++ = i
 #  define ldr(r0,r1)			ldr_l(r0,r1)
 #  define ldxr(r0,r1,r2)		ldxr_l(r0,r1,r2)
@@ -781,12 +782,12 @@ _bmxi(jit_state_t*,jit_int32_t,jit_word_t,jit_int32_t,jit_word_t);
 #  define bmci(i0,r0,i1)		bmxi(BCC_EQ,i0,r0,i1)
 #  define jmpr(r0)			BR(r0)
 #  define jmpi(i0)			_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #  define jmpi_p(i0)			_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #  define callr(r0)			BLR(r0)
 #  define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t);
 #  define calli_p(i0)			_calli_p(_jit,i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #  define prolog(i0)			_prolog(_jit,i0)
@@ -912,7 +913,7 @@ static void
 _o26(jit_state_t *_jit, jit_int32_t Op, jit_int32_t Simm26)
 {
     instr_t	i;
-    assert(Simm26 >= -33554432 && Simm26 <= 33554431);
+    assert(s26_p(Simm26));
     assert(!(Op   & ~0xfc000000));
     i.w = Op;
     i.imm26.b = Simm26;
@@ -2166,20 +2167,22 @@ _bmxi(jit_state_t *_jit, jit_int32_t cc,
     return (w);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
     jit_int32_t		reg;
-    w = (i0 - _jit->pc.w) >> 2;
-    if (w >= -33554432 && w <= 33554431)
-	B(w);
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 2;
+    if (s26_p(d))
+	B(d);
     else {
 	reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
 	movi(rn(reg), i0);
 	jmpr(rn(reg));
 	jit_unget_reg(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -2194,20 +2197,22 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
     return (w);
 }
 
-static void
+static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
     jit_int32_t		reg;
-    w = (i0 - _jit->pc.w) >> 2;
-    if (w >= -33554432 && w <= 33554431)
-	BL(w);
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 2;
+    if (s26_p(d))
+	BL(d);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
 	callr(rn(reg));
 	jit_unget_reg(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -2454,7 +2459,7 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
     ffc = i.w & 0xffc00000;
     if (fc == A64_B || fc == A64_BL) {
 	d = (label - instr) >> 2;
-	assert(d >= -33554432 && d <= 33554431);
+	assert(s26_p(d));
 	i.imm26.b = d;
 	u.i[0] = i.w;
     }
