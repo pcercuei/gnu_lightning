@@ -54,4 +54,6 @@ main(int argc, char *argv[])
 
     jit_destroy_state();
     finish_jit();
+
+    return (0);
 }

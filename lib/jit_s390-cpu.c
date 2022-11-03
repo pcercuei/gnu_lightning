@@ -1289,13 +1289,13 @@ static void _stxi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define bmci(i0,r0,i1)		bmxi(CC_E,i0,r0,i1)
 #  define bmci_p(i0,r0,i1)		bmxi_p(CC_E,i0,r0,i1)
 #  define jmpr(r0)			BR(r0)
-#  define jmpi(i0)			_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+#  define jmpi(i0,i1)			_jmpi(_jit,i0,i1)
+static jit_word_t _jmpi(jit_state_t*,jit_word_t, jit_bool_t);
 #  define jmpi_p(i0)			_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #  define callr(r0)			BALR(_R14_REGNO,r0)
-#  define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
+#  define calli(i0,i1)			_calli(_jit,i0,i1)
+static jit_word_t _calli(jit_state_t*,jit_word_t, jit_bool_t);
 #  define calli_p(i0)			_calli_p(_jit,i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #  define prolog(i0)			_prolog(_jit,i0)
@@ -3497,13 +3497,14 @@ _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 }
 #endif
 
-static void
-_jmpi(jit_state_t *_jit, jit_word_t i0)
+static jit_word_t
+_jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t i1)
 {
-    jit_word_t		d;
     jit_int32_t		reg;
-    d = (i0 - _jit->pc.w) >> 1;
-    if (s16_p(d))
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 1;
+    if (i1 && s16_p(d))
 	J(x16(d));
     else if (s32_p(d))
 	BRL(d);
@@ -3513,6 +3514,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
 	jmpr(rn(reg));
 	jit_unget_reg_but_zero(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -3527,13 +3529,16 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
     return (w);
 }
 
-static void
-_calli(jit_state_t *_jit, jit_word_t i0)
+static jit_word_t
+_calli(jit_state_t *_jit, jit_word_t i0, jit_bool_t i1)
 {
-    jit_word_t		d;
     jit_int32_t		reg;
-    d = (i0 - _jit->pc.w) >> 1;
-    if (s32_p(d))
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 1;
+    if (i1 && s16_p(d))
+	BRAS(_R14_REGNO, x16(d));
+    else if (s32_p(d))
 	BRASL(_R14_REGNO, d);
     else {
 	reg = jit_get_reg_but_zero(0);
@@ -3541,6 +3546,7 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 	callr(rn(reg));
 	jit_unget_reg_but_zero(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -3889,17 +3895,17 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	u.s[7] = i1.s;
 #endif
     }
-    /* BRC */
+    /* BRC or BRL */
     else if (i0.b.op == 0xA7) {
-	assert(i0.b.r3 == 0x4);
+	assert(i0.b.r3 == 0x4 || i0.b.r3 == 0x5);
 	d = (label - instr) >> 1;
 	assert(s16_p(d));
 	i1.b.i2 = d;
 	u.s[1] = i1.s;
     }
-    /* BRCL */
+    /* BRCL or BRASL */
     else if (i0.b.op == 0xC0) {
-	assert(i0.b.r3 == 0x4);
+	assert(i0.b.r3 == 0x4 || i0.b.r3 == 0x5);
 	d = (label - instr) >> 1;
 	assert(s32_p(d));
 	i12.i = d;

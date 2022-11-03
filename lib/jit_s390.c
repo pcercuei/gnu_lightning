@@ -1034,7 +1034,7 @@ _emit_code(jit_state_t *_jit)
 		    nop(node->u.w - word);
 		break;
 	    case jit_code_skip:
-                nop(node->u.w);
+		nop((node->u.w + 1) & ~1);
 		break;
 	    case jit_code_note:		case jit_code_name:
 		node->u.w = _jit->pc.w;
@@ -1431,14 +1431,21 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			jmpi(temp->u.w);
+			jmpi(temp->u.w, 1);
 		    else {
-			word = jmpi_p(_jit->pc.w);
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (s32_p(word)) {
+			    offset = s16_p(word);
+			    word = jmpi(_jit->pc.w, offset);
+			}
+			else
+			    word = jmpi_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
 		else
-		    jmpi(node->u.w);
+		    jmpi(node->u.w, 1);
 		break;
 	    case jit_code_callr:
 		callr(rn(node->u.w));
@@ -1449,14 +1456,21 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			calli(temp->u.w);
+			calli(temp->u.w, 1);
 		    else {
-			word = calli_p(_jit->pc.w);
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (s32_p(word)) {
+			    offset =s16_p(word);
+			    word = calli(_jit->pc.w, offset);
+			}
+			else
+			    word = calli_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
 		else
-		    calli(node->u.w);
+		    calli(node->u.w, 1);
 		break;
 	    case jit_code_prolog:
 		_jitc->function = _jitc->functions.ptr + node->w.w;
