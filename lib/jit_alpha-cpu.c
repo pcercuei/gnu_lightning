@@ -637,7 +637,7 @@ static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define jmpr(r0)			JMP(_R31_REGNO,r0,0)
 #  define jmpi(i0)			_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*, jit_word_t);
+static jit_word_t _jmpi(jit_state_t*, jit_word_t);
 #  define jmpi_p(i0)			_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*, jit_word_t);
 #define callr(r0)			_callr(_jit,r0)
@@ -2543,7 +2543,7 @@ _bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_unget_reg(t0);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
@@ -2553,7 +2553,8 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
     if (_s21_p(d))
 	BR(_R31_REGNO, d);
     else
-	(void)jmpi_p(i0);
+	w = jmpi_p(i0);
+    return (w);
 }
 
 static jit_word_t
