@@ -1407,7 +1407,10 @@ _emit_code(jit_state_t *_jit)
 		    nop(node->u.w - word);
 		break;
 	    case jit_code_skip:
-	        nop(node->u.w);
+		if (jit_thumb_p())
+		    nop((node->u.w + 1) & ~1);
+		else
+		    nop((node->u.w + 3) & ~3);
 		break;
 	    case jit_code_note:		case jit_code_name:
 		if (must_align_p(node->next))
@@ -1780,7 +1783,9 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			word = jmpi_p(_jit->pc.w, 1);
+			word = jmpi_p(_jit->pc.w,
+				      _s24P(_jit->code.length -
+					    (_jit->pc.uc - _jit->code.ptr)));
 			patch(word, node);
 		    }
 		}
