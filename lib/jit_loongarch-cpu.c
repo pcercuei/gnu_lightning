@@ -580,7 +580,7 @@ static jit_word_t _bner(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
 static jit_word_t _bnei(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
 # define jmpr(r0)			JIRL(_ZERO_REGNO, r0, 0)
 # define jmpi(i0)			_jmpi(_jit, i0)
-static void _jmpi(jit_state_t*, jit_word_t);
+static jit_word_t _jmpi(jit_state_t*, jit_word_t);
 # define jmpi_p(i0)			_jmpi_p(_jit, i0)
 static jit_word_t _jmpi_p(jit_state_t*, jit_word_t);
 # define boaddr(i0, r0, r1)		_boaddr(_jit, i0, r0, r1)
@@ -625,7 +625,7 @@ static jit_word_t _bmcr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static jit_word_t _bmci(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 # define callr(r0)			JIRL(_RA_REGNO, r0, 0)
 # define calli(i0)			_calli(_jit, i0)
-static void _calli(jit_state_t*, jit_word_t);
+static jit_word_t _calli(jit_state_t*, jit_word_t);
 # define calli_p(i0)			_calli_p(_jit, i0)
 static jit_word_t _calli_p(jit_state_t*, jit_word_t);
 # define prolog(i0)			_prolog(_jit, i0)
@@ -2134,15 +2134,17 @@ _bnei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     return (w);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
-    w = (i0 - _jit->pc.w) >> 2;
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 2;
     if (can_sign_extend_si26_p(i0))
-	B(w);
+	B(d);
     else
-	(void)jmpi_p(i0);
+	w = jmpi_p(i0);
+    return (w);
 }
 
 static jit_word_t
@@ -2501,15 +2503,17 @@ _bmci(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     return (w);
 }
 
-static void
+static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
-    w = (i0 - _jit->pc.w) >> 2;
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 2;
     if (can_sign_extend_si26_p(i0))
-	BL(w);
+	BL(d);
     else
-	(void)calli_p(i0);
+	w = calli_p(i0);
+    return (w);
 }
 
 static jit_word_t
