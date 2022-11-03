@@ -912,7 +912,7 @@ static jit_word_t _bxsubi_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 #define jmpr(r0)		_jmpr(_jit,r0)
 static void _jmpr(jit_state_t*,jit_int32_t);
 #define jmpi(i0)		_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #define jmpi_p(i0)		_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #define callr(r0)		_callr(_jit,r0)
@@ -2632,17 +2632,19 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0)
     BV_N(_R0_REGNO, r0);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
-    w = ((i0 - _jit->pc.w) >> 2) - 2;
-    if (w >= -32768 && w <= 32767)
-	B_N(w, _R0_REGNO);
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = ((i0 - w) >> 2) - 2;
+    if (d >= -32768 && d <= 32767)
+	B_N(d, _R0_REGNO);
     else {
-	movi(_R1_REGNO, w);
+	movi(_R1_REGNO, d);
 	BV_N(_R0_REGNO, _R1_REGNO);
     }
+    return (w);
 }
 
 static jit_word_t
