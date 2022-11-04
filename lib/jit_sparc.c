@@ -1328,7 +1328,7 @@ _emit_code(jit_state_t *_jit)
 		    nop(node->u.w - word);
 		break;
 	    case jit_code_skip:
-	        nop(code->u.w);
+	        nop((node->u.w + 3) & ~3);
 		break;
 	    case jit_code_note:		case jit_code_name:
 		node->u.w = _jit->pc.w;
@@ -1727,7 +1727,12 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			word = jmpi_p(_jit->pc.w);
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (s22_p(word >> 2))
+			    word = jmpi(_jit->pc.w);
+			else
+			    word = jmpi_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
@@ -1742,9 +1747,17 @@ _emit_code(jit_state_t *_jit)
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
-		    word = calli_p(temp->u.w);
-		    if (!(temp->flag & jit_flag_patch))
+		    if (temp->flag & jit_flag_patch)
+			calli(temp->u.w);
+		    else {
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (s30_p(word >> 2))
+			    word = calli(_jit->pc.w);
+			else
+			    word = calli_p(_jit->pc.w);
 			patch(word, node);
+		    }
 		}
 		else
 		    calli(node->u.w);

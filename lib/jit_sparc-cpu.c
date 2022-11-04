@@ -941,13 +941,13 @@ _bm_w(jit_state_t*,jit_bool_t,jit_word_t,jit_int32_t,jit_word_t);
 #  define jmpr(r0)			_jmpr(_jit, r0)
 static void _jmpr(jit_state_t*,jit_int32_t);
 #  define jmpi(i0)			_jmpi(_jit, i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #  define jmpi_p(i0)			_jmpi_p(_jit, i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #  define callr(r0)			_callr(_jit, r0)
 static void _callr(jit_state_t*,jit_int32_t);
 #  define calli(i0)			_calli(_jit, i0)
-static void _calli(jit_state_t*,jit_word_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t);
 #  define calli_p(i0)			_calli_p(_jit, i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #  define prolog(node)			_prolog(_jit, node)
@@ -2307,11 +2307,7 @@ _bw(jit_state_t *_jit, jit_int32_t cc,
     if (s13_p(i1)) {
 	CMPI(r0, i1);
 	w = _jit->pc.w;
-#  if __WORDSIZE == 32
 	B(cc, (i0 - w) >> 2);
-#  else
-	B(cc, (i0 - w) >> 2);
-#  endif
 	NOP();
     }
     else {
@@ -2430,14 +2426,15 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0)
     NOP();
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
     jit_int32_t		reg;
-    w = (i0 - _jit->pc.w) >> 2;
-    if (s22_p(w)) {
-	BA(w);
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 2;
+    if (s22_p(d)) {
+	BA(d);
 	NOP();
     }
     else {
@@ -2446,6 +2443,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
 	jmpr(rn(reg));
 	jit_unget_reg(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -2467,17 +2465,19 @@ _callr(jit_state_t *_jit, jit_int32_t r0)
     NOP();
 }
 
-static void
+static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
-    w = (i0 - _jit->pc.w) >> 2;
-    if (s30_p(w)) {
-	CALLI(w);
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 2;
+    if (s30_p(d)) {
+	CALLI(d);
 	NOP();
     }
     else
-	(void)calli_p(i0);
+	w = calli_p(i0);
+    return (w);
 }
 
 static jit_word_t
@@ -2648,6 +2648,11 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	}
 	else
 	    abort();
+    }
+    else if (i.op.b == 1) {
+	assert(s30_p((label - instr) >> 2));
+	i.disp30.b = (label - instr) >> 2;
+	u.i[0] = i.v;
     }
     else
 	abort();
