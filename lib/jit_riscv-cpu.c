@@ -579,12 +579,12 @@ static jit_word_t _bmcr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static jit_word_t _bmci(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 #  define jmpr(r0)			JALR(_ZERO_REGNO, r0, 0)
 #  define jmpi(im)			_jmpi(_jit, im)
-static void _jmpi(jit_state_t*,jit_word_t);
+static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #  define jmpi_p(im)			_jmpi_p(_jit, im)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #  define callr(r0)			JALR(_RA_REGNO, r0, 0)
 #  define calli(im)			_calli(_jit, im)
-static void _calli(jit_state_t*,jit_word_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t);
 #  define calli_p(im)		_calli_p(_jit, im)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #  define prolog(i0)			_prolog(_jit,i0)
@@ -2087,12 +2087,13 @@ _bmci(jit_state_t *_jit, jit_word_t br, jit_int32_t r0, jit_word_t i0)
     return (w);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
     jit_int32_t		t0;
-    jit_word_t		dsp;
-    dsp = i0 - _jit->pc.w;
+    jit_word_t		dsp, w;
+    w = _jit->pc.w;
+    dsp = i0 - w;
     if (simm20_p(dsp))
 	JAL(_ZERO_REGNO, dsp);
     else {
@@ -2101,6 +2102,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
 	jmpr(rn(t0));
 	jit_unget_reg(t0);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -2115,12 +2117,13 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
     return (w);
 }
 
-static void
+static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
     jit_int32_t		t0;
-    jit_word_t		dsp;
-    dsp = i0 - _jit->pc.w;
+    jit_word_t		dsp, w;
+    w = _jit->pc.w;
+    dsp = i0 - w;
     if (simm20_p(dsp))
 	JAL(_RA_REGNO, dsp);
     else {
@@ -2129,6 +2132,7 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 	callr(rn(t0));
 	jit_unget_reg(t0);
     }
+    return (w);
 }
 
 static jit_word_t
