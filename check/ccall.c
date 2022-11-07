@@ -135,16 +135,22 @@
 /*
  * Types
  */
+#if !__APPLE__
 typedef signed char		_c;
 typedef unsigned char		_uc;
 typedef signed short		_s;
 typedef unsigned short		_us;
 typedef signed int		_i;
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 typedef unsigned int		_ui;
+#endif
 typedef jit_word_t		_l;
 #endif
+#if !__APPLE__
 typedef float			_f;
+#endif
 typedef double			_d;
 
 #define prt0(T)			T C##T##0(void);
@@ -179,16 +185,22 @@ typedef double			_d;
 #define prt15(T)		prt14(T)				\
 				T C##T##15(T,T,T,T,T,T,T,T,T,T,T,T,T,T,T);
 #define prt(T)			prt15(T)
+#if !__APPLE__
 prt(_c)
 prt(_uc)
 prt(_s)
 prt(_us)
 prt(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 prt(_ui)
+#endif
 prt(_l)
 #endif
+#if !__APPLE__
 prt(_f)
+#endif
 prt(_d)
 #undef prt
 #undef prt15
@@ -226,16 +238,22 @@ prt(_d)
 #define prt14(T)		prt13(T)		prtn(14,T)
 #define prt15(T)		prt14(T)		prtn(15,T)
 #define prt(T)			prt15(T)
+#if !__APPLE__
 prt(_c)
 prt(_uc)
 prt(_s)
 prt(_us)
 prt(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 prt(_ui)
+#endif
 prt(_l)
 #endif
+#if !__APPLE__
 prt(_f)
+#endif
 prt(_d)
 #undef prt
 #undef prt15
@@ -308,16 +326,22 @@ prt(_d)
 				T (*j##T##15)(T,T,T,T,T,T,T,T,T,T,T,T,T,T,T);\
 				jit_node_t *n##T##15;
 #define dat(T)			dat15(T)
+#if !__APPLE__
 dat(_c)
 dat(_uc)
 dat(_s)
 dat(_us)
 dat(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 dat(_ui)
+#endif
 dat(_l)
 #endif
+#if !__APPLE__
 dat(_f)
+#endif
 dat(_d)
 #undef dat
 #undef dat15
@@ -436,16 +460,22 @@ T C##T##15(T A,T B,T C,T D,T E,T F,T G,T H,T I,T J,T K,T L,T M,T N,T O)	\
     return (A-B-C-D-E-F-G-H-I-J-K-L-M-N-O);				\
 }
 #define dcl(T)	dcl15(T)
+#if !__APPLE__
 dcl(_c)
 dcl(_uc)
 dcl(_s)
 dcl(_us)
 dcl(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 dcl(_ui)
+#endif
 dcl(_l)
 #endif
+#if !__APPLE__
 dcl(_f)
+#endif
 dcl(_d)
 #undef dcl
 #undef dcl15
@@ -561,16 +591,22 @@ T CJ##T##15(void)							\
     return ((*j##T##15)(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));		\
 }
 #define dcl(t)	dcl15(t)
+#if !__APPLE__
 dcl(_c)
 dcl(_uc)
 dcl(_s)
 dcl(_us)
 dcl(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 dcl(_ui)
+#endif
 dcl(_l)
 #endif
+#if !__APPLE__
 dcl(_f)
+#endif
 dcl(_d)
 #undef dcl
 #undef dcl15
@@ -738,18 +774,24 @@ main(int argc, char *argv[])
 #define def14(X, T)	def13(X, T)		def##X(T, 14)
 #define def15(X, T)	def14(X, T)		def##X(T, 15)
 #define def(T)		def15(i, T)
+#if !__APPLE__
 	def(_c)
 	def(_uc)
 	def(_s)
 	def(_us)
 	def(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
 	def(_ui)
+#endif
 	def(_l)
 #endif
 #undef def
 #define def(T)		def15(f, T)
+#if !__APPLE__
 	def(_f)
+#endif
 	def(_d)
 #undef def
 
@@ -810,16 +852,22 @@ main(int argc, char *argv[])
 #define cali(T)		calx15(i,T)
 #define calf(T)		calx15(f,T)
 
+#if !__APPLE__
     cali(_c)
     cali(_uc)
     cali(_s)
     cali(_us)
     cali(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
     cali(_ui)
+#endif
     cali(_l)
 #endif
+#if !__APPLE__
     calf(_f)
+#endif
     calf(_d)
 
 #undef calin
@@ -840,16 +888,22 @@ main(int argc, char *argv[])
 	jmp = jit_beqi##T(JIT_F0, _w##N);				\
 	jit_calli(abort);						\
 	jit_patch(jmp);
+#if !__APPLE__
     cali(_c)
     cali(_uc)
     cali(_s)
     cali(_us)
     cali(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
     cali(_ui)
+#endif
     cali(_l)
 #endif
+#if !__APPLE__
     calf(_f)
+#endif
     calf(_d)
 
     jit_ret();
@@ -874,16 +928,22 @@ main(int argc, char *argv[])
 #define init14(T)	init13(T)	initn(T,14)
 #define init15(T)	init14(T)	initn(T,15)
 #define init(T)		init15(T)
+#if !__APPLE__
     init(_c)
     init(_uc)
     init(_s)
     init(_us)
     init(_i)
+#endif
 #if __WORDSIZE == 64
+#if !__APPLE__
     init(_ui)
+#endif
     init(_l)
 #endif
+#if !__APPLE__
     init(_f)
+#endif
     init(_d)
 
 #if 0

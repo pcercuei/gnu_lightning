@@ -2303,7 +2303,7 @@ _jit_emit(jit_state_t *_jit)
 #else
     if (!_jit->user_code) {
 	mmap_prot = PROT_READ | PROT_WRITE;
-#if !__OpenBSD__
+#if !(__OpenBSD__ || __APPLE__)
 	mmap_prot |= PROT_EXEC;
 #endif
 #if __NetBSD__

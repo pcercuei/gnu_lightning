@@ -20,6 +20,9 @@
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < 8)
 #define jit_arg_f_reg_p(i)		((i) >= 0 && (i) < 8)
 
+#if __APPLE__
+typedef jit_pointer_t jit_va_list_t;
+#else
 typedef struct jit_qreg {
     jit_float64_t	l;
     jit_float64_t	h;
@@ -52,6 +55,7 @@ typedef struct jit_va_list {
     jit_qreg_t		q6;
     jit_qreg_t		q7;
 } jit_va_list_t;
+#endif
 
 /*
  * Prototypes
@@ -72,7 +76,11 @@ extern void __clear_cache(void *, void *);
  */
 jit_register_t		_rvs[] = {
     { rc(gpr) | 0x08,			"x8" },
+#if __APPLE__
+    { 0x12,				"x18" },
+#else
     { rc(gpr) | 0x12,			"x18" },
+#endif
     { rc(gpr) | 0x11,			"x17" },
     { rc(gpr) | 0x10,			"x16" },
     { rc(gpr) | 0x09,			"x9" },
@@ -351,6 +359,7 @@ _jit_ellipsis(jit_state_t *_jit)
 	assert(!(_jitc->function->self.call & jit_call_varargs));
 	_jitc->function->self.call |= jit_call_varargs;
 
+#if !__APPLE_
 	/* Allocate va_list like object in the stack,
 	 * with enough space to save all argument
 	 * registers, and use fixed offsets for them. */
@@ -367,6 +376,7 @@ _jit_ellipsis(jit_state_t *_jit)
 	    _jitc->function->vafp = (8 - _jitc->function->self.argf) * -16;
 	else
 	    _jitc->function->vafp = 0;
+#endif
     }
     jit_dec_synth();
 }
@@ -639,6 +649,12 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
 	jit_movr(JIT_RA0 - _jitc->function->call.argi, u);
+#  if __APPLE__
+	if (_jitc->function->call.call & jit_call_varargs) {
+	    jit_stxi(_jitc->function->call.size, JIT_SP, u);
+	    _jitc->function->call.size += sizeof(jit_word_t);
+	}
+#  endif
 	++_jitc->function->call.argi;
     }
     else {
@@ -657,6 +673,13 @@ _jit_pushargi(jit_state_t *_jit, jit_word_t u)
     jit_link_prepare();
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
 	jit_movi(JIT_RA0 - _jitc->function->call.argi, u);
+#  if __APPLE__
+	if (_jitc->function->call.call & jit_call_varargs) {
+	    jit_stxi(_jitc->function->call.size, JIT_SP,
+		     JIT_RA0 - _jitc->function->call.argi);
+	    _jitc->function->call.size += sizeof(jit_word_t);
+	}
+#  endif
 	++_jitc->function->call.argi;
     }
     else {
@@ -677,6 +700,13 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movr_f(JIT_FA0 - _jitc->function->call.argf, u);
+#if __APPLE__
+	if (_jitc->function->call.call & jit_call_varargs) {
+	    jit_stxi_f(_jitc->function->call.size, JIT_SP,
+		       JIT_FA0 - _jitc->function->call.argf);
+	    _jitc->function->call.size += sizeof(jit_word_t);
+	}
+#endif
 	++_jitc->function->call.argf;
     }
     else {
@@ -695,6 +725,13 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movi_f(JIT_FA0 - _jitc->function->call.argf, u);
+#if __APPLE__
+	if (_jitc->function->call.call & jit_call_varargs) {
+	    jit_stxi_f(_jitc->function->call.size, JIT_SP,
+		       JIT_FA0 - _jitc->function->call.argf);
+	    _jitc->function->call.size += sizeof(jit_word_t);
+	}
+#endif
 	++_jitc->function->call.argf;
     }
     else {
@@ -715,6 +752,13 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movr_d(JIT_FA0 - _jitc->function->call.argf, u);
+#if __APPLE__
+	if (_jitc->function->call.call & jit_call_varargs) {
+	    jit_stxi_d(_jitc->function->call.size, JIT_SP,
+		       JIT_FA0 - _jitc->function->call.argf);
+	    _jitc->function->call.size += sizeof(jit_float64_t);
+	}
+#endif
 	++_jitc->function->call.argf;
     }
     else {
@@ -733,6 +777,13 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movi_d(JIT_FA0 - _jitc->function->call.argf, u);
+#if __APPLE__
+	if (_jitc->function->call.call & jit_call_varargs) {
+	    jit_stxi_d(_jitc->function->call.size, JIT_SP,
+		       JIT_FA0 - _jitc->function->call.argf);
+	    _jitc->function->call.size += sizeof(jit_float64_t);
+	}
+#endif
 	++_jitc->function->call.argf;
     }
     else {

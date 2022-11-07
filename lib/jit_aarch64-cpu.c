@@ -2293,6 +2293,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	jit_unget_reg(reg);
     }
 
+#if !__APPLE__
     if (_jitc->function->self.call & jit_call_varargs) {
 	/* Save gp registers in the save area, if any is a vararg */
 	for (reg = 8 - _jitc->function->vagp / -8;
@@ -2310,6 +2311,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	    stxi_d(_jitc->function->vaoff + offsetof(jit_va_list_t, q0) +
 		   reg * 16 + offsetof(jit_qreg_t, l), FP_REGNO, rn(_V0 - reg));
     }
+#endif
 }
 
 static void
@@ -2357,6 +2359,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 static void
 _vastart(jit_state_t *_jit, jit_int32_t r0)
 {
+#if !__APPLE__
     jit_int32_t		reg;
 
     assert(_jitc->function->self.call & jit_call_varargs);
@@ -2387,11 +2390,16 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     stxi_i(offsetof(jit_va_list_t, fpoff), r0, rn(reg));
 
     jit_unget_reg(reg);
+#else
+    assert(_jitc->function->self.call & jit_call_varargs);
+    addi(r0, FP_REGNO, _jitc->function->self.size);
+#endif
 }
 
 static void
 _vaarg(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+#if !__APPLE__
     jit_word_t		ge_code;
     jit_word_t		lt_code;
     jit_int32_t		rg0, rg1;
@@ -2440,6 +2448,11 @@ _vaarg(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     patch_at(lt_code, _jit->pc.w);
 
     jit_unget_reg(rg0);
+#else
+    assert(_jitc->function->self.call & jit_call_varargs);
+    ldr(r0, r1);
+    addi(r1, r1, sizeof(jit_word_t));
+#endif
 }
 
 static void

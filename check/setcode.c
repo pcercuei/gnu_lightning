@@ -38,7 +38,7 @@ main(int argc, char *argv[])
 #endif
 
     mmap_prot = PROT_READ | PROT_WRITE;
-#if !__OpenBSD__
+#if !(__OpenBSD__ || __APPLE__)
     mmap_prot |= PROT_EXEC;
 #endif
 #if __NetBSD__
@@ -92,7 +92,7 @@ main(int argc, char *argv[])
 	abort();
 
     jit_clear_state();
-#if __NetBSD__ ||  __OpenBSD__
+#if __NetBSD__ ||  __OpenBSD__ || __APPLE__
     assert(mprotect(ptr, 1024 * 1024, PROT_READ | PROT_EXEC) == 0);
 #endif
     (*function)();
