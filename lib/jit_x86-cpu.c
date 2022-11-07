@@ -3524,10 +3524,10 @@ static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
-#if __X64
     jit_word_t		d;
     jit_word_t		l = _jit->pc.w + 5;
     d = i0 - l;
+#if __X64
     if (
 #  if __X64_32
 	!((d < 0) ^ (l < 0)) &&
@@ -3571,10 +3571,10 @@ static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
-#if __X64
     jit_word_t		d;
     jit_word_t		l = _jit->pc.w + 5;
     d = i0 - l;
+#if __X64
     if (
 #  if __X64_32
 	!((d < 0) ^ (l < 0)) &&
