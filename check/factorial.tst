@@ -63,7 +63,7 @@ call:
 	prepare
 		pushargr %v0
 	finishi factorial
-	retval_f %f0
+	retval_d %f0
 	prepare
 		pushargi str
 		ellipsis
