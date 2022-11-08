@@ -23,6 +23,10 @@
 #define JIT_HASH_CONSTS		0
 #define JIT_NUM_OPERANDS	3
 
+#if __APPLE__
+#  define PACKED_STACK		1
+#endif
+
 /*
  * Types
  */

@@ -275,6 +275,11 @@ static void prolog(void);
 static void frame(void);	static void tramp(void);
 static void ellipsis(void);
 static void allocai(void);	static void allocar(void);
+static void arg_c(void);	static void arg_s(void);
+static void arg_i(void);
+#if __WORDSIZE == 64
+static void arg_l(void);
+#endif
 static void arg(void);
 static void getarg_c(void);	static void getarg_uc(void);
 static void getarg_s(void);	static void getarg_us(void);
@@ -283,6 +288,15 @@ static void getarg_i(void);
 static void getarg_ui(void);	static void getarg_l(void);
 #endif
 static void getarg(void);
+static void putargr_c(void);	static void putargi_c(void);
+static void putargr_uc(void);	static void putargi_uc(void);
+static void putargr_s(void);	static void putargi_s(void);
+static void putargr_us(void);	static void putargi_us(void);
+static void putargr_i(void);	static void putargi_i(void);
+#if __WORDSIZE == 64
+static void putargr_ui(void);	static void putargi_ui(void);
+static void putargr_l(void);	static void putargi_l(void);
+#endif
 static void putargr(void);	static void putargi(void);
 static void addr(void);		static void addi(void);
 static void addxr(void);	static void addxi(void);
@@ -393,9 +407,30 @@ static void bxsubr_u(void);	static void bxsubi_u(void);
 static void jmpr(void);		static void jmpi(void);
 static void callr(void);	static void calli(void);
 static void prepare(void);
+
+static void pushargr_c(void);	static void pushargi_c(void);
+static void pushargr_uc(void);	static void pushargi_uc(void);
+static void pushargr_s(void);	static void pushargi_s(void);
+static void pushargr_us(void);	static void pushargi_us(void);
+static void pushargr_i(void);	static void pushargi_i(void);
+#if __WORDSIZE == 64
+static void pushargr_ui(void);	static void pushargi_ui(void);
+static void pushargr_l(void);	static void pushargi_l(void);
+#endif
 static void pushargr(void);	static void pushargi(void);
+
 static void finishr(void);	static void finishi(void);
 static void ret(void);
+
+static void retr_c(void);	static void reti_c(void);
+static void retr_uc(void);	static void reti_uc(void);
+static void retr_s(void);	static void reti_s(void);
+static void retr_us(void);	static void reti_us(void);
+static void retr_i(void);	static void reti_i(void);
+#if __WORDSIZE == 64
+static void retr_ui(void);	static void reti_ui(void);
+static void retr_l(void);	static void reti_l(void);
+#endif
 static void retr(void);		static void reti(void);
 static void retval_c(void);	static void retval_uc(void);
 static void retval_s(void);	static void retval_us(void);
@@ -597,6 +632,11 @@ static instr_t		  instr_vector[] = {
     entry(frame),	entry(tramp),
     entry(ellipsis),
     entry(allocai),	entry(allocar),
+    entry(arg_c),	entry(arg_s),
+    entry(arg_i),
+#if __WORDSIZE == 64
+    entry(arg_l),
+#endif
     entry(arg),
     entry(getarg_c),	entry(getarg_uc),
     entry(getarg_s),	entry(getarg_us),
@@ -605,6 +645,16 @@ static instr_t		  instr_vector[] = {
     entry(getarg_ui),	entry(getarg_l),
 #endif
     entry(getarg),
+
+    entry(putargr_c),	entry(putargi_c),
+    entry(putargr_uc),	entry(putargi_uc),
+    entry(putargr_s),	entry(putargi_s),
+    entry(putargr_us),	entry(putargi_us),
+    entry(putargr_i),	entry(putargi_i),
+#if __WORDSIZE == 64
+    entry(putargr_ui),	entry(putargi_ui),
+    entry(putargr_l),	entry(putargi_l),
+#endif
     entry(putargr),	entry(putargi),
     entry(addr),	entry(addi),
     entry(addxr),	entry(addxi),
@@ -715,9 +765,27 @@ static instr_t		  instr_vector[] = {
     entry(jmpr),	entry(jmpi),
     entry(callr),	entry(calli),
     entry(prepare),
+    entry(pushargr_c),	entry(pushargi_c),
+    entry(pushargr_uc),	entry(pushargi_uc),
+    entry(pushargr_s),	entry(pushargi_s),
+    entry(pushargr_us),	entry(pushargi_us),
+    entry(pushargr_i),	entry(pushargi_i),
+#if __WORDSIZE == 64
+    entry(pushargr_ui),	entry(pushargi_ui),
+    entry(pushargr_l),	entry(pushargi_l),
+#endif
     entry(pushargr),	entry(pushargi),
     entry(finishr),	entry(finishi),
     entry(ret),
+    entry(retr_c),	entry(reti_c),
+    entry(retr_uc),	entry(reti_uc),
+    entry(retr_s),	entry(reti_s),
+    entry(retr_us),	entry(reti_us),
+    entry(retr_i),	entry(reti_i),
+#if __WORDSIZE == 64
+    entry(retr_ui),	entry(reti_ui),
+    entry(retr_l),	entry(reti_l),
+#endif
     entry(retr),	entry(reti),
     entry(retval_c),	entry(retval_uc),
     entry(retval_s),	entry(retval_us),
@@ -1416,6 +1484,11 @@ allocai(void) {
     symbol->value.i = i;
 }
 entry_ir_ir(allocar)
+entry_ca(arg_c)			entry_ca(arg_s)
+entry_ca(arg_i)
+#if __WORDSIZE == 64
+entry_ca(arg_l)
+#endif
 entry_ca(arg)
 entry_ia(getarg_c)		entry_ia(getarg_uc)
 entry_ia(getarg_s)		entry_ia(getarg_us)
@@ -1424,6 +1497,15 @@ entry_ia(getarg_i)
 entry_ia(getarg_ui)		entry_ia(getarg_l)
 #endif
 entry_ia(getarg)
+entry_ia(putargr_c)		entry_ima(putargi_c)
+entry_ia(putargr_uc)		entry_ima(putargi_uc)
+entry_ia(putargr_s)		entry_ima(putargi_s)
+entry_ia(putargr_us)		entry_ima(putargi_us)
+entry_ia(putargr_i)		entry_ima(putargi_i)
+#if __WORDSIZE == 64
+entry_ia(putargr_ui)		entry_ima(putargi_ui)
+entry_ia(putargr_l)		entry_ima(putargi_l)
+#endif
 entry_ia(putargr)		entry_ima(putargi)
 entry_ir_ir_ir(addr)		entry_ir_ir_im(addi)
 entry_ir_ir_ir(addxr)		entry_ir_ir_im(addxi)
@@ -1581,9 +1663,27 @@ entry_lb_ir_ir(bxsubr_u)	entry_lb_ir_im(bxsubi_u)
 entry_ir(jmpr)			entry_lb(jmpi)
 entry_ir(callr)			entry_fn(calli)
 entry(prepare)
+entry_ir(pushargr_c)		entry_im(pushargi_c)
+entry_ir(pushargr_uc)		entry_im(pushargi_uc)
+entry_ir(pushargr_s)		entry_im(pushargi_s)
+entry_ir(pushargr_us)		entry_im(pushargi_us)
+entry_ir(pushargr_i)		entry_im(pushargi_i)
+#if __WORDSIZE == 64
+entry_ir(pushargr_ui)		entry_im(pushargi_ui)
+entry_ir(pushargr_l)		entry_im(pushargi_l)
+#endif
 entry_ir(pushargr)		entry_im(pushargi)
 entry_ir(finishr)		entry_fn(finishi)
 entry(ret)
+entry_ir(retr_c)		entry_im(reti_c)
+entry_ir(retr_uc)		entry_im(reti_uc)
+entry_ir(retr_s)		entry_im(reti_s)
+entry_ir(retr_us)		entry_im(reti_us)
+entry_ir(retr_i)		entry_im(reti_i)
+#if __WORDSIZE == 64
+entry_ir(retr_ui)		entry_im(reti_ui)
+entry_ir(retr_l)		entry_im(reti_l)
+#endif
 entry_ir(retr)			entry_im(reti)
 entry_ir(retval_c)		entry_ir(retval_uc)
 entry_ir(retval_s)		entry_ir(retval_us)

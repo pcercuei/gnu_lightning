@@ -60,6 +60,12 @@ case "$target_cpu" in
 		fi				;;
 	    *)					;;
 	esac					;;
+    aarch64)
+	case "$host_os" in
+	    darwin*)
+		LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DPACKED_STACK=1"			;;
+	    *)					;;
+	esac					;;
     *)						;;
 esac
 

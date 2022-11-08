@@ -1,3 +1,33 @@
+2022-11-08 Paulo Andrade <pcpa@gnu.org>
+
+	Add support for packed stack arguments as used by Apple M1
+	aarch64 cpus. This requires a major redesign in how Lightning
+	works, because contrary to all other supported ports, in this
+	case arguments must be truncated and sign/zero extended if
+	passed in registers, but when receiving the argument, there
+	is no need to truncate and sign/zero extend.
+	Return values are also treated this way. The callee must
+	truncate sign/zero extend, not the caller.
+	check/Makefile.am: Add LIGHTNING_CFLAGS to AM_CFLAGS.
+	check/all.tst: Implement paired arg/getarg/pusharg/putarg/ret
+	codes to validate they do not generate assertions.
+	* check/allocar.tst, check/call.tst, check/fib.tst, check/put.tst,
+	check/stack.tst: Update to pass in all build types.
+	check/lightning.c: Add new codes for extra codes to handle
+	packed stack.
+	* configure.ac: Add a preprocessor define to know if packed stack
+	need is required. This is not really used, as it was moved to
+	jit_aarch64.h.
+	* doc/Makefile.am: Add LIGHTNING_CFLAGS to AM_CFLAGS.
+	* doc/rpn.c: Update to pass in all build types.
+	include/lightning.h.in: Add new codes and reorder enum.
+	* include/lightning/jit_aarch64.h: Detect condition of needing
+	a packed stack.
+	* lib/jit_aarch64-sz.c: Regenerate.
+	* lib/jit_aarch64.c: Major updates for packed stack.
+	* lib/jit_names.c: Updates for debug output.
+	* lib/lightning.c: Update for new codes.
+
 2022-10-31  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
 
 	Add new skip instruction.

@@ -32,7 +32,6 @@ cw(W a1, W  a2, W  a3, W  a4, W  a5, W  a6, W  a7, W  a8,
 	abort();
 }
 
-#if !__APPLE__
 void
 cf(F a1, F  a2, F  a3, F  a4, F  a5, F  a6, F  a7, F  a8,
    F a9, F a10, F a11, F a12, F a13, F a14, F a15, F a16)
@@ -43,7 +42,6 @@ cf(F a1, F  a2, F  a3, F  a4, F  a5, F  a6, F  a7, F  a8,
 	a13 != 13 || a14 != 14 || a15 != 15 || a16 != 16)
 	abort();
 }
-#endif
 
 void
 cd(D a1, D  a2, D  a3, D  a4, D  a5, D  a6, D  a7, D  a8,
@@ -61,11 +59,7 @@ main(int argc, char *argv[])
 {
     void		(*code)(void);
     jit_node_t		*jmp, *pass;
-    jit_node_t		 *jw,
-#if !__APPLE__
-			 *jf,
-#endif
-			  *jd;
+    jit_node_t		 *jw, *jf, *jd;
     jit_int32_t		  s1,   s2,   s3,   s4,   s5,   s6,   s7,   s8,
 			  s9,  s10,  s11,  s12,  s13,  s14,  s15,  s16;
     jit_node_t		 *a1,  *a2,  *a3,  *a4,  *a5,  *a6,  *a7,  *a8,
@@ -205,7 +199,6 @@ main(int argc, char *argv[])
     jit_ret();
     jit_epilog();
 
-#if !__APPLE__
     /* Create jit function that
      * o Receives 16 float arguments
      * o Save in the stack any register argument. Also force register
@@ -333,7 +326,6 @@ main(int argc, char *argv[])
     jit_link(pass);
     jit_ret();
     jit_epilog();
-#endif
 
     /* Create jit function that
      * o Receives 16 double arguments
@@ -492,7 +484,7 @@ main(int argc, char *argv[])
 	jit_pushargi(1);
     }
     jit_patch_at(jit_finishi(NULL), jw);
-#if !__APPLE__
+
     jit_prepare();
     {
 	jit_pushargi_f(16);
@@ -513,7 +505,7 @@ main(int argc, char *argv[])
 	jit_pushargi_f(1);
     }
     jit_patch_at(jit_finishi(NULL), jf);
-#endif
+
     jit_prepare();
     {
 	jit_pushargi_d(16);

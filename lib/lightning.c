@@ -1353,14 +1353,35 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    mask = 0;
 	    break;
 	case jit_code_live:	case jit_code_va_end:
-	case jit_code_retr:	case jit_code_retr_f:	case jit_code_retr_d:
-	case jit_code_pushargr:	case jit_code_pushargr_f:
+	case jit_code_retr_c:	case jit_code_retr_uc:
+	case jit_code_retr_s:	case jit_code_retr_us:
+	case jit_code_retr_i:	case jit_code_retr_ui:
+	case jit_code_retr_l:
+	case jit_code_retr_f:	case jit_code_retr_d:
+	case jit_code_pushargr_c:
+	case jit_code_pushargr_uc:
+	case jit_code_pushargr_s:
+	case jit_code_pushargr_us:
+	case jit_code_pushargr_i:
+	case jit_code_pushargr_ui:
+	case jit_code_pushargr_l:
+	case jit_code_pushargr_f:
 	case jit_code_pushargr_d:
 	case jit_code_finishr:	/* synthesized will set jit_cc_a0_jmp */
 	    mask = jit_cc_a0_reg;
 	    break;
-	case jit_code_align:	case jit_code_reti:	case jit_code_pushargi:
-        case jit_code_skip:
+	case jit_code_align:	case jit_code_skip:
+	case jit_code_reti_c:	case jit_code_reti_uc:
+	case jit_code_reti_s:	case jit_code_reti_us:
+	case jit_code_reti_i:	case jit_code_reti_ui:
+	case jit_code_reti_l:
+	case jit_code_pushargi_c:
+	case jit_code_pushargi_uc:
+	case jit_code_pushargi_s:
+	case jit_code_pushargi_us:
+	case jit_code_pushargi_i:
+	case jit_code_pushargi_ui:
+	case jit_code_pushargi_l:
         case jit_code_finishi:	/* synthesized will set jit_cc_a0_jmp */
 	    mask = jit_cc_a0_int;
 	    break;
@@ -1373,7 +1394,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_allocai:
 	    mask = jit_cc_a0_int|jit_cc_a1_int;
 	    break;
-	case jit_code_arg:	case jit_code_arg_f:	case jit_code_arg_d:
+	case jit_code_arg_c:	case jit_code_arg_s:
+	case jit_code_arg_i:	case jit_code_arg_l:
+	case jit_code_arg_f:	case jit_code_arg_d:
 	    mask = jit_cc_a0_int|jit_cc_a0_arg;
 	    break;
 	case jit_code_calli:	case jit_code_jmpi:
@@ -1397,11 +1420,17 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_getarg_f:	case jit_code_getarg_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_arg;
 	    break;
-	case jit_code_putargr:	case jit_code_putargr_f:
-	case jit_code_putargr_d:
+	case jit_code_putargr_c:case jit_code_putargr_uc:
+	case jit_code_putargr_s:case jit_code_putargr_us:
+	case jit_code_putargr_i:case jit_code_putargr_ui:
+	case jit_code_putargr_l:
+	case jit_code_putargr_f:case jit_code_putargr_d:
 	    mask = jit_cc_a0_reg|jit_cc_a1_arg;
 	    break;
-	case jit_code_putargi:
+	case jit_code_putargi_c:case jit_code_putargi_uc:
+	case jit_code_putargi_s:case jit_code_putargi_us:
+	case jit_code_putargi_i:case jit_code_putargi_ui:
+	case jit_code_putargi_l:
 	    mask = jit_cc_a0_int|jit_cc_a1_arg;
 	    break;
 	case jit_code_putargi_f:
@@ -2366,8 +2395,7 @@ _jit_emit(jit_state_t *_jit)
 #  endif
 #else
 	    _jit->code.ptr = mmap(NULL, length,
-				  PROT_EXEC | PROT_READ | PROT_WRITE,
-				  MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
+				  mmap_prot, mmap_flags, mmap_fd, 0);
 #endif
 
 	    assert(_jit->code.ptr != MAP_FAILED);
