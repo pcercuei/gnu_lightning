@@ -579,8 +579,8 @@ finishi   (not specified)                @r{function call to immediate O1}
 jmpr      (not specified)                @r{unconditional jump to register}
 jmpi      (not specified)                @r{unconditional jump}
 ret       (not specified)                @r{return from subroutine}
-retr      _c _uc _s _us _i _ui _l _f _d
-reti      _c _uc _s _us _i _ui _l _f _d
+retr                              _f _d
+reti                              _f _d
 retval    _c _uc _s _us _i _ui _l _f _d  @r{move return value}
                                          @r{to register}
 @end example
