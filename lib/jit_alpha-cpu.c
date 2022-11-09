@@ -825,7 +825,7 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     }
     again = _jit->pc.w;			/* AGAIN */
     LDQ_L(r0, r1, 0);			/* Load r0 locked */
-    jump0 = bner(0, r0, r2);		/* bne FAIL r0 r2 */
+    jump0 = bner(_jit->pc.w, r0, r2);	/* bne FAIL r0 r2 */
     movr(r0, r3);			/* Move to r0 to attempt to store */
     STQ_C(r0, r1, 0);			/* r0 is an in/out argument */
     jump1 = _jit->pc.w;
