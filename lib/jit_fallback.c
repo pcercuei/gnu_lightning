@@ -96,15 +96,9 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 {
 #  if defined(__arm__)
     movi(rn(_R0), i1);
-#  elif defined(__ia64__)
-    /* avoid confusion with pushargi patching */
-    if (i1 >= -2097152 && i1 <= 2097151)
-	MOVI(_jitc->rout, i1);
-    else
-	MOVL(_jitc->rout, i1);
 #  elif defined(__hppa__)
     movi(_R26_REGNO, i1);
-#endif
+#  endif
     calli(i0);
 }
 
@@ -136,16 +130,11 @@ _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     str_l(r1, r3);
 #  endif
     /* done: */
-#  if defined(__ia64__)
-    sync();
-# endif
     done = _jit->pc.w;
     fallback_calli((jit_word_t)pthread_mutex_unlock, (jit_word_t)&mutex);
     fallback_load(r0);
 #  if defined(__arm__)
     patch_at(arm_patch_jump, jump, done);
-#  elif defined(__ia64__)
-    patch_at(jit_code_bnei, jump, done);
 #  else
     patch_at(jump, done);
 #  endif
