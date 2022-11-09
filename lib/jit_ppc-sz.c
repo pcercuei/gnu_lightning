@@ -1,23 +1,26 @@
 #if __WORDSIZE == 32
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
-#if _CALL_SYSV
-#define JIT_INSTR_MAX 124
+#if !_CALL_SYSV
+#define JIT_INSTR_MAX 136
     0,	/* data */
     0,	/* live */
-    0,	/* align */
+    20,	/* align */
     0,	/* save */
     0,	/* load */
-    0,  /* skip */
+    4,	/* skip */
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
-    124,	/* prolog */
+    136,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
     0,	/* allocar */
-    0,	/* arg */
+    0,	/* arg_c */
+    0,	/* arg_s */
+    0,	/* arg_i */
+    0,	/* arg_l */
     0,	/* getarg_c */
     0,	/* getarg_uc */
     0,	/* getarg_s */
@@ -25,11 +28,23 @@
     0,	/* getarg_i */
     0,	/* getarg_ui */
     0,	/* getarg_l */
-    0,	/* putargr */
-    0,	/* putargi */
-    36,	/* va_start */
-    52,	/* va_arg */
-    64,	/* va_arg_d */
+    0,	/* putargr_c */
+    0,	/* putargi_c */
+    0,	/* putargr_uc */
+    0,	/* putargi_uc */
+    0,	/* putargr_s */
+    0,	/* putargi_s */
+    0,	/* putargr_us */
+    0,	/* putargi_us */
+    0,	/* putargr_i */
+    0,	/* putargi_i */
+    0,	/* putargr_ui */
+    0,	/* putargi_ui */
+    0,	/* putargr_l */
+    0,	/* putargi_l */
+    4,	/* va_start */
+    8,	/* va_arg */
+    8,	/* va_arg_d */
     0,	/* va_end */
     4,	/* addr */
     12,	/* addi */
@@ -100,12 +115,17 @@
     8,	/* movi */
     12,	/* movnr */
     12,	/* movzr */
+    36,	/* casr */
+    44,	/* casi */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
     4,	/* extr_us */
     0,	/* extr_i */
     0,	/* extr_ui */
+    8,	/* bswapr_us */
+    16,	/* bswapr_ui */
+    0,	/* bswapr_ul */
     4,	/* htonr_us */
     4,	/* htonr_ui */
     0,	/* htonr_ul */
@@ -195,16 +215,40 @@
     16,	/* bxsubi_u */
     8,	/* jmpr */
     4,	/* jmpi */
-    12,	/* callr */
-    20,	/* calli */
+    28,	/* callr */
+    36,	/* calli */
     0,	/* prepare */
-    0,	/* pushargr */
-    0,	/* pushargi */
+    0,	/* pushargr_c */
+    0,	/* pushargi_c */
+    0,	/* pushargr_uc */
+    0,	/* pushargi_uc */
+    0,	/* pushargr_s */
+    0,	/* pushargi_s */
+    0,	/* pushargr_us */
+    0,	/* pushargi_us */
+    0,	/* pushargr_i */
+    0,	/* pushargi_i */
+    0,	/* pushargr_ui */
+    0,	/* pushargi_ui */
+    0,	/* pushargr_l */
+    0,	/* pushargi_l */
     0,	/* finishr */
     0,	/* finishi */
     0,	/* ret */
-    0,	/* retr */
-    0,	/* reti */
+    0,	/* retr_c */
+    0,	/* reti_c */
+    0,	/* retr_uc */
+    0,	/* reti_uc */
+    0,	/* retr_s */
+    0,	/* reti_s */
+    0,	/* retr_us */
+    0,	/* reti_us */
+    0,	/* retr_i */
+    0,	/* reti_i */
+    0,	/* retr_ui */
+    0,	/* reti_ui */
+    0,	/* retr_l */
+    0,	/* reti_l */
     0,	/* retval_c */
     0,	/* retval_uc */
     0,	/* retval_s */
@@ -353,7 +397,7 @@
     36,	/* extr_d */
     4,	/* extr_f_d */
     4,	/* movr_d */
-    24,	/* movi_d */
+    28,	/* movi_d */
     4,	/* ldr_d */
     8,	/* ldi_d */
     4,	/* ldxr_d */
@@ -404,12 +448,7 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* bswapr_us */
-    16,	/* bswapr_ui */
-    0,	/* bswapr_ul */
-    36,	/* casr */
-    44,	/* casi */
-#endif /* _CALL_SYSV */
+#endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -417,22 +456,26 @@
 #if __WORDSIZE == 32
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
-#if !_CALL_SYSV
-#define JIT_INSTR_MAX 136
+#if _CALL_SYSV
+#define JIT_INSTR_MAX 124
     0,	/* data */
     0,	/* live */
     0,	/* align */
     0,	/* save */
     0,	/* load */
+    4,	/* skip */
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
-    136,	/* prolog */
+    124,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
     0,	/* allocar */
-    0,	/* arg */
+    0,	/* arg_c */
+    0,	/* arg_s */
+    0,	/* arg_i */
+    0,	/* arg_l */
     0,	/* getarg_c */
     0,	/* getarg_uc */
     0,	/* getarg_s */
@@ -440,11 +483,23 @@
     0,	/* getarg_i */
     0,	/* getarg_ui */
     0,	/* getarg_l */
-    0,	/* putargr */
-    0,	/* putargi */
-    4,	/* va_start */
-    8,	/* va_arg */
-    8,	/* va_arg_d */
+    0,	/* putargr_c */
+    0,	/* putargi_c */
+    0,	/* putargr_uc */
+    0,	/* putargi_uc */
+    0,	/* putargr_s */
+    0,	/* putargi_s */
+    0,	/* putargr_us */
+    0,	/* putargi_us */
+    0,	/* putargr_i */
+    0,	/* putargi_i */
+    0,	/* putargr_ui */
+    0,	/* putargi_ui */
+    0,	/* putargr_l */
+    0,	/* putargi_l */
+    36,	/* va_start */
+    52,	/* va_arg */
+    64,	/* va_arg_d */
     0,	/* va_end */
     4,	/* addr */
     12,	/* addi */
@@ -478,7 +533,7 @@
     12,	/* remr_u */
     20,	/* remi_u */
     4,	/* andr */
-    12,	/* andi */
+    4,	/* andi */
     4,	/* orr */
     12,	/* ori */
     4,	/* xorr */
@@ -513,14 +568,19 @@
     16,	/* nei */
     4,	/* movr */
     8,	/* movi */
-    12,  /* movnr */
-    12,  /* movzr */
+    12,	/* movnr */
+    12,	/* movzr */
+    36,	/* casr */
+    44,	/* casi */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
     4,	/* extr_us */
     0,	/* extr_i */
     0,	/* extr_ui */
+    8,	/* bswapr_us */
+    16,	/* bswapr_ui */
+    0,	/* bswapr_ul */
     4,	/* htonr_us */
     4,	/* htonr_ui */
     0,	/* htonr_ul */
@@ -610,16 +670,40 @@
     16,	/* bxsubi_u */
     8,	/* jmpr */
     4,	/* jmpi */
-    28,	/* callr */
-    40,	/* calli */
+    12,	/* callr */
+    20,	/* calli */
     0,	/* prepare */
-    0,	/* pushargr */
-    0,	/* pushargi */
+    0,	/* pushargr_c */
+    0,	/* pushargi_c */
+    0,	/* pushargr_uc */
+    0,	/* pushargi_uc */
+    0,	/* pushargr_s */
+    0,	/* pushargi_s */
+    0,	/* pushargr_us */
+    0,	/* pushargi_us */
+    0,	/* pushargr_i */
+    0,	/* pushargi_i */
+    0,	/* pushargr_ui */
+    0,	/* pushargi_ui */
+    0,	/* pushargr_l */
+    0,	/* pushargi_l */
     0,	/* finishr */
     0,	/* finishi */
     0,	/* ret */
-    0,	/* retr */
-    0,	/* reti */
+    0,	/* retr_c */
+    0,	/* reti_c */
+    0,	/* retr_uc */
+    0,	/* reti_uc */
+    0,	/* retr_s */
+    0,	/* reti_s */
+    0,	/* retr_us */
+    0,	/* reti_us */
+    0,	/* retr_i */
+    0,	/* reti_i */
+    0,	/* retr_ui */
+    0,	/* reti_ui */
+    0,	/* retr_l */
+    0,	/* reti_l */
     0,	/* retval_c */
     0,	/* retval_uc */
     0,	/* retval_s */
@@ -674,7 +758,7 @@
     24,	/* unordi_f */
     12,	/* truncr_f_i */
     0,	/* truncr_f_l */
-    20,	/* extr_f */
+    36,	/* extr_f */
     4,	/* extr_d_f */
     4,	/* movr_f */
     12,	/* movi_f */
@@ -765,10 +849,10 @@
     32,	/* unordi_d */
     12,	/* truncr_d_i */
     0,	/* truncr_d_l */
-    20,	/* extr_d */
+    36,	/* extr_d */
     4,	/* extr_f_d */
     4,	/* movr_d */
-    24,	/* movi_d */
+    28,	/* movi_d */
     4,	/* ldr_d */
     8,	/* ldi_d */
     4,	/* ldxr_d */
@@ -819,13 +903,8 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    20,	/* bswapr_us */
-    16,	/* bswapr_ui */
-    0,	/* bswapr_ul */
-    36,	/* casr */
-    44,	/* casi */
-#endif /* _CALL_AIX */
-#endif /* __BYTEORDER */
+#endif /* _CALL_SYSV */
+#endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
 
@@ -838,6 +917,7 @@
     4,	/* align */
     0,	/* save */
     0,	/* load */
+    4,	/* skip */
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
@@ -846,7 +926,10 @@
     0,	/* va_push */
     0,	/* allocai */
     0,	/* allocar */
-    0,	/* arg */
+    0,	/* arg_c */
+    0,	/* arg_s */
+    0,	/* arg_i */
+    0,	/* arg_l */
     0,	/* getarg_c */
     0,	/* getarg_uc */
     0,	/* getarg_s */
@@ -854,8 +937,20 @@
     0,	/* getarg_i */
     0,	/* getarg_ui */
     0,	/* getarg_l */
-    0,	/* putargr */
-    0,	/* putargi */
+    0,	/* putargr_c */
+    0,	/* putargi_c */
+    0,	/* putargr_uc */
+    0,	/* putargi_uc */
+    0,	/* putargr_s */
+    0,	/* putargi_s */
+    0,	/* putargr_us */
+    0,	/* putargi_us */
+    0,	/* putargr_i */
+    0,	/* putargi_i */
+    0,	/* putargr_ui */
+    0,	/* putargi_ui */
+    0,	/* putargr_l */
+    0,	/* putargi_l */
     4,	/* va_start */
     8,	/* va_arg */
     8,	/* va_arg_d */
@@ -929,12 +1024,17 @@
     36,	/* movi */
     12,	/* movnr */
     12,	/* movzr */
+    36,	/* casr */
+    44,	/* casi */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
     4,	/* extr_us */
     4,	/* extr_i */
     4,	/* extr_ui */
+    8,	/* bswapr_us */
+    16,	/* bswapr_ui */
+    44,	/* bswapr_ul */
     4,	/* htonr_us */
     4,	/* htonr_ui */
     4,	/* htonr_ul */
@@ -1027,13 +1127,37 @@
     28,	/* callr */
     52,	/* calli */
     0,	/* prepare */
-    0,	/* pushargr */
-    0,	/* pushargi */
+    0,	/* pushargr_c */
+    0,	/* pushargi_c */
+    0,	/* pushargr_uc */
+    0,	/* pushargi_uc */
+    0,	/* pushargr_s */
+    0,	/* pushargi_s */
+    0,	/* pushargr_us */
+    0,	/* pushargi_us */
+    0,	/* pushargr_i */
+    0,	/* pushargi_i */
+    0,	/* pushargr_ui */
+    0,	/* pushargi_ui */
+    0,	/* pushargr_l */
+    0,	/* pushargi_l */
     0,	/* finishr */
     0,	/* finishi */
     0,	/* ret */
-    0,	/* retr */
-    0,	/* reti */
+    0,	/* retr_c */
+    0,	/* reti_c */
+    0,	/* retr_uc */
+    0,	/* reti_uc */
+    0,	/* retr_s */
+    0,	/* reti_s */
+    0,	/* retr_us */
+    0,	/* reti_us */
+    0,	/* retr_i */
+    0,	/* reti_i */
+    0,	/* retr_ui */
+    0,	/* reti_ui */
+    0,	/* retr_l */
+    0,	/* reti_l */
     0,	/* retval_c */
     0,	/* retval_uc */
     0,	/* retval_s */
@@ -1233,11 +1357,6 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* bswapr_us */
-    16,	/* bswapr_ui */
-    44,	/* bswapr_ul */
-    36,	/* casr */
-    44,	/* casi */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -1248,9 +1367,10 @@
 #define JIT_INSTR_MAX 124
     0,	/* data */
     0,	/* live */
-    4,	/* align */
+    28,	/* align */
     0,	/* save */
     0,	/* load */
+    4,	/* skip */
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
@@ -1259,7 +1379,10 @@
     0,	/* va_push */
     0,	/* allocai */
     0,	/* allocar */
-    0,	/* arg */
+    0,	/* arg_c */
+    0,	/* arg_s */
+    0,	/* arg_i */
+    0,	/* arg_l */
     0,	/* getarg_c */
     0,	/* getarg_uc */
     0,	/* getarg_s */
@@ -1267,8 +1390,20 @@
     0,	/* getarg_i */
     0,	/* getarg_ui */
     0,	/* getarg_l */
-    0,	/* putargr */
-    0,	/* putargi */
+    0,	/* putargr_c */
+    0,	/* putargi_c */
+    0,	/* putargr_uc */
+    0,	/* putargi_uc */
+    0,	/* putargr_s */
+    0,	/* putargi_s */
+    0,	/* putargr_us */
+    0,	/* putargi_us */
+    0,	/* putargr_i */
+    0,	/* putargi_i */
+    0,	/* putargr_ui */
+    0,	/* putargi_ui */
+    0,	/* putargr_l */
+    0,	/* putargi_l */
     4,	/* va_start */
     8,	/* va_arg */
     8,	/* va_arg_d */
@@ -1342,12 +1477,17 @@
     36,	/* movi */
     12,	/* movnr */
     12,	/* movzr */
+    36,	/* casr */
+    44,	/* casi */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
     4,	/* extr_us */
     4,	/* extr_i */
     4,	/* extr_ui */
+    8,	/* bswapr_us */
+    16,	/* bswapr_ui */
+    44,	/* bswapr_ul */
     8,	/* htonr_us */
     16,	/* htonr_ui */
     44,	/* htonr_ul */
@@ -1440,13 +1580,37 @@
     12,	/* callr */
     32,	/* calli */
     0,	/* prepare */
-    0,	/* pushargr */
-    0,	/* pushargi */
+    0,	/* pushargr_c */
+    0,	/* pushargi_c */
+    0,	/* pushargr_uc */
+    0,	/* pushargi_uc */
+    0,	/* pushargr_s */
+    0,	/* pushargi_s */
+    0,	/* pushargr_us */
+    0,	/* pushargi_us */
+    0,	/* pushargr_i */
+    0,	/* pushargi_i */
+    0,	/* pushargr_ui */
+    0,	/* pushargi_ui */
+    0,	/* pushargr_l */
+    0,	/* pushargi_l */
     0,	/* finishr */
     0,	/* finishi */
     0,	/* ret */
-    0,	/* retr */
-    0,	/* reti */
+    0,	/* retr_c */
+    0,	/* reti_c */
+    0,	/* retr_uc */
+    0,	/* reti_uc */
+    0,	/* retr_s */
+    0,	/* reti_s */
+    0,	/* retr_us */
+    0,	/* reti_us */
+    0,	/* retr_i */
+    0,	/* reti_i */
+    0,	/* retr_ui */
+    0,	/* reti_ui */
+    0,	/* retr_l */
+    0,	/* reti_l */
     0,	/* retval_c */
     0,	/* retval_uc */
     0,	/* retval_s */
@@ -1646,11 +1810,6 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* bswapr_us */
-    16,	/* bswapr_ui */
-    44,	/* bswapr_ul */
-    36,	/* casr */
-    44,	/* casi */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */

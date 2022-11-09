@@ -3654,7 +3654,7 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    if (!can_sign_extend_short_p(d)) {
 		/* use absolute address */
 		assert(can_sign_extend_short_p(label));
-		d |= 2;
+		d = label | 2;
 	    }
 	    u.i[0] = (u.i[0] & ~0xfffd) | (d & 0xfffe);
 	    break;
@@ -3682,9 +3682,9 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    if (!can_sign_extend_jump_p(d)) {
 		/* use absolute address */
 		assert(can_sign_extend_jump_p(label));
-		d |= 2;
+		d = label | 2;
 	    }
-	    u.i[0] = (u.i[0] & ~0x3fffffd) | (d & 0x3fffffe);
+	    u.i[0] = (u.i[0] & ~0x3fffffc) | (d & 0x3fffffd);
 	    break;
 	case 15:					/* LI */
 #if __WORDSIZE == 32
