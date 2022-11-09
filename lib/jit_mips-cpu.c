@@ -3005,8 +3005,11 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 		LUI(_T9_REGNO, i0 >> 16);
 	    }
         }
+	else
+	    goto fallback;
     }
     else {
+    fallback:
 	movi(_T9_REGNO, i0);
 	JALR(_T9_REGNO);
 	NOP(1);
