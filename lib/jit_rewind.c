@@ -71,9 +71,10 @@ _rewind_prolog(jit_state_t *_jit)
     for (; node; node = next) {
 	next = node->next;
 	switch (node->code) {
-	    case jit_code_arg:
+	    case jit_code_arg_c:	case jit_code_arg_s:
+	    case jit_code_arg_i:	case jit_code_arg_l:
 		node->next = (jit_node_t *)0;
-		jit_make_arg(node);
+		jit_make_arg(node, node->code);
 		break;
 	    case jit_code_arg_f:
 		node->next = (jit_node_t *)0;

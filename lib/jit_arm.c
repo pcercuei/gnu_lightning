@@ -59,8 +59,8 @@ typedef jit_pointer_t	jit_va_list;
 /*
  * Prototypes
  */
-#define jit_make_arg(node)		_jit_make_arg(_jit,node)
-static jit_node_t *_jit_make_arg(jit_state_t*,jit_node_t*);
+#define jit_make_arg(node,code)		_jit_make_arg(_jit,node,code)
+static jit_node_t *_jit_make_arg(jit_state_t*,jit_node_t*,jit_code_t);
 #define jit_make_arg_f(node)		_jit_make_arg_f(_jit,node)
 static jit_node_t *_jit_make_arg_f(jit_state_t*,jit_node_t*);
 #define jit_make_arg_d(node)		_jit_make_arg_d(_jit,node)
@@ -327,20 +327,18 @@ _jit_ret(jit_state_t *_jit)
 }
 
 void
-_jit_retr(jit_state_t *_jit, jit_int32_t u)
+_jit_retr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
-    jit_inc_synth_w(retr, u);
-    if (JIT_RET != u)
-	jit_movr(JIT_RET, u);
-    jit_live(JIT_RET);
+    jit_code_inc_synth_w(code, u);
+    jit_movr(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
 }
 
 void
-_jit_reti(jit_state_t *_jit, jit_word_t u)
+_jit_reti(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
-    jit_inc_synth_w(reti, u);
+    jit_code_inc_synth_w(code, u);
     jit_movi(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
@@ -422,7 +420,7 @@ _jit_epilog(jit_state_t *_jit)
 jit_bool_t
 _jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
 {
-    if (u->code != jit_code_arg) {
+    if (!(u->code >= jit_code_arg_c && u->code <= jit_code_arg)) {
 	if (u->code == jit_code_arg_f) {
 	    if (jit_cpu.abi)
 		return (jit_arg_f_reg_p(u->u.w));
@@ -437,7 +435,7 @@ _jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
 }
 
 static jit_node_t *
-_jit_make_arg(jit_state_t *_jit, jit_node_t *node)
+_jit_make_arg(jit_state_t *_jit, jit_node_t *node, jit_code_t code)
 {
     jit_int32_t		 offset;
     if (jit_arg_reg_p(_jitc->function->self.argi))
@@ -447,7 +445,7 @@ _jit_make_arg(jit_state_t *_jit, jit_node_t *node)
 	_jitc->function->self.size += sizeof(jit_word_t);
     }
     if (node == (jit_node_t *)0)
-	node = jit_new_node(jit_code_arg);
+	node = jit_new_node(code);
     else
 	link_node(node);
     node->u.w = offset;
@@ -559,16 +557,21 @@ _jit_va_push(jit_state_t *_jit, jit_int32_t u)
 }
 
 jit_node_t *
-_jit_arg(jit_state_t *_jit)
+_jit_arg(jit_state_t *_jit, jit_code_t code)
 {
     assert(_jitc->function);
-    return (jit_make_arg((jit_node_t*)0));
+    assert(!(_jitc->function->self.call & jit_call_varargs));
+#if STRONG_TYPE_CHECKING
+    assert(code >= jit_code_arg_c && code <= jit_code_arg);
+#endif
+    return (jit_make_arg((jit_node_t*)0, code));
 }
 
 jit_node_t *
 _jit_arg_f(jit_state_t *_jit)
 {
     assert(_jitc->function);
+    assert(!(_jitc->function->self.call & jit_call_varargs));
     return (jit_make_arg_f((jit_node_t*)0));
 }
 
@@ -576,13 +579,14 @@ jit_node_t *
 _jit_arg_d(jit_state_t *_jit)
 {
     assert(_jitc->function);
+    assert(!(_jitc->function->self.call & jit_call_varargs));
     return (jit_make_arg_d((jit_node_t*)0));
 }
 
 void
 _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_c);
     jit_inc_synth_wp(getarg_c, u, v);
     if (jit_swf_p())
 	jit_ldxi_c(u, JIT_FP, arg_offset(v->u.w));
@@ -596,7 +600,7 @@ _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_c);
     jit_inc_synth_wp(getarg_uc, u, v);
     if (jit_swf_p())
 	jit_ldxi_uc(u, JIT_FP, arg_offset(v->u.w));
@@ -610,7 +614,7 @@ _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_s);
     jit_inc_synth_wp(getarg_s, u, v);
     if (jit_swf_p())
 	jit_ldxi_s(u, JIT_FP, arg_offset(v->u.w));
@@ -624,7 +628,7 @@ _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_s);
     jit_inc_synth_wp(getarg_us, u, v);
     if (jit_swf_p())
 	jit_ldxi_us(u, JIT_FP, arg_offset(v->u.w));
@@ -638,7 +642,7 @@ _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_i);
     jit_inc_synth_wp(getarg_i, u, v);
     if (jit_swf_p())
 	jit_ldxi_i(u, JIT_FP, arg_offset(v->u.w));
@@ -650,10 +654,10 @@ _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 }
 
 void
-_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v, jit_code_t code)
 {
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargr, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
     if (jit_swf_p())
 	jit_stxi(arg_offset(v->u.w), JIT_FP, u);
     else if (jit_arg_reg_p(v->u.w))
@@ -664,11 +668,11 @@ _jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 }
 
 void
-_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v)
+_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
 {
     jit_int32_t		regno;
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargi, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
     if (jit_swf_p()) {
 	regno = jit_get_reg(jit_class_gpr);
 	jit_movi(regno, u);
@@ -843,10 +847,10 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
 }
 
 void
-_jit_pushargr(jit_state_t *_jit, jit_int32_t u)
+_jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
     assert(_jitc->function);
-    jit_inc_synth_w(pushargr, u);
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
 	jit_movr(JIT_RA0 - _jitc->function->call.argi, u);
@@ -860,11 +864,11 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u)
 }
 
 void
-_jit_pushargi(jit_state_t *_jit, jit_word_t u)
+_jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
     jit_int32_t		 regno;
     assert(_jitc->function);
-    jit_inc_synth_w(pushargi, u);
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
 	jit_movi(JIT_RA0 - _jitc->function->call.argi, u);
@@ -1924,21 +1928,34 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_live:			case jit_code_ellipsis:
 	    case jit_code_va_push:
 	    case jit_code_allocai:		case jit_code_allocar:
-	    case jit_code_arg:
+	    case jit_code_arg_c:		case jit_code_arg_s:
+	    case jit_code_arg_i:
 	    case jit_code_arg_f:		case jit_code_arg_d:
 	    case jit_code_va_end:
 	    case jit_code_ret:
-	    case jit_code_retr:			case jit_code_reti:
+	    case jit_code_retr_c:		case jit_code_reti_c:
+	    case jit_code_retr_uc:		case jit_code_reti_uc:
+	    case jit_code_retr_s:		case jit_code_reti_s:
+	    case jit_code_retr_us:		case jit_code_reti_us:
+	    case jit_code_retr_i:		case jit_code_reti_i:
 	    case jit_code_retr_f:		case jit_code_reti_f:
 	    case jit_code_retr_d:		case jit_code_reti_d:
 	    case jit_code_getarg_c:		case jit_code_getarg_uc:
 	    case jit_code_getarg_s:		case jit_code_getarg_us:
 	    case jit_code_getarg_i:
 	    case jit_code_getarg_f:		case jit_code_getarg_d:
-	    case jit_code_putargr:		case jit_code_putargi:
+	    case jit_code_putargr_c:		case jit_code_putargi_c:
+	    case jit_code_putargr_uc:		case  jit_code_putargi_uc:
+	    case jit_code_putargr_s:		case jit_code_putargi_s:
+	    case jit_code_putargr_us:		case jit_code_putargi_us:
+	    case jit_code_putargr_i:		case jit_code_putargi_i:
 	    case jit_code_putargr_f:		case jit_code_putargi_f:
 	    case jit_code_putargr_d:		case jit_code_putargi_d:
-	    case jit_code_pushargr:		case jit_code_pushargi:
+	    case jit_code_pushargr_c:		case jit_code_pushargi_c:
+	    case jit_code_pushargr_uc:		case jit_code_pushargi_uc:
+	    case jit_code_pushargr_s:		case jit_code_pushargi_s:
+	    case jit_code_pushargr_us:		case jit_code_pushargi_us:
+	    case jit_code_pushargr_i:		case jit_code_pushargi_i:
 	    case jit_code_pushargr_f:		case jit_code_pushargi_f:
 	    case jit_code_pushargr_d:		case jit_code_pushargi_d:
 	    case jit_code_retval_c:		case jit_code_retval_uc:
