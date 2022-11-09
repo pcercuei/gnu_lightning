@@ -401,31 +401,33 @@ ldxi    _c  _uc  _s  _us  _i  _ui  _l  _f  _d  O1 = *(O2+O3)
 both cases, the first can be either a register or an immediate
 value. Values are sign-extended to fit a whole register.
 @example
-str     _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *O1 = O2
-sti     _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *O1 = O2
-stxr    _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *(O1+O2) = O3
-stxi    _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *(O1+O2) = O3
+str     _c       _s       _i       _l  _f  _d  *O1 = O2
+sti     _c       _s       _i       _l  _f  _d  *O1 = O2
+stxr    _c       _s       _i       _l  _f  _d  *(O1+O2) = O3
+stxi    _c       _s       _i       _l  _f  _d  *(O1+O2) = O3
 @end example
-As for the load operations, the @code{_ui} and @code{_l} types are
-only available in 64-bit architectures, and for convenience, there
-is a version without a type modifier for integer or pointer operands
-that uses the appropriate wordsize call.
+Note that the unsigned type modifier is not available, as the store
+only writes to the 1, 2, 4 or 8 sized memory address.
+The @code{_l} type is only available in 64-bit architectures, and for
+convenience, there is a version without a type modifier for integer or
+pointer operands that uses the appropriate wordsize call.
 
 @item Argument management
 These are:
 @example
 prepare     (not specified)
 va_start    (not specified)
-pushargr                                   _f  _d
-pushargi                                   _f  _d
+pushargr    _c  _uc  _s  _us  _i  _ui  _l  _f  _d
+pushargi    _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 va_push     (not specified)
-arg                                        _f  _d
+arg         _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 getarg      _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 va_arg                                         _d
-putargr                                    _f  _d
-putargi                                    _f  _d
+putargr     _c  _uc  _s  _us  _i  _ui  _l  _f  _d
+putargi     _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 ret         (not specified)
-retr                                       _f  _d
+retr        _c  _uc  _s  _us  _i  _ui  _l  _f  _d
+reti        _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 reti                                       _f  _d
 va_end      (not specified)
 retval      _c  _uc  _s  _us  _i  _ui  _l  _f  _d
@@ -443,6 +445,15 @@ arguments must, in order: use the @code{prepare} instruction and use
 the @code{pushargr} or @code{pushargi} to push the arguments @strong{in
 left to right order}; and use @code{finish} or @code{call} (explained below)
 to perform the actual call.
+
+Note that @code{arg}, @code{pusharg}, @code{putarg} and @code{ret} when
+handling integer types can be used without a type modifier.
+It is suggested to use matching type modifiers to @code{arg}, @code{putarg}
+and @code{getarg} otherwise problems will happen if generating jit for
+environments that require arguments to be truncated and zero or sign
+extended by the caller and/or excess arguments might be passed packed
+in the stack. Currently only Apple systems with @code{aarch64} cpus are
+known to have this restriction.
 
 @code{va_start} returns a @code{C} compatible @code{va_list}. To fetch
 arguments, use @code{va_arg} for integers and @code{va_arg_d} for doubles.
@@ -579,8 +590,8 @@ finishi   (not specified)                @r{function call to immediate O1}
 jmpr      (not specified)                @r{unconditional jump to register}
 jmpi      (not specified)                @r{unconditional jump}
 ret       (not specified)                @r{return from subroutine}
-retr                              _f _d
-reti                              _f _d
+retr      _c _uc _s _us _i _ui _l _f _d
+reti      _c _uc _s _us _i _ui _l _f _d
 retval    _c _uc _s _us _i _ui _l _f _d  @r{move return value}
                                          @r{to register}
 @end example
