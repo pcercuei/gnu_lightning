@@ -802,7 +802,7 @@ _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert_arg_type(v->code, jit_code_arg_i);
+    assert_arg_type(v->code, jit_code_arg_l);
     jit_inc_synth_wp(getarg_l, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(u, JIT_RA0 - v->u.w);
