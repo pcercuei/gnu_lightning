@@ -500,22 +500,18 @@ _jit_ret(jit_state_t *_jit)
 }
 
 void
-_jit_retr(jit_state_t *_jit, jit_int32_t u)
+_jit_retr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
-    jit_inc_synth_w(retr, u);
-    /* movr(%ret, %ret) would be optimized out */
-    if (JIT_RET != u)
-	jit_movr(JIT_RET, u);
-    /* explicitly tell it is live */
-    jit_live(JIT_RET);
+    jit_code_inc_synth_w(code, u);
+    jit_movr(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
 }
 
 void
-_jit_reti(jit_state_t *_jit, jit_word_t u)
+_jit_reti(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
-    jit_inc_synth_w(reti, u);
+    jit_code_inc_synth_w(code, u);
     jit_movi(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
@@ -575,7 +571,7 @@ _jit_epilog(jit_state_t *_jit)
 jit_bool_t
 _jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
 {
-    if (u->code == jit_code_arg)
+    if (u->code >= jit_code_arg_c && u->code <= jit_code_arg)
 	return (jit_arg_reg_p(u->u.w));
     assert(u->code == jit_code_arg_f || u->code == jit_code_arg_d);
     return (jit_arg_f_reg_p(u->u.w));
@@ -629,12 +625,15 @@ _jit_va_push(jit_state_t *_jit, jit_int32_t u)
 }
 
 jit_node_t *
-_jit_arg(jit_state_t *_jit)
+_jit_arg(jit_state_t *_jit, jit_code_t code)
 {
     jit_node_t		*node;
     jit_int32_t		 offset;
     assert(_jitc->function);
     assert(!(_jitc->function->self.call & jit_call_varargs));
+#if STRONG_TYPE_CHECKING
+    assert(code >= jit_code_arg_c && code <= jit_code_arg);
+#endif
 #if __X64
     if (jit_arg_reg_p(_jitc->function->self.argi)) {
 	offset = _jitc->function->self.argi++;
@@ -648,7 +647,7 @@ _jit_arg(jit_state_t *_jit)
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += REAL_WORDSIZE;
     }
-    node = jit_new_node_ww(jit_code_arg, offset,
+    node = jit_new_node_ww(code, offset,
 			   ++_jitc->function->self.argn);
     jit_link_prolog();
     return (node);
@@ -715,7 +714,7 @@ _jit_arg_d(jit_state_t *_jit)
 void
 _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_c);
     jit_inc_synth_wp(getarg_c, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w))
@@ -729,7 +728,7 @@ _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_c);
     jit_inc_synth_wp(getarg_uc, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w))
@@ -743,7 +742,7 @@ _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_s);
     jit_inc_synth_wp(getarg_s, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w))
@@ -757,7 +756,7 @@ _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_s);
     jit_inc_synth_wp(getarg_us, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w))
@@ -771,7 +770,7 @@ _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_i);
     jit_inc_synth_wp(getarg_i, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w)) {
@@ -791,7 +790,7 @@ _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_i);
     jit_inc_synth_wp(getarg_ui, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_ui(u, JIT_RA0 - v->u.w);
@@ -803,7 +802,7 @@ _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-    assert(v->code == jit_code_arg);
+    assert_arg_type(v->code, jit_code_arg_i);
     jit_inc_synth_wp(getarg_l, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(u, JIT_RA0 - v->u.w);
@@ -814,10 +813,10 @@ _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
 
 void
-_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v, jit_code_t code)
 {
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargr, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(JIT_RA0 - v->u.w, u);
@@ -828,11 +827,11 @@ _jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 }
 
 void
-_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v)
+_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
 {
     jit_int32_t		regno;
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargi, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
 #if __X64
     if (jit_arg_reg_p(v->u.w))
 	jit_movi(JIT_RA0 - v->u.w, u);
@@ -944,10 +943,10 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
 }
 
 void
-_jit_pushargr(jit_state_t *_jit, jit_int32_t u)
+_jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
     assert(_jitc->function);
-    jit_inc_synth_w(pushargr, u);
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
 #if __X64
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
@@ -969,11 +968,11 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u)
 }
 
 void
-_jit_pushargi(jit_state_t *_jit, jit_word_t u)
+_jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
     jit_int32_t		 regno;
     assert(_jitc->function);
-    jit_inc_synth_w(pushargi, u);
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
 #if __X64
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
@@ -2125,11 +2124,23 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_live:			case jit_code_ellipsis:
 	    case jit_code_va_push:
 	    case jit_code_allocai:		case jit_code_allocar:
-	    case jit_code_arg:
+	    case jit_code_arg_c:		case jit_code_arg_s:
+	    case jit_code_arg_i:
+#  if __WORDSIZE == 64
+	    case jit_code_arg_l:
+#  endif
 	    case jit_code_arg_f:		case jit_code_arg_d:
 	    case jit_code_va_end:
 	    case jit_code_ret:
-	    case jit_code_retr:			case jit_code_reti:
+	    case jit_code_retr_c:		case jit_code_reti_c:
+	    case jit_code_retr_uc:		case jit_code_reti_uc:
+	    case jit_code_retr_s:		case jit_code_reti_s:
+	    case jit_code_retr_us:		case jit_code_reti_us:
+	    case jit_code_retr_i:		case jit_code_reti_i:
+#if __WORDSIZE == 64
+	    case jit_code_retr_ui:		case jit_code_reti_ui:
+	    case jit_code_retr_l:		case jit_code_reti_l:
+#endif
 	    case jit_code_retr_f:		case jit_code_reti_f:
 	    case jit_code_retr_d:		case jit_code_reti_d:
 	    case jit_code_getarg_c:		case jit_code_getarg_uc:
@@ -2139,10 +2150,26 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_getarg_ui:		case jit_code_getarg_l:
 #endif
 	    case jit_code_getarg_f:		case jit_code_getarg_d:
-	    case jit_code_putargr:		case jit_code_putargi:
+	    case jit_code_putargr_c:		case jit_code_putargi_c:
+	    case jit_code_putargr_uc:		case jit_code_putargi_uc:
+	    case jit_code_putargr_s:		case jit_code_putargi_s:
+	    case jit_code_putargr_us:		case jit_code_putargi_us:
+	    case jit_code_putargr_i:		case jit_code_putargi_i:
+#if __WORDSIZE == 64
+	    case jit_code_putargr_ui:		case jit_code_putargi_ui:
+	    case jit_code_putargr_l:		case jit_code_putargi_l:
+#endif
 	    case jit_code_putargr_f:		case jit_code_putargi_f:
 	    case jit_code_putargr_d:		case jit_code_putargi_d:
-	    case jit_code_pushargr:		case jit_code_pushargi:
+	    case jit_code_pushargr_c:		case jit_code_pushargi_c:
+	    case jit_code_pushargr_uc:		case jit_code_pushargi_uc:
+	    case jit_code_pushargr_s:		case jit_code_pushargi_s:
+	    case jit_code_pushargr_us:		case jit_code_pushargi_us:
+	    case jit_code_pushargr_i:		case jit_code_pushargi_i:
+#if __WORDSIZE == 64
+	    case jit_code_pushargr_ui:		case jit_code_pushargi_ui:
+	    case jit_code_pushargr_l:		case jit_code_pushargi_l:
+#endif
 	    case jit_code_pushargr_f:		case jit_code_pushargi_f:
 	    case jit_code_pushargr_d:		case jit_code_pushargi_d:
 	    case jit_code_retval_c:		case jit_code_retval_uc:
