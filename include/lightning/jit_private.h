@@ -55,6 +55,26 @@
 #  define HIDDEN		/**/
 #endif
 
+#if PACKED_STACK || STRONG_TYPE_CHECK
+#  define assert_arg_type(code, expect)					\
+    do assert((code) == (expect)); while (0)
+#  define assert_putarg_type(code, expect)				\
+    do									\
+	assert((((code) - jit_code_putargr_c) >> 2) ==			\
+	       ((expect) - jit_code_arg_c));				\
+    while (0)
+#else
+#  define assert_arg_type(code, expect)					\
+    do assert((int)(code) == (int)(expect) ||				\
+	      (code) == jit_code_arg); while (0)
+#  define assert_putarg_type(code, expect)				\
+    do									\
+	assert(((((code) - jit_code_putargr_c) >> 2) ==			\
+	       ((expect) - jit_code_arg_c)) ||				\
+	       ((code) == jit_code_arg));				\
+    while (0)
+#endif
+
 #define rc(value)		jit_class_##value
 #define rn(reg)			(jit_regno(_rvs[jit_regno(reg)].spec))
 
@@ -174,46 +194,62 @@ extern jit_node_t *_jit_data(jit_state_t*, const void*,
     (!jit_regset_tstbit(&_jitc->regarg, regno) &&			\
      !jit_regset_tstbit(&_jitc->regsav, regno))
 
-#define jit_inc_synth(code)						\
+#define jit_code_inc_synth(code)					\
     do {								\
-	(void)jit_new_node(jit_code_##code);				\
+	(void)jit_new_node(code);					\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_w(code, u)					\
+#define jit_inc_synth(name)						\
+    jit_code_inc_synth(jit_code_##name)
+#define jit_code_inc_synth_w(code, u)					\
     do {								\
-	(void)jit_new_node_w(jit_code_##code, u);			\
+	(void)jit_new_node_w(code, u);					\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_f(code, u)					\
+#define jit_inc_synth_w(name, u)					\
+    jit_code_inc_synth_w(jit_code_##name, u)
+#define jit_code_inc_synth_f(code, u)					\
     do {								\
-	(void)jit_new_node_f(jit_code_##code, u);			\
+	(void)jit_new_node_f(code, u);					\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_d(code, u)					\
+#define jit_inc_synth_f(name, u)					\
+    jit_code_inc_synth_f(jit_code_##name, u)
+#define jit_code_inc_synth_d(code, u)					\
     do {								\
-	(void)jit_new_node_d(jit_code_##code, u);			\
+	(void)jit_new_node_d(code, u);					\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_ww(code, u, v)					\
+#define jit_inc_synth_d(name, u)					\
+    jit_code_inc_synth_d(jit_code_##name, u)
+#define jit_code_inc_synth_ww(code, u, v)				\
     do {								\
-	(void)jit_new_node_ww(jit_code_##code, u, v);			\
+	(void)jit_new_node_ww(code, u, v);				\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_wp(code, u, v)					\
+#define jit_inc_synth_ww(name, u, v)					\
+    jit_code_inc_synth_ww(jit_code_##name, u, v)
+#define jit_code_inc_synth_wp(code, u, v)				\
     do {								\
-	(void)jit_new_node_wp(jit_code_##code, u, v);			\
+	(void)jit_new_node_wp(code, u, v);				\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_fp(code, u, v)					\
+#define jit_inc_synth_wp(name, u, v)					\
+    jit_code_inc_synth_wp(jit_code_##name, u, v)
+#define jit_code_inc_synth_fp(code, u, v)				\
     do {								\
-	(void)jit_new_node_fp(jit_code_##code, u, v);			\
+	(void)jit_new_node_fp(code, u, v);				\
 	jit_synth_inc();						\
     } while (0)
-#define jit_inc_synth_dp(code, u, v)					\
+#define jit_inc_synth_fp(name, u, v)					\
+    jit_code_inc_synth_fp(jit_code_##name, u, v)
+#define jit_code_inc_synth_dp(code, u, v)				\
     do {								\
-	(void)jit_new_node_dp(jit_code_##code, u, v);			\
+	(void)jit_new_node_dp(code, u, v);				\
 	jit_synth_inc();						\
     } while (0)
+#define jit_inc_synth_dp(name, u, v)					\
+    jit_code_inc_synth_dp(jit_code_##name, u, v)
 #define jit_dec_synth()		jit_synth_dec()
 
 #define jit_link_prolog()						\

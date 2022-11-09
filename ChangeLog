@@ -1,3 +1,20 @@
+2022-11-09 Paulo Andrade <pcpa@gnu.org>
+
+	* configure.ac: Add new --enable-devel-strong-type-checking
+	option.
+	* include/lightning.h.in: Rework to not need to know if
+	PACKED_STACK is defined, and add a new argument to _jit_arg,
+	_jit_putarg{r,i}, _jit_pusharg{r,i} and _jit_ret{r,i} to have
+	the same code path if PACKED_STACK is defined or not, and also
+	to implement STRONG_TYPE_CHECK enabled with the new
+	--enable-devel-strong-type-checking.
+	* include/lightning/jit_private.h: Add new macros to add assertions
+	for STRONG_TYPE_CHECK and avoid pasting tokens in jit_inc_synth*
+	when the token is not a static known value.
+	* lib/jit_aarch64.c: The first implementation of the new code,
+	working correctly in Apple M1 and with and without STRONG_TYPE_CHECK
+	in Linux.
+
 2022-11-08 Paulo Andrade <pcpa@gnu.org>
 
 	Add support for packed stack arguments as used by Apple M1

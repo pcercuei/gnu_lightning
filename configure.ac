@@ -187,6 +187,17 @@ AC_ARG_ENABLE(devel-get-jit-size,
 	      [GET_JIT_SIZE=$enableval], [GET_JIT_SIZE=no])
 AM_CONDITIONAL(get_jit_size, [test $GET_JIT_SIZE = yes])
 
+# This option might be made default in the future
+# Currently it is only useful to ensure existing code will work
+# if PACKED_STACK is also defined.
+AC_ARG_ENABLE(devel-strong-type-checking,
+	      AS_HELP_STRING([--enable-devel-strong-type-checking],
+			     [Devel mode for strong type checking]),
+	      [STRONG_TYPE_CHECKING=$enabelval], [STRONG_TYPE_CHECKING=no])
+if test "x$STRONG_TYPE_CHECKING" = xyes; then
+    LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DSTRONG_TYPE_CHECKING=1"
+fi
+
 case "$host_os" in
     *bsd*|osf*)		SHLIB=""	;;
     *hpux*)		SHLIB="-ldld"	;;

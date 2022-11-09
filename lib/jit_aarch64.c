@@ -265,102 +265,56 @@ _jit_ret(jit_state_t *_jit)
     jit_dec_synth();
 }
 
+void
+_jit_retr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
+{
+    jit_code_inc_synth_w(code, u);
 #if PACKED_STACK
-#define def_jit_retr(T)							\
-void									\
-_jit_retr##T(jit_state_t *_jit, jit_int32_t u)				\
-{									\
-    jit_inc_synth_w(retr##T, u);					\
-    jit_extr##T(JIT_RET, u);						\
-    jit_ret();								\
-    jit_dec_synth();							\
-}
-#define def_jit_reti(T, TT)						\
-void									\
-_jit_reti##T(jit_state_t *_jit, jit_word_t u)				\
-{									\
-    jit_inc_synth_w(reti##T, u);					\
-    jit_movi(JIT_RET, (TT)u);						\
-    jit_ret();								\
-    jit_dec_synth();							\
-}
-def_jit_retr(_c)
-def_jit_reti(_c, jit_int8_t)
-def_jit_retr(_uc)
-def_jit_reti(_uc, jit_uint8_t)
-def_jit_retr(_s)
-def_jit_reti(_s, jit_int16_t)
-def_jit_retr(_us)
-def_jit_reti(_us, jit_uint16_t)
+    switch (code) {
+	case jit_code_retr_c:	jit_extr_c(JIT_RET, u);	break;
+	case jit_code_retr_uc:	jit_extr_uc(JIT_RET, u);break;
+	case jit_code_retr_s:	jit_extr_s(JIT_RET, u);	break;
+	case jit_code_retr_us:	jit_extr_us(JIT_RET, u);break;
 #  if __WORDSIZE == 32
-void
-_jit_retr_i(jit_state_t *_jit, jit_int32_t u)
-{
-    jit_inc_synth_w(retr_i, u);
-    if (JIT_RET != u)
-	jit_movr(JIT_RET, u);
-    else
-	jit_live(JIT_RET);
-    jit_ret();
-    jit_dec_synth();
-}
-
-void
-_jit_reti_i(jit_state_t *_jit, jit_word_t u)
-{
-    jit_inc_synth_w(reti_i, u);
-    jit_movi(JIT_RET, u);
-    jit_ret();
-    jit_dec_synth();
-}
+	case jit_code_retr_i:	jit_movr(JIT_RET, u);	break;
 #  else
-def_jit_retr(_i)
-def_jit_reti(_i, jit_int32_t)
-def_jit_retr(_ui)
-def_jit_reti(_ui, jit_uint32_t)
-
-void
-_jit_retr_l(jit_state_t *_jit, jit_int32_t u)
-{
-    jit_inc_synth_w(retr_l, u);
-    if (JIT_RET != u)
-	jit_movr(JIT_RET, u);
-    else
-	jit_live(JIT_RET);
-    jit_ret();
-    jit_dec_synth();
-}
-
-void
-_jit_reti_l(jit_state_t *_jit, jit_word_t u)
-{
-    jit_inc_synth_w(reti_l, u);
-    jit_movi(JIT_RET, u);
-    jit_ret();
-    jit_dec_synth();
-}
+	case jit_code_retr_i:	jit_extr_i(JIT_RET, u);	break;
+	case jit_code_retr_ui:	jit_extr_ui(JIT_RET, u);break;
+	case jit_code_retr_l:	jit_movr(JIT_RET, u);	break;
 #  endif
+	default:		abort();		break;
+    }
 #else
-void
-_jit_retr(jit_state_t *_jit, jit_int32_t u)
-{
-    jit_inc_synth_w(retr, u);
-    if (JIT_RET != u)
-	jit_movr(JIT_RET, u);
-    jit_live(JIT_RET);
+    jit_movr(JIT_RET, u);
+#endif
     jit_ret();
     jit_dec_synth();
 }
 
 void
-_jit_reti(jit_state_t *_jit, jit_word_t u)
+_jit_reti(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
-    jit_inc_synth_w(reti, u);
+    jit_code_inc_synth_w(code, u);
+#if PACKED_STACK
+    switch (code) {
+	case jit_code_reti_c:	u = (jit_int8_t)u;	break;
+	case jit_code_reti_uc:	u = (jit_uint8_t)u;	break;
+	case jit_code_reti_s:	u = (jit_int16_t)u;	break;
+	case jit_code_reti_us:	u = (jit_uint16_t)u;	break;
+#  if __WORDSIZE == 32
+	case jit_code_reti_i:				break;
+#  else
+	case jit_code_reti_i:	u = (jit_int32_t)u;	break;
+	case jit_code_reti_ui:	u = (jit_uint32_t)u;	break;
+	case jit_code_reti_l:				break;
+#  endif
+	default:		abort();		break;
+    }
+#endif
     jit_movi(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
 }
-#endif
 
 void
 _jit_retr_f(jit_state_t *_jit, jit_int32_t u)
@@ -466,37 +420,8 @@ _jit_va_push(jit_state_t *_jit, jit_int32_t u)
     jit_dec_synth();
 }
 
-#if PACKED_STACK
-#define def_jit_arg(T, TT)						\
-jit_node_t *								\
-_jit_arg##T(jit_state_t *_jit)						\
-{									\
-    jit_node_t		*node;						\
-    jit_int32_t		 offset;					\
-    assert(_jitc->function);						\
-    assert(!(_jitc->function->self.call & jit_call_varargs));		\
-    if (jit_arg_reg_p(_jitc->function->self.argi))			\
-	offset = _jitc->function->self.argi++;				\
-    else {								\
-	_jitc->function->self.size +=					\
-	    _jitc->function->self.size & (sizeof(TT) - 1);		\
-	offset = _jitc->function->self.size;				\
-	_jitc->function->self.size += sizeof(TT);			\
-    }									\
-    node = jit_new_node_ww(jit_code_arg##T, offset,			\
-			   ++_jitc->function->self.argn);		\
-    jit_link_prolog();							\
-    return (node);							\
-}
-def_jit_arg(_c, jit_int8_t)
-def_jit_arg(_s, jit_int16_t)
-def_jit_arg(_i, jit_int32_t)
-#  if __WORDSIZE == 64
-def_jit_arg(_l, jit_int64_t)
-#  endif
-#else
 jit_node_t *
-_jit_arg(jit_state_t *_jit)
+_jit_arg(jit_state_t *_jit, jit_code_t code)
 {
     jit_node_t		*node;
     jit_int32_t		 offset;
@@ -505,15 +430,25 @@ _jit_arg(jit_state_t *_jit)
     if (jit_arg_reg_p(_jitc->function->self.argi))
 	offset = _jitc->function->self.argi++;
     else {
+#if PACKED_STACK || STRONG_TYPE_CHECKING
+	assert(code >= jit_code_arg_c && code <= jit_code_arg);
+#endif
+#if PACKED_STACK
+	_jitc->function->self.size +=
+	    _jitc->function->self.size & ((1 << (code - jit_code_arg_c)) - 1);
+#endif
 	offset = _jitc->function->self.size;
+#if PACKED_STACK
+	_jitc->function->self.size += 1 << (code - jit_code_arg_c);
+#else
 	_jitc->function->self.size += sizeof(jit_word_t);
+#endif
     }
-    node = jit_new_node_ww(jit_code_arg, offset,
+    node = jit_new_node_ww(code, offset,
 			   ++_jitc->function->self.argn);
     jit_link_prolog();
     return (node);
 }
-#endif
 
 jit_node_t *
 _jit_arg_f(jit_state_t *_jit)
@@ -568,11 +503,7 @@ _jit_arg_d(jit_state_t *_jit)
 void
 _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_c);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_c);
     jit_inc_synth_wp(getarg_c, u, v);
     if (jit_arg_reg_p(v->u.w)) {
 #if PACKED_STACK
@@ -589,11 +520,7 @@ _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_c);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_c);
     jit_inc_synth_wp(getarg_uc, u, v);
     if (jit_arg_reg_p(v->u.w)) {
 #if PACKED_STACK
@@ -610,11 +537,7 @@ _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_s);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_s);
     jit_inc_synth_wp(getarg_s, u, v);
     if (jit_arg_reg_p(v->u.w)) {
 #if PACKED_STACK
@@ -631,11 +554,7 @@ _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_s);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_s);
     jit_inc_synth_wp(getarg_us, u, v);
     if (jit_arg_reg_p(v->u.w)) {
 #if PACKED_STACK
@@ -652,11 +571,7 @@ _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_i);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_i);
     jit_inc_synth_wp(getarg_i, u, v);
     if (jit_arg_reg_p(v->u.w)) {
 #if PACKED_STACK || __WORDSIZE == 32
@@ -670,15 +585,11 @@ _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_dec_synth();
 }
 
-#  if __WORDSIZE == 64
+#if __WORDSIZE == 64
 void
 _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_i);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_i);
     jit_inc_synth_wp(getarg_ui, u, v);
     if (jit_arg_reg_p(v->u.w)) {
 #if PACKED_STACK
@@ -695,11 +606,7 @@ _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 void
 _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
-#if PACKED_STACK
-    assert(v->code == jit_code_arg_l);
-#else
-    assert(v->code == jit_code_arg);
-#endif
+    assert_arg_type(v->code, jit_code_arg_l);
     jit_inc_synth_wp(getarg_l, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(u, JIT_RA0 - v->u.w);
@@ -707,108 +614,110 @@ _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_ldxi_l(u, JIT_FP, v->u.w);
     jit_dec_synth();
 }
-#  endif
+#endif
 
+void
+_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v, jit_code_t code)
+{
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
+    if (jit_arg_reg_p(v->u.w)) {
+	jit_int32_t	regno = JIT_RA0 - v->u.w;
 #if PACKED_STACK
-#define def_jit_putargr(T, AT)						\
-void									\
-_jit_putargr##T(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)	\
-{									\
-    assert(v->code == jit_code_arg##AT);				\
-    jit_inc_synth_wp(putargr##T, u, v);					\
-    if (jit_arg_reg_p(v->u.w))						\
-	jit_extr##T(JIT_RA0 - v->u.w, u);				\
-    else								\
-	jit_stxi##AT(v->u.w, JIT_FP, u);				\
-    jit_dec_synth();							\
-}
-#define def_jit_putargi(T, AT, TT)					\
-void									\
-_jit_putargi##T(jit_state_t *_jit, jit_word_t u, jit_node_t *v)		\
-{									\
-    jit_int32_t		regno;						\
-    assert(v->code == jit_code_arg##AT);				\
-    jit_inc_synth_wp(putargi##T, u, v);					\
-    if (jit_arg_reg_p(v->u.w))						\
-	jit_movi(JIT_RA0 - v->u.w, (TT)u);				\
-    else {								\
-	regno = jit_get_reg(jit_class_gpr);				\
-	jit_movi(regno, u);						\
-	jit_stxi##AT(v->u.w, JIT_FP, regno);				\
-	jit_unget_reg(regno);						\
-    }									\
-    jit_dec_synth();							\
-}
-def_jit_putargr(_c, _c)
-def_jit_putargi(_c, _c, jit_int8_t)
-def_jit_putargr(_uc, _c)
-def_jit_putargi(_uc, _c, jit_uint8_t)
-def_jit_putargr(_s, _s)
-def_jit_putargi(_s, _s, jit_int16_t)
-def_jit_putargr(_us, _s)
-def_jit_putargi(_us, _s, jit_uint16_t)
-#  if __WORDSIZE == 32
-void
-_jit_putargr_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
-{
-    assert(v->code == jit_code_arg_l);
-    jit_inc_synth_wp(putargr_i, u, v);
-    if (jit_arg_reg_p(v->u.w))
-	jit_movr(JIT_RA0 - v->u.w, u);
-    else
-	jit_stxi(v->u.w, JIT_FP, u);
-    jit_dec_synth();
-}
+	switch (code) {
+	    case jit_code_putargr_c:	jit_extr_c(regno, u);	break;
+	    case jit_code_putargr_uc:	jit_extr_uc(regno, u);	break;
+	    case jit_code_putargr_s:	jit_extr_s(regno, u);	break;
+	    case jit_code_putargr_us:	jit_extr_us(regno, u);	break;
+#  if __WORDISZE == 32
+	    case jit_code_putargr_i:	jit_movr(regno, u);	break;
 #  else
-def_jit_putargr(_i, _i)
+	    case jit_code_putargr_i:	jit_extr_i(regno, u);	break;
+	    case jit_code_putargr_ui:	jit_extr_ui(regno, u);	break;
+	    case jit_code_putargr_l:	jit_movr(regno, u);	break;
 #  endif
-def_jit_putargi(_i, _i, jit_int32_t)
-#  if __WORDSIZE == 64
-def_jit_putargr(_ui, _i)
-def_jit_putargi(_ui, _i, jit_uint32_t)
-void
-_jit_putargr_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
-{
-    assert(v->code == jit_code_arg_l);
-    jit_inc_synth_wp(putargr_l, u, v);
-    if (jit_arg_reg_p(v->u.w))
-	jit_movr(JIT_RA0 - v->u.w, u);
-    else
-	jit_stxi(v->u.w, JIT_FP, u);
-    jit_dec_synth();
-}
-def_jit_putargi(_l, _l, jit_int64_t)
-#  endif
+	    default:			abort();		break;
+	}
 #else
-void
-_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
-{
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargr, u, v);
-    if (jit_arg_reg_p(v->u.w))
-	jit_movr(JIT_RA0 - v->u.w, u);
-    else
+	jit_movr(regno, u);
+#endif
+    }
+    else {
+#if PACKED_STACK
+	switch (code) {
+	    case jit_code_putargr_c:	case jit_code_putargr_uc:
+		jit_stxi_c(v->u.w, JIT_FP, u);			break;
+	    case jit_code_putargr_s:	case jit_code_putargr_us:
+		jit_stxi_s(v->u.w, JIT_FP, u);			break;
+#  if __WORDSIZE == 32
+	    case jit_code_putargr_i:
+		jit_stxi(v->u.w, JIT_FP, u);			break;
+#  else
+	    case jit_code_putargr_i:	case jit_code_putargr_ui:
+		jit_stxi_i(v->u.w, JIT_FP, u);			break;
+	    case jit_code_putargr_l:
+		jit_stxi(v->u.w, JIT_FP, u);			break;
+#  endif
+	    default:			abort();		break;
+	}
+#else
 	jit_stxi(v->u.w, JIT_FP, u);
+#endif
+    }
     jit_dec_synth();
 }
 
 void
-_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v)
+_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
 {
     jit_int32_t		regno;
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargi, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
+#if PACKED_STACK
+    switch (code) {
+	case jit_code_putargi_c:	u = (jit_int8_t)u;	break;
+	case jit_code_putargi_uc:	u = (jit_uint8_t)u;	break;
+	case jit_code_putargi_s:	u = (jit_int16_t)u;	break;
+	case jit_code_putargi_us:	u = (jit_uint16_t)u;	break;
+#  if __WORDSIZE == 32
+	case jit_code_putargi_i:				break;
+#  else
+	case jit_code_putargi_i:	u = (jit_int32_t)u;	break;
+	case jit_code_putargi_ui:	u = (jit_uint32_t)u;	break;
+	case jit_code_putargi_l:				break;
+#  endif
+	default:			abort();		break;
+    }
+#endif
     if (jit_arg_reg_p(v->u.w))
 	jit_movi(JIT_RA0 - v->u.w, u);
     else {
 	regno = jit_get_reg(jit_class_gpr);
 	jit_movi(regno, u);
+#if PACKED_STACK
+	switch (code) {
+	    case jit_code_putargi_c:	case jit_code_putargi_uc:
+		jit_stxi_c(v->u.w, JIT_FP, regno);		break;
+	    case jit_code_putargi_s:	case jit_code_putargi_us:
+		jit_stxi_s(v->u.w, JIT_FP, regno);		break;
+#  if __WORDSIZE == 32
+	    case jit_code_putargi_i:
+		jit_stxi(v->u.w, JIT_FP, regno);		break;
+#  else
+	    case jit_code_putargi_i:	case jit_code_putargi_ui:
+		jit_stxi_i(v->u.w, JIT_FP, regno);		break;
+	    case jit_code_putargi_l:
+		jit_stxi(v->u.w, JIT_FP, regno);		break;
+#  endif
+	    default:			abort();		break;
+	}
+#else
 	jit_stxi(v->u.w, JIT_FP, regno);
+#endif
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
 }
-#endif
 
 void
 _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
@@ -892,178 +801,152 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
     jit_dec_synth();
 }
 
+void
+_jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
+{
+    assert(_jitc->function);
+    jit_code_inc_synth_w(code, u);
+    jit_link_prepare();
+    if (jit_arg_reg_p(_jitc->function->call.argi)) {
+	jit_int32_t	regno = JIT_RA0 - _jitc->function->call.argi;
 #if PACKED_STACK
-#  if __APPLE__
-#    define APPLE_VARARGS						\
-	if (_jitc->function->call.call & jit_call_varargs) {		\
-	    /* FIXME Cannot support if not jit_word_t FIXME */		\
-	    jit_stxi(_jitc->function->call.size, JIT_SP,		\
-		     JIT_RA0 - _jitc->function->call.argi);		\
-	    _jitc->function->call.size += sizeof(jit_word_t);		\
-	}
+	switch (code) {
+	    case jit_code_pushargr_c:	jit_extr_c(regno, u);	break;
+	    case jit_code_pushargr_uc:	jit_extr_uc(regno, u);	break;
+	    case jit_code_pushargr_s:	jit_extr_s(regno, u);	break;
+	    case jit_code_pushargr_us:	jit_extr_us(regno, u);	break;
+#  if __WORDISZE == 32
+	    case jit_code_pushargr_i:	jit_movr(regno, u);	break;
 #  else
-#    error Unsupported environment please report
+	    case jit_code_pushargr_i:	jit_extr_i(regno, u);	break;
+	    case jit_code_pushargr_ui:	jit_extr_ui(regno, u);	break;
+	    case jit_code_pushargr_l:	jit_movr(regno, u);	break;
 #  endif
-#define def_jit_pushargr(T, AT, TT)					\
-void									\
-_jit_pushargr##T(jit_state_t *_jit, jit_int32_t u)			\
-{									\
-    assert(_jitc->function);						\
-    jit_inc_synth_w(pushargr##T, u);					\
-    jit_link_prepare();							\
-    if (jit_arg_reg_p(_jitc->function->call.argi)) {			\
-	jit_extr##T(JIT_RA0 - _jitc->function->call.argi, u);		\
-	APPLE_VARARGS							\
-	++_jitc->function->call.argi;					\
-    }									\
-    else {								\
-	_jitc->function->call.size +=					\
-	    _jitc->function->call.size & (sizeof(TT) - 1);		\
-	jit_stxi##AT(_jitc->function->call.size, JIT_SP, u);		\
-	_jitc->function->call.size += sizeof(TT);			\
-    }									\
-    jit_dec_synth();							\
-}
-#define def_jit_pushargi(T, AT, TT)					\
-void									\
-_jit_pushargi##T(jit_state_t *_jit, jit_word_t u)			\
-{									\
-    jit_int32_t		 regno;						\
-    assert(_jitc->function);						\
-    jit_inc_synth_w(pushargi##T, u);					\
-    jit_link_prepare();							\
-    if (jit_arg_reg_p(_jitc->function->call.argi)) {			\
-	jit_movi(JIT_RA0 - _jitc->function->call.argi, (TT)u);		\
-	APPLE_VARARGS							\
-	++_jitc->function->call.argi;					\
-    }									\
-    else {								\
-	regno = jit_get_reg(jit_class_gpr);				\
-	jit_movi(regno, u);						\
-	_jitc->function->call.size +=					\
-	    _jitc->function->call.size & (sizeof(TT) - 1);		\
-	jit_stxi##AT(_jitc->function->call.size, JIT_SP, regno);	\
-	jit_unget_reg(regno);						\
-	_jitc->function->call.size += sizeof(TT);			\
-    }									\
-    jit_dec_synth();							\
-}
-def_jit_pushargr(_c, _c, jit_int8_t)
-def_jit_pushargi(_c, _c, jit_int8_t)
-def_jit_pushargr(_uc, _c, jit_uint8_t)
-def_jit_pushargi(_uc, _c, jit_uint8_t)
-def_jit_pushargr(_s, _s, jit_int16_t)
-def_jit_pushargi(_s, _s, jit_int16_t)
-def_jit_pushargr(_us, _s, jit_uint16_t)
-def_jit_pushargi(_us, _s, jit_uint16_t)
-#if __WORDSIZE == 32
-void
-_jit_pushargr_i(jit_state_t *_jit, jit_int32_t u)
-{
-    assert(_jitc->function);
-    jit_inc_synth_w(pushargr_i, u);
-    jit_link_prepare();
-    if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	jit_movr(JIT_RA0 - _jitc->function->call.argi, u);
-	APPLE_VARARGS
-	++_jitc->function->call.argi;
-    }
-    else {
-	_jitc->function->call.size +=
-	    _jitc->function->call.size & (sizeof(jit_int32_t) - 1);
-	jit_stxi_i(_jitc->function->call.size, JIT_SP, u);
-	_jitc->function->call.size += sizeof(jit_int32_t);
-    }
-    jit_dec_synth();
-}
+	    default:			abort();		break;
+	}
 #else
-def_jit_pushargr(_i, _i, jit_int32_t)
+	jit_movr(regno, u);
 #endif
-def_jit_pushargi(_i, _i, jit_int32_t)
-#  if __WORDSIZE == 64
-def_jit_pushargr(_ui, _i, jit_uint32_t)
-def_jit_pushargi(_ui, _i, jit_uint32_t)
-void
-_jit_pushargr_l(jit_state_t *_jit, jit_int32_t u)
-{
-    assert(_jitc->function);
-    jit_inc_synth_w(pushargr_l, u);
-    jit_link_prepare();
-    if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	jit_movr(JIT_RA0 - _jitc->function->call.argi, u);
-	APPLE_VARARGS
-	++_jitc->function->call.argi;
-    }
-    else {
-	_jitc->function->call.size +=
-	    _jitc->function->call.size & (sizeof(jit_int64_t) - 1);
-	jit_stxi_l(_jitc->function->call.size, JIT_SP, u);
-	_jitc->function->call.size += sizeof(jit_int64_t);
-    }
-    jit_dec_synth();
-}
-def_jit_pushargi(_l, _l, jit_int64_t)
-#  endif
-#else
-void
-_jit_pushargr(jit_state_t *_jit, jit_int32_t u)
-{
-    assert(_jitc->function);
-#if __WORDSIZE == 32
-    jit_inc_synth_w(pushargr_i, u);
-#else
-    jit_inc_synth_w(pushargr_l, u);
-#endif
-    jit_link_prepare();
-    if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	jit_movr(JIT_RA0 - _jitc->function->call.argi, u);
-#  if __APPLE__	/* FIXME Cannot support if not jit_word_t FIXME */
+#if __APPLE__
 	if (_jitc->function->call.call & jit_call_varargs) {
+	    assert(code == jit_code_pushargr);
 	    jit_stxi(_jitc->function->call.size, JIT_SP, u);
 	    _jitc->function->call.size += sizeof(jit_word_t);
 	}
-#  endif
+#endif
 	++_jitc->function->call.argi;
     }
     else {
+#if PACKED_STACK
+	_jitc->function->call.size +=
+	    _jitc->function->call.size &
+		((1 << ((code - jit_code_pushargr_c) >> 2)) - 1);
+	switch (code) {
+	    case jit_code_pushargr_c:	case jit_code_pushargr_uc:
+		jit_stxi_c(_jitc->function->call.size, JIT_SP, u);
+		break;
+	    case jit_code_pushargr_s:	case jit_code_pushargr_us:
+		jit_stxi_s(_jitc->function->call.size, JIT_SP, u);
+		break;
+#  if __WORDSIZE == 32
+	    case jit_code_pushargr_i:
+		jit_stxi(_jitc->function->call.size, JIT_SP, u);
+		break;
+#  else
+	    case jit_code_pushargr_i:	case jit_code_pushargr_ui:
+		jit_stxi_i(_jitc->function->call.size, JIT_SP, u);
+		break;
+	    case jit_code_pushargr_l:
+		jit_stxi(_jitc->function->call.size, JIT_SP, u);
+		break;
+#  endif
+	    default:
+		abort();
+		break;
+	}
+	_jitc->function->call.size += 1 << ((code - jit_code_pushargr_c) >> 2);
+#else
 	jit_stxi(_jitc->function->call.size, JIT_SP, u);
 	_jitc->function->call.size += sizeof(jit_word_t);
+#endif
     }
     jit_dec_synth();
 }
 
 void
-_jit_pushargi(jit_state_t *_jit, jit_word_t u)
+_jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
     jit_int32_t		 regno;
     assert(_jitc->function);
-#if __WORDSIZE == 32
-    jit_inc_synth_w(pushargi_i, u);
-#else
-    jit_inc_synth_w(pushargi_l, u);
-#endif
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
+#if PACKED_STACK
+    switch (code) {
+	case jit_code_pushargi_c:	u = (jit_int8_t)u;	break;
+	case jit_code_pushargi_uc:	u = (jit_uint8_t)u;	break;
+	case jit_code_pushargi_s:	u = (jit_int16_t)u;	break;
+	case jit_code_pushargi_us:	u = (jit_uint16_t)u;	break;
+#  if __WORDSIZE == 32
+	case jit_code_pushargi_i:				break;
+#  else
+	case jit_code_pushargi_i:	u = (jit_int32_t)u;	break;
+	case jit_code_pushargi_ui:	u = (jit_uint32_t)u;	break;
+	case jit_code_pushargi_l:				break;
+#  endif
+	default:			abort();		break;
+    }
+#endif
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	jit_movi(JIT_RA0 - _jitc->function->call.argi, u);
-#  if __APPLE__ /* FIXME Cannot support if not jit_word_t FIXME */
+	regno = JIT_RA0 - _jitc->function->call.argi;
+	jit_movi(regno, u);
+#if __APPLE__
 	if (_jitc->function->call.call & jit_call_varargs) {
-	    jit_stxi(_jitc->function->call.size, JIT_SP,
-		     JIT_RA0 - _jitc->function->call.argi);
+	    assert(code == jit_code_pushargi);
+	    jit_stxi(_jitc->function->call.size, JIT_SP, regno);
 	    _jitc->function->call.size += sizeof(jit_word_t);
 	}
-#  endif
+#endif
 	++_jitc->function->call.argi;
     }
     else {
 	regno = jit_get_reg(jit_class_gpr);
 	jit_movi(regno, u);
+#if PACKED_STACK
+	_jitc->function->call.size +=
+	    _jitc->function->call.size &
+		((1 << ((code - jit_code_pushargr_c) >> 2)) - 1);
+	switch (code) {
+	    case jit_code_pushargi_c:	case jit_code_pushargi_uc:
+		jit_stxi_c(_jitc->function->call.size, JIT_SP, regno);
+		break;
+	    case jit_code_pushargi_s:	case jit_code_pushargi_us:
+		jit_stxi_s(_jitc->function->call.size, JIT_SP, regno);
+		break;
+#  if __WORDSIZE == 32
+	    case jit_code_pushargi_i:
+		jit_stxi(_jitc->function->call.size, JIT_SP, regno);
+		break;
+#  else
+	    case jit_code_pushargi_i:	case jit_code_pushargi_ui:
+		jit_stxi_i(_jitc->function->call.size, JIT_SP, regno);
+		break;
+	    case jit_code_pushargi_l:
+		jit_stxi(_jitc->function->call.size, JIT_SP, regno);
+		break;
+#  endif
+	    default:
+		abort();
+		break;
+	}
+	_jitc->function->call.size += 1 << ((code - jit_code_pushargr_c) >> 2);
+#else
 	jit_stxi(_jitc->function->call.size, JIT_SP, regno);
-	jit_unget_reg(regno);
 	_jitc->function->call.size += sizeof(jit_word_t);
+#endif
+	jit_unget_reg(regno);
     }
     jit_dec_synth();
 }
-#endif
 
 void
 _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
@@ -1073,8 +956,9 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movr_f(JIT_FA0 - _jitc->function->call.argf, u);
-#if __APPLE__	/* FIXME Cannot support if not jit_word_t FIXME */
+#if __APPLE__
 	if (_jitc->function->call.call & jit_call_varargs) {
+	    assert(sizeof(jit_float32_t) == sizeof(jit_word_t));
 	    jit_stxi_f(_jitc->function->call.size, JIT_SP,
 		       JIT_FA0 - _jitc->function->call.argf);
 	    _jitc->function->call.size += sizeof(jit_word_t);
@@ -1105,8 +989,9 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movi_f(JIT_FA0 - _jitc->function->call.argf, u);
-#if __APPLE__	/* FIXME Cannot support if not jit_word_t FIXME */
+#if __APPLE__
 	if (_jitc->function->call.call & jit_call_varargs) {
+	    assert(sizeof(jit_float32_t) == sizeof(jit_word_t));
 	    jit_stxi_f(_jitc->function->call.size, JIT_SP,
 		       JIT_FA0 - _jitc->function->call.argf);
 	    _jitc->function->call.size += sizeof(jit_word_t);
@@ -1139,8 +1024,9 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movr_d(JIT_FA0 - _jitc->function->call.argf, u);
-#if __APPLE__	/* FIXME Cannot support if not jit_word_t FIXME */
+#if __APPLE__
 	if (_jitc->function->call.call & jit_call_varargs) {
+	    assert(sizeof(jit_float64_t) == sizeof(jit_word_t));
 	    jit_stxi_d(_jitc->function->call.size, JIT_SP,
 		       JIT_FA0 - _jitc->function->call.argf);
 	    _jitc->function->call.size += sizeof(jit_float64_t);
@@ -1168,8 +1054,9 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
     jit_link_prepare();
     if (jit_arg_f_reg_p(_jitc->function->call.argf)) {
 	jit_movi_d(JIT_FA0 - _jitc->function->call.argf, u);
-#if __APPLE__	/* FIXME Cannot support if not jit_word_t FIXME */
+#if __APPLE__
 	if (_jitc->function->call.call & jit_call_varargs) {
+	    assert(sizeof(jit_float64_t) == sizeof(jit_word_t));
 	    jit_stxi_d(_jitc->function->call.size, JIT_SP,
 		       JIT_FA0 - _jitc->function->call.argf);
 	    _jitc->function->call.size += sizeof(jit_float64_t);
@@ -1253,19 +1140,6 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
     return (node);
 }
 
-#if PACKED_STACK
-void
-_jit_retval(jit_state_t *_jit, jit_int32_t r0)
-{
-#  if __WORDSIZE == 32
-    jit_inc_synth_w(retval_i, r0);
-#  else
-    jit_inc_synth_w(retval_l, r0);
-#  endif
-    jit_movr(r0, JIT_RET);
-    jit_dec_synth();
-}
-#else
 void
 _jit_retval_c(jit_state_t *_jit, jit_int32_t r0)
 {
@@ -1278,7 +1152,11 @@ void
 _jit_retval_uc(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_uc, r0);
+#if PACKED_STACK
+    jit_movr(r0, JIT_RET);
+#else
     jit_extr_uc(r0, JIT_RET);
+#endif
     jit_dec_synth();
 }
 
@@ -1286,7 +1164,11 @@ void
 _jit_retval_s(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_s, r0);
+#if PACKED_STACK
+    jit_movr(r0, JIT_RET);
+#else
     jit_extr_s(r0, JIT_RET);
+#endif
     jit_dec_synth();
 }
 
@@ -1294,7 +1176,11 @@ void
 _jit_retval_us(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_us, r0);
+#if PACKED_STACK
+    jit_movr(r0, JIT_RET);
+#else
     jit_extr_us(r0, JIT_RET);
+#endif
     jit_dec_synth();
 }
 
@@ -1302,16 +1188,24 @@ void
 _jit_retval_i(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_i, r0);
+#if PACKED_STACK || __WORDSIZE == 32
+    jit_movr(r0, JIT_RET);
+#else
     jit_extr_i(r0, JIT_RET);
+#endif
     jit_dec_synth();
 }
 
-#  if __WORDSIZE == 64
+#if __WORDSIZE == 64
 void
 _jit_retval_ui(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_ui, r0);
+#  if PACKED_STACK
+    jit_movr(r0, JIT_RET);
+#  else
     jit_extr_ui(r0, JIT_RET);
+#  endif
     jit_dec_synth();
 }
 
@@ -1319,11 +1213,13 @@ void
 _jit_retval_l(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_l, r0);
-    if (r0 != JIT_RET)
-	jit_movr(r0, JIT_RET);
+#  if PACKED_STACK
+    jit_movr(r0, JIT_RET);
+#  else
+    jit_movr(r0, JIT_RET);
+#  endif
     jit_dec_synth();
 }
-#  endif
 #endif
 
 void
@@ -1966,30 +1862,22 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_live:			case jit_code_ellipsis:
 	    case jit_code_va_push:
 	    case jit_code_allocai:		case jit_code_allocar:
-#if PACKED_STACK
 	    case jit_code_arg_c:		case jit_code_arg_s:
 	    case jit_code_arg_i:
 #  if __WORDSIZE == 64
 	    case jit_code_arg_l:
 #  endif
-#else
-	    case jit_code_arg:
-#endif
 	    case jit_code_arg_f:		case jit_code_arg_d:
 	    case jit_code_va_end:
 	    case jit_code_ret:
-#if PACKED_STACK
 	    case jit_code_retr_c:		case jit_code_reti_c:
 	    case jit_code_retr_uc:		case jit_code_reti_uc:
 	    case jit_code_retr_s:		case jit_code_reti_s:
 	    case jit_code_retr_us:		case jit_code_reti_us:
 	    case jit_code_retr_i:		case jit_code_reti_i:
-#  if __WORDSIZE == 64
+#if __WORDSIZE == 64
 	    case jit_code_retr_ui:		case jit_code_reti_ui:
 	    case jit_code_retr_l:		case jit_code_reti_l:
-#  endif
-#else
-	    case jit_code_retr:			case jit_code_reti:
 #endif
 	    case jit_code_retr_f:		case jit_code_reti_f:
 	    case jit_code_retr_d:		case jit_code_reti_d:
@@ -1998,45 +1886,33 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_getarg_i:		case jit_code_getarg_ui:
 	    case jit_code_getarg_l:
 	    case jit_code_getarg_f:		case jit_code_getarg_d:
-#if PACKED_STACK
 	    case jit_code_putargr_c:		case jit_code_putargi_c:
 	    case jit_code_putargr_uc:		case jit_code_putargi_uc:
 	    case jit_code_putargr_s:		case jit_code_putargi_s:
 	    case jit_code_putargr_us:		case jit_code_putargi_us:
 	    case jit_code_putargr_i:		case jit_code_putargi_i:
-#  if __WORDSIZE == 64
+#if __WORDSIZE == 64
 	    case jit_code_putargr_ui:		case jit_code_putargi_ui:
 	    case jit_code_putargr_l:		case jit_code_putargi_l:
-#  endif
-#else
-	    case jit_code_putargr:		case jit_code_putargi:
 #endif
 	    case jit_code_putargr_f:		case jit_code_putargi_f:
 	    case jit_code_putargr_d:		case jit_code_putargi_d:
-#if PACKED_STACK
 	    case jit_code_pushargr_c:		case jit_code_pushargi_c:
 	    case jit_code_pushargr_uc:		case jit_code_pushargi_uc:
 	    case jit_code_pushargr_s:		case jit_code_pushargi_s:
 	    case jit_code_pushargr_us:		case jit_code_pushargi_us:
 	    case jit_code_pushargr_i:		case jit_code_pushargi_i:
-#  if __WORDSIZE == 64
+#if __WORDSIZE == 64
 	    case jit_code_pushargr_ui:		case jit_code_pushargi_ui:
 	    case jit_code_pushargr_l:		case jit_code_pushargi_l:
-#  endif
-#else
-	    case jit_code_pushargr:		case jit_code_pushargi:
 #endif
 	    case jit_code_pushargr_f:		case jit_code_pushargi_f:
 	    case jit_code_pushargr_d:		case jit_code_pushargi_d:
-#if PACKED_STACK
-	    case jit_code_retval:
-#else
 	    case jit_code_retval_c:		case jit_code_retval_uc:
 	    case jit_code_retval_s:		case jit_code_retval_us:
 	    case jit_code_retval_i:
-#  if __WORDSIZE == 64
+#if __WORDSIZE == 64
 	    case jit_code_retval_ui:		case jit_code_retval_l:
-#  endif
 #endif
 	    case jit_code_retval_f:		case jit_code_retval_d:
 	    case jit_code_prepare:
