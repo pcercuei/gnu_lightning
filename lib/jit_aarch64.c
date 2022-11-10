@@ -269,24 +269,7 @@ void
 _jit_retr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
     jit_code_inc_synth_w(code, u);
-#if PACKED_STACK
-    switch (code) {
-	case jit_code_retr_c:	jit_extr_c(JIT_RET, u);	break;
-	case jit_code_retr_uc:	jit_extr_uc(JIT_RET, u);break;
-	case jit_code_retr_s:	jit_extr_s(JIT_RET, u);	break;
-	case jit_code_retr_us:	jit_extr_us(JIT_RET, u);break;
-#  if __WORDSIZE == 32
-	case jit_code_retr_i:	jit_movr(JIT_RET, u);	break;
-#  else
-	case jit_code_retr_i:	jit_extr_i(JIT_RET, u);	break;
-	case jit_code_retr_ui:	jit_extr_ui(JIT_RET, u);break;
-	case jit_code_retr_l:	jit_movr(JIT_RET, u);	break;
-#  endif
-	default:		abort();		break;
-    }
-#else
     jit_movr(JIT_RET, u);
-#endif
     jit_ret();
     jit_dec_synth();
 }
@@ -295,22 +278,6 @@ void
 _jit_reti(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
     jit_code_inc_synth_w(code, u);
-#if PACKED_STACK
-    switch (code) {
-	case jit_code_reti_c:	u = (jit_int8_t)u;	break;
-	case jit_code_reti_uc:	u = (jit_uint8_t)u;	break;
-	case jit_code_reti_s:	u = (jit_int16_t)u;	break;
-	case jit_code_reti_us:	u = (jit_uint16_t)u;	break;
-#  if __WORDSIZE == 32
-	case jit_code_reti_i:				break;
-#  else
-	case jit_code_reti_i:	u = (jit_int32_t)u;	break;
-	case jit_code_reti_ui:	u = (jit_uint32_t)u;	break;
-	case jit_code_reti_l:				break;
-#  endif
-	default:		abort();		break;
-    }
-#endif
     jit_movi(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
@@ -1152,11 +1119,7 @@ void
 _jit_retval_uc(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_uc, r0);
-#if PACKED_STACK
-    jit_movr(r0, JIT_RET);
-#else
     jit_extr_uc(r0, JIT_RET);
-#endif
     jit_dec_synth();
 }
 
@@ -1164,11 +1127,7 @@ void
 _jit_retval_s(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_s, r0);
-#if PACKED_STACK
-    jit_movr(r0, JIT_RET);
-#else
     jit_extr_s(r0, JIT_RET);
-#endif
     jit_dec_synth();
 }
 
@@ -1176,11 +1135,7 @@ void
 _jit_retval_us(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_us, r0);
-#if PACKED_STACK
-    jit_movr(r0, JIT_RET);
-#else
     jit_extr_us(r0, JIT_RET);
-#endif
     jit_dec_synth();
 }
 
@@ -1188,7 +1143,7 @@ void
 _jit_retval_i(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_i, r0);
-#if PACKED_STACK || __WORDSIZE == 32
+#if __WORDSIZE == 32
     jit_movr(r0, JIT_RET);
 #else
     jit_extr_i(r0, JIT_RET);
@@ -1201,11 +1156,7 @@ void
 _jit_retval_ui(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_ui, r0);
-#  if PACKED_STACK
-    jit_movr(r0, JIT_RET);
-#  else
     jit_extr_ui(r0, JIT_RET);
-#  endif
     jit_dec_synth();
 }
 
@@ -1213,11 +1164,7 @@ void
 _jit_retval_l(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_inc_synth_w(retval_l, r0);
-#  if PACKED_STACK
     jit_movr(r0, JIT_RET);
-#  else
-    jit_movr(r0, JIT_RET);
-#  endif
     jit_dec_synth();
 }
 #endif
