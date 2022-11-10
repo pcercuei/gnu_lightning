@@ -3,7 +3,7 @@
 #define JIT_INSTR_MAX 196
     0,	/* data */
     0,	/* live */
-    20,	/* align */
+    28,	/* align */
     0,	/* save */
     0,	/* load */
     0,  /* skip */
