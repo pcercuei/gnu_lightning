@@ -55,7 +55,7 @@
 #  define HIDDEN		/**/
 #endif
 
-#if PACKED_STACK || STRONG_TYPE_CHECK
+#if PACKED_STACK || STRONG_TYPE_CHECKING
 #  define assert_arg_type(code, expect)					\
     do assert((code) == (expect)); while (0)
 #  define assert_putarg_type(code, expect)				\
