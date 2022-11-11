@@ -193,10 +193,8 @@ AM_CONDITIONAL(get_jit_size, [test $GET_JIT_SIZE = yes])
 AC_ARG_ENABLE(devel-strong-type-checking,
 	      AS_HELP_STRING([--enable-devel-strong-type-checking],
 			     [Devel mode for strong type checking]),
-	      [STRONG_TYPE_CHECKING=$enabelval], [STRONG_TYPE_CHECKING=no])
-if test "x$STRONG_TYPE_CHECKING" = xyes; then
-    LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DSTRONG_TYPE_CHECKING=1"
-fi
+	      [STRONG_TYPE_CHECKING=$enableval], [STRONG_TYPE_CHECKING=no])
+AM_CONDITIONAL(strong_type_checking, [test $STRONG_TYPE_CHECKING = yes])
 
 case "$host_os" in
     *bsd*|osf*)		SHLIB=""	;;
