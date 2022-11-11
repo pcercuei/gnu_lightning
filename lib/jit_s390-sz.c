@@ -1,5 +1,5 @@
 #if __WORDSIZE == 32
-#define JIT_INSTR_MAX 94
+#define JIT_INSTR_MAX 82
     0,	/* data */
     0,	/* live */
     8,	/* align */
@@ -40,8 +40,8 @@
     0,	/* putargr_l */
     0,	/* putargi_l */
     40,	/* va_start */
-    86,	/* va_arg */
-    82,	/* va_arg_d */
+    82,	/* va_arg */
+    78,	/* va_arg_d */
     0,	/* va_end */
     4,	/* addr */
     12,	/* addi */
@@ -58,8 +58,8 @@
     14,	/* rsbi */
     6,	/* mulr */
     14,	/* muli */
-    46,	/* qmulr */
-    50,	/* qmuli */
+    38,	/* qmulr */
+    42,	/* qmuli */
     10,	/* qmulr_u */
     18,	/* qmuli_u */
     10,	/* divr */
@@ -81,11 +81,11 @@
     4,	/* xorr */
     12,	/* xori */
     8,	/* lshr */
-    10,	/* lshi */
+    6,	/* lshi */
     8,	/* rshr */
-    10,	/* rshi */
+    6,	/* rshi */
     8,	/* rshr_u */
-    10,	/* rshi_u */
+    6,	/* rshi_u */
     2,	/* negr */
     8,	/* comr */
     16,	/* ltr */
@@ -120,8 +120,8 @@
     4,	/* extr_us */
     0,	/* extr_i */
     0,	/* extr_ui */
-    38,	/* bswapr_us */
-    94,	/* bswapr_ui */
+    12,	/* bswapr_us */
+    4,	/* bswapr_ui */
     0,	/* bswapr_ul */
     4,	/* htonr_us */
     2,	/* htonr_ui */
@@ -448,7 +448,7 @@
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 300
+#define JIT_INSTR_MAX 100
     0,	/* data */
     0,	/* live */
     20,	/* align */
@@ -489,8 +489,8 @@
     0,	/* putargr_l */
     0,	/* putargi_l */
     44,	/* va_start */
-    104,	/* va_arg */
-    100,	/* va_arg_d */
+    100,	/* va_arg */
+    96,	/* va_arg_d */
     0,	/* va_end */
     8,	/* addr */
     24,	/* addi */
@@ -507,8 +507,8 @@
     28,	/* rsbi */
     8,	/* mulr */
     24,	/* muli */
-    60,	/* qmulr */
-    68,	/* qmuli */
+    52,	/* qmulr */
+    60,	/* qmuli */
     16,	/* qmulr_u */
     32,	/* qmuli_u */
     12,	/* divr */
@@ -530,11 +530,11 @@
     8,	/* xorr */
     24,	/* xori */
     6,	/* lshr */
-    10,	/* lshi */
+    6,	/* lshi */
     6,	/* rshr */
-    10,	/* rshi */
+    6,	/* rshi */
     6,	/* rshr_u */
-    10,	/* rshi_u */
+    6,	/* rshi_u */
     4,	/* negr */
     12,	/* comr */
     20,	/* ltr */
@@ -569,9 +569,9 @@
     4,	/* extr_us */
     4,	/* extr_i */
     4,	/* extr_ui */
-    60,	/* bswapr_us */
-    140,	/* bswapr_ui */
-    300,	/* bswapr_ul */
+    12,	/* bswapr_us */
+    8,	/* bswapr_ui */
+    4,	/* bswapr_ul */
     4,	/* htonr_us */
     4,	/* htonr_ui */
     4,	/* htonr_ul */
