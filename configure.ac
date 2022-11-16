@@ -169,23 +169,17 @@ if test "x$DEVEL_DISASSEMBLER" != "xno"; then
     LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DDEVEL_DISASSEMBLER=1"
 fi
 
-AC_ARG_ENABLE(assertions,
-	      AS_HELP_STRING([--enable-assertions],
-			     [Enable runtime code generation assertions]),
-	      [DEBUG=$enableval], [DEBUG=auto])
-if test "x$DEBUG" = xyes; then
-    LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DDEBUG=1"
-else
-    LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DNDEBUG"
-    DEBUG=no
-fi
-
 # This option is only useful during development.
 AC_ARG_ENABLE(devel-get-jit-size,
 	      AS_HELP_STRING([--enable-devel-get-jit-size],
 			     [Devel mode to regenerate jit size information]),
 	      [GET_JIT_SIZE=$enableval], [GET_JIT_SIZE=no])
 AM_CONDITIONAL(get_jit_size, [test $GET_JIT_SIZE = yes])
+
+AC_ARG_ENABLE(assertions,
+	      AS_HELP_STRING([--enable-assertions],
+			     [Enable runtime code generation assertions]),
+	      [DEBUG=$enableval], [DEBUG=auto])
 
 # This option might be made default in the future
 # Currently it is only useful to ensure existing code will work
@@ -194,6 +188,12 @@ AC_ARG_ENABLE(devel-strong-type-checking,
 	      AS_HELP_STRING([--enable-devel-strong-type-checking],
 			     [Devel mode for strong type checking]),
 	      [STRONG_TYPE_CHECKING=$enableval], [STRONG_TYPE_CHECKING=no])
+if test "x$DEBUG" = xyes -o x"$STRONG_TYPE_CHECKING" = xyes; then
+    LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DDEBUG=1"
+else
+    LIGHTNING_CFLAGS="$LIGHTNING_CFLAGS -DNDEBUG"
+    DEBUG=no
+fi
 AM_CONDITIONAL(strong_type_checking, [test $STRONG_TYPE_CHECKING = yes])
 
 case "$host_os" in
