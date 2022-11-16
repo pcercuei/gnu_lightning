@@ -101,16 +101,29 @@ the @file{configure} shell script; to run it, merely type:
      ./configure
 @end example
 
-@lightning{} supports the @code{--enable-disassembler} option, that
-enables linking to GNU binutils and optionally print human readable
+The @file{configure} accepts the @code{--enable-disassembler} option,
+hat enables linking to GNU binutils and optionally print human readable
 disassembly of the jit code. This option can be disabled by the
 @code{--disable-disassembler} option.
 
-Another option that @file{configure} accepts is
-@code{--enable-assertions}, which enables several consistency checks in
-the run-time assemblers.  These are not usually needed, so you can
-decide to simply forget about it; also remember that these consistency
+@file{configure} also accepts the  @code{--enable-devel-disassembler},
+option useful to check exactly hat machine instructions were generated
+for a @lightning{} instrction. Basically mixing @code{jit_print} and
+@code{jit_disassembly}.
+
+The @code{--enable-assertions} option, which enables several consistency
+hecks in the run-time assemblers.  These are not usually needed, so you
+can decide to simply forget about it; also remember that these consistency
 checks tend to slow down your code generator.
+
+The @code{--enable-devel-strong-type-checking} option that does extra type
+checking using @code{assert}. This option also enables the
+@code{--enable-assertions} unless it is explicitly disabled.
+
+The option @code{--enable-devel-get-jit-size} should only be used
+when doing updates or maintenance to lightning. It regenerates the
+@code{jit_$ARCH]-sz.c} creating a table or maximum bytes usage when
+translating a @lightning{} instruction to machine code.
 
 After you've configured @lightning{}, run @file{make} as usual.
 
@@ -942,7 +955,7 @@ will return non zero if the argument lives in a register. This call
 is useful to know the live range of register arguments, as those
 are very fast to read and write, but have volatile values.
 
-@code{callee_save_p} exects a valid @code{JIT_Rn}, @code{JIT_Vn}, or
+@code{callee_save_p} expects a valid @code{JIT_Rn}, @code{JIT_Vn}, or
 @code{JIT_Fn}, and will return non zero if the register is callee
 save. This call is useful because on several ports, the @code{JIT_Rn}
 and @code{JIT_Fn} registers are actually callee save; no need
@@ -1350,7 +1363,7 @@ jit_node_t *compile_rpn(char *expr)
   in = jit_arg();
   stack_ptr = stack_base = jit_allocai (32 * sizeof (int));
 
-  jit_getarg_i(JIT_R2, in);
+  jit_getarg(JIT_R2, in);
 
   while (*expr) @{
     char buf[32];
