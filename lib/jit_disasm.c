@@ -256,7 +256,7 @@ disasm_print_address(bfd_vma addr, struct disassemble_info *info)
     int			 line;
     char		 buffer[address_buffer_length];
 
-    sprintf(buffer, address_buffer_format, (long long)addr);
+    sprintf(buffer, address_buffer_format, addr);
     (*info->fprintf_func)(info->stream, "0x%s", buffer);
 
 #  define _jit				disasm_jit
@@ -406,7 +406,7 @@ _disassemble(jit_state_t *_jit, jit_pointer_t code, jit_int32_t length)
 	    old_line = line;
 	}
 
-	bytes = sprintf(buffer, address_buffer_format, (long long)pc);
+	bytes = sprintf(buffer, address_buffer_format, pc);
 	(*disasm_info.fprintf_func)(disasm_stream, "%*c0x%s\t",
 				    16 - bytes, ' ', buffer);
 	pc += (*disasm_print)(pc, &disasm_info);

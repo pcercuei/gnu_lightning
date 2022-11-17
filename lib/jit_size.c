@@ -151,7 +151,7 @@ jit_finish_size(void)
 {
 #if GET_JIT_SIZE
     FILE		*fp;
-    jit_word_t		 offset;
+    int			 offset;
 
     /* Define a single path */
     fp = fopen(JIT_SIZE_PATH, "a");
