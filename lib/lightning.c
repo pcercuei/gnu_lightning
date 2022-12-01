@@ -2969,7 +2969,10 @@ _sequential_labels(jit_state_t *_jit)
 		    if ((jump = node->link)) {
 			for (; jump; jump = link) {
 			    link = jump->link;
-			    jump->u.n = prev;
+			    if (jump->code == jit_code_movi)
+				jump->v.n = prev;
+			    else
+				jump->u.n = prev;
 			    jump->link = prev->link;
 			    prev->link = jump;
 			}
@@ -2983,7 +2986,10 @@ _sequential_labels(jit_state_t *_jit)
 		if ((jump = next->link)) {
 		    for (; jump; jump = link) {
 			link = jump->link;
-			jump->u.n = node;
+			if (jump->code == jit_code_movi)
+			    jump->v.n = node;
+			else
+			    jump->u.n = node;
 			jump->link = node->link;
 			node->link = jump;
 		    }
