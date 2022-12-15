@@ -20,6 +20,14 @@
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < 8)
 #define jit_arg_f_reg_p(i)		((i) >= 0 && (i) < 8)
 
+#define CHECK_FRAME()							\
+    do {								\
+	if (!_jitc->function->need_frame) {				\
+	    _jitc->again = 1;						\
+	    _jitc->function->need_frame = 1;				\
+	}								\
+    } while (0)
+
 /*
  * Types
  */
@@ -167,6 +175,7 @@ jit_int32_t
 _jit_allocai(jit_state_t *_jit, jit_int32_t length)
 {
     assert(_jitc->function);
+    CHECK_FRAME();
     switch (length) {
 	case 0:	case 1:						break;
 	case 2:		_jitc->function->self.aoff &= -2;	break;
@@ -296,6 +305,7 @@ void
 _jit_ellipsis(jit_state_t *_jit)
 {
     jit_inc_synth(ellipsis);
+    CHECK_FRAME();
     if (_jitc->prepare) {
 	jit_link_prepare();
 	assert(!(_jitc->function->call.call & jit_call_varargs));
@@ -333,6 +343,7 @@ _jit_arg(jit_state_t *_jit, jit_code_t code)
     else {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     node = jit_new_node_ww(code, offset,
 			   ++_jitc->function->self.argn);
@@ -356,6 +367,7 @@ _jit_arg_f(jit_state_t *_jit)
     else {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     node = jit_new_node_ww(jit_code_arg_f, offset,
 			   ++_jitc->function->self.argn);
@@ -379,6 +391,7 @@ _jit_arg_d(jit_state_t *_jit)
     else {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     node = jit_new_node_ww(jit_code_arg_d, offset,
 			   ++_jitc->function->self.argn);
@@ -618,6 +631,7 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
     else {
 	jit_stxi(_jitc->function->call.size, JIT_SP, u);
 	_jitc->function->call.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -639,6 +653,7 @@ _jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 	jit_stxi(_jitc->function->call.size, JIT_SP, regno);
 	jit_unget_reg(regno);
 	_jitc->function->call.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -661,6 +676,7 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
     else {
 	jit_stxi_f(_jitc->function->call.size, JIT_SP, u);
 	_jitc->function->call.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -687,6 +703,7 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 	jit_stxi_f(_jitc->function->call.size, JIT_SP, regno);
 	jit_unget_reg(regno);
 	_jitc->function->call.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -709,6 +726,7 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
     else {
 	jit_stxi_d(_jitc->function->call.size, JIT_SP, u);
 	_jitc->function->call.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -735,6 +753,7 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
 	jit_stxi_d(_jitc->function->call.size, JIT_SP, regno);
 	jit_unget_reg(regno);
 	_jitc->function->call.size += sizeof(jit_word_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -762,6 +781,7 @@ _jit_finishr(jit_state_t *_jit, jit_int32_t r0)
 {
     jit_node_t		*node;
     assert(_jitc->function);
+    CHECK_FRAME();
     jit_inc_synth_w(finishr, r0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
@@ -779,6 +799,7 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 {
     jit_node_t		*node;
     assert(_jitc->function);
+    CHECK_FRAME();
     jit_inc_synth_w(finishi, (jit_word_t)i0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
@@ -1388,6 +1409,7 @@ _emit_code(jit_state_t *_jit)
 		case_brr(bunord, _d);
 		case_brd(bunord);
 	    case jit_code_jmpr:
+		CHECK_FRAME();
 		jmpr(rn(node->u.w));
 		break;
 	    case jit_code_jmpi:
@@ -1407,13 +1429,17 @@ _emit_code(jit_state_t *_jit)
 			patch(word, node);
 		    }
 		}
-		else
+		else {
+		    CHECK_FRAME();
 		    jmpi(node->u.w);
+		}
 		break;
 	    case jit_code_callr:
+		CHECK_FRAME();
 		callr(rn(node->u.w));
 		break;
 	    case jit_code_calli:
+		CHECK_FRAME();
 		if (node->flag & jit_flag_node) {
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
@@ -1463,6 +1489,7 @@ _emit_code(jit_state_t *_jit)
 		     * the reason of the undo. */
 		    undo.func.self.aoff = _jitc->function->frame +
 			_jitc->function->self.aoff;
+		    undo.func.need_frame = _jitc->function->need_frame;
 		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;

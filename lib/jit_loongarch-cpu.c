@@ -2534,6 +2534,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     jit_int32_t		reg;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
+	CHECK_FRAME();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -2544,9 +2545,22 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     _jitc->function->stack = ((_jitc->function->self.alen -
 			      /* align stack at 16 bytes */
 			      _jitc->function->self.aoff) + 15) & -16;
-    subi(_SP_REGNO, _SP_REGNO, stack_framesize);
-    stxi(0, _SP_REGNO, _RA_REGNO);
-    stxi(8, _SP_REGNO, _FP_REGNO);
+
+    if (!_jitc->function->need_frame) {
+	/* check if any callee save register needs to be saved */
+	for (reg = 0; reg < _jitc->reglen; ++reg)
+	    if (jit_regset_tstbit(&_jitc->function->regset, reg) &&
+		(_rvs[reg].spec & jit_class_sav)) {
+		CHECK_FRAME();
+		break;
+	    }
+    }
+
+    if (_jitc->function->need_frame) {
+	subi(_SP_REGNO, _SP_REGNO, stack_framesize);
+	stxi(0, _SP_REGNO, _RA_REGNO);
+	stxi(8, _SP_REGNO, _FP_REGNO);
+    }
     if (jit_regset_tstbit(&_jitc->function->regset, _S0))
 	stxi(16, _SP_REGNO, rn(_S0));
     if (jit_regset_tstbit(&_jitc->function->regset, _S1))
@@ -2581,7 +2595,8 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	stxi_d(136, _SP_REGNO, rn(_FS6));
     if (jit_regset_tstbit(&_jitc->function->regset, _FS7))
 	stxi_d(144, _SP_REGNO, rn(_FS7));
-    movr(_FP_REGNO, _SP_REGNO);
+    if (_jitc->function->need_frame)
+	movr(_FP_REGNO, _SP_REGNO);
     if (_jitc->function->stack)
 	subi(_SP_REGNO, _SP_REGNO, _jitc->function->stack);
     if (_jitc->function->allocar) {
@@ -2602,9 +2617,11 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 {
     if (_jitc->function->assume_frame)
 	return;
-    movr(_SP_REGNO, _FP_REGNO);
-    ldxi(_RA_REGNO, _SP_REGNO, 0);
-    ldxi(_FP_REGNO, _SP_REGNO, 8);
+    if (_jitc->function->need_frame) {
+	movr(_SP_REGNO, _FP_REGNO);
+	ldxi(_RA_REGNO, _SP_REGNO, 0);
+	ldxi(_FP_REGNO, _SP_REGNO, 8);
+    }
     if (jit_regset_tstbit(&_jitc->function->regset, _S0))
 	ldxi(rn(_S0), _SP_REGNO, 16);
     if (jit_regset_tstbit(&_jitc->function->regset, _S1))
@@ -2639,7 +2656,8 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	ldxi_d(rn(_FS6), _SP_REGNO, 136);
     if (jit_regset_tstbit(&_jitc->function->regset, _FS7))
 	ldxi_d(rn(_FS7), _SP_REGNO, 144);
-    addi(_SP_REGNO, _SP_REGNO, stack_framesize);
+    if (_jitc->function->need_frame)
+	addi(_SP_REGNO, _SP_REGNO, stack_framesize);
     JIRL(_ZERO_REGNO, _RA_REGNO, 0);
 }
 
