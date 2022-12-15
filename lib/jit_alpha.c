@@ -1427,6 +1427,9 @@ _emit_code(jit_state_t *_jit)
 		     * the reason of the undo. */
 		    undo.func.self.aoff = _jitc->function->frame +
 			_jitc->function->self.aoff;
+		    /* allocar information also does not need to be undone */
+		    undo.func.aoffoff = _jitc->function->aoffoff;
+		    undo.func.allocar = _jitc->function->allocar;
 		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
 		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER

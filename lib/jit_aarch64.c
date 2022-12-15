@@ -1784,6 +1784,9 @@ _emit_code(jit_state_t *_jit)
 		    undo.func.self.aoff = _jitc->function->frame +
 			_jitc->function->self.aoff;
 		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
+		    /* allocar information also does not need to be undone */
+		    undo.func.aoffoff = _jitc->function->aoffoff;
+		    undo.func.allocar = _jitc->function->allocar;
 		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;
