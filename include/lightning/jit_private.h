@@ -521,6 +521,8 @@ struct jit_function {
     jit_uint32_t	 define_frame : 1;
     jit_uint32_t	 assume_frame : 1;
 
+    jit_uint32_t	 need_frame : 1;	/* need frame pointer? */
+
     /* alloca offset offset */
     jit_int32_t		 aoffoff;
     /* uses allocar flag */

@@ -59,6 +59,15 @@
 #  define REAL_WORDSIZE			8
 #endif
 
+#define CHECK_FRAME()							\
+    do {								\
+	if (!_jitc->function->need_frame) {				\
+	    _jitc->again = 1;						\
+	    _jitc->function->need_frame = 1;				\
+	    _jitc->function->self.aoff = CVT_OFFSET;			\
+	}								\
+    } while (0)
+
 /*
  * Types
  */
@@ -417,8 +426,10 @@ _jit_prolog(jit_state_t *_jit)
     _jitc->function->self.size = stack_framesize;
     _jitc->function->self.argi = _jitc->function->self.argf =
 	_jitc->function->self.aoff = _jitc->function->self.alen = 0;
-    /* sse/x87 conversion */
-    _jitc->function->self.aoff = CVT_OFFSET;
+#if __X64 && (__CYGWIN__ || _WIN32)
+    /* force framepointer */
+    CHECK_FRAME();
+#endif
     _jitc->function->self.call = jit_call_default;
     jit_alloc((jit_pointer_t *)&_jitc->function->regoff,
 	      _jitc->reglen * sizeof(jit_int32_t));
@@ -444,6 +455,7 @@ jit_int32_t
 _jit_allocai(jit_state_t *_jit, jit_int32_t length)
 {
     assert(_jitc->function);
+    CHECK_FRAME();
     switch (length) {
 	case 0:	case 1:						break;
 	case 2:		_jitc->function->self.aoff &= -2;	break;
@@ -581,6 +593,7 @@ void
 _jit_ellipsis(jit_state_t *_jit)
 {
     jit_inc_synth(ellipsis);
+    CHECK_FRAME();
     if (_jitc->prepare) {
 	jit_link_prepare();
 	/* Remember that a varargs function call is being constructed. */
@@ -646,6 +659,7 @@ _jit_arg(jit_state_t *_jit, jit_code_t code)
     {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += REAL_WORDSIZE;
+	CHECK_FRAME();
     }
     node = jit_new_node_ww(code, offset,
 			   ++_jitc->function->self.argn);
@@ -675,6 +689,7 @@ _jit_arg_f(jit_state_t *_jit)
     {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += REAL_WORDSIZE;
+	CHECK_FRAME();
     }
     node = jit_new_node_ww(jit_code_arg_f, offset,
 			   ++_jitc->function->self.argn);
@@ -704,6 +719,7 @@ _jit_arg_d(jit_state_t *_jit)
     {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += sizeof(jit_float64_t);
+	CHECK_FRAME();
     }
     node = jit_new_node_ww(jit_code_arg_d, offset,
 			   ++_jitc->function->self.argn);
@@ -963,6 +979,7 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
     {
 	jit_stxi(_jitc->function->call.size, _RSP, u);
 	_jitc->function->call.size += REAL_WORDSIZE;
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -993,6 +1010,7 @@ _jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 	jit_stxi(_jitc->function->call.size, _RSP, regno);
 	_jitc->function->call.size += REAL_WORDSIZE;
 	jit_unget_reg(regno);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -1027,6 +1045,7 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
     {
 	jit_stxi_f(_jitc->function->call.size, _RSP, u);
 	_jitc->function->call.size += REAL_WORDSIZE;
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -1065,6 +1084,7 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 	jit_stxi_f(_jitc->function->call.size, _RSP, regno);
 	_jitc->function->call.size += REAL_WORDSIZE;
 	jit_unget_reg(regno);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -1099,6 +1119,7 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
     {
 	jit_stxi_d(_jitc->function->call.size, _RSP, u);
 	_jitc->function->call.size += sizeof(jit_float64_t);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -1137,6 +1158,7 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
 	jit_stxi_d(_jitc->function->call.size, _RSP, regno);
 	_jitc->function->call.size += sizeof(jit_float64_t);
 	jit_unget_reg(regno);
+	CHECK_FRAME();
     }
     jit_dec_synth();
 }
@@ -1170,6 +1192,7 @@ _jit_finishr(jit_state_t *_jit, jit_int32_t r0)
     jit_int32_t		 reg;
     jit_node_t		*call;
     assert(_jitc->function);
+    CHECK_FRAME();
     reg = r0;
     jit_inc_synth_w(finishr, r0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
@@ -1207,6 +1230,7 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 #endif
     jit_node_t		*node;
     assert(_jitc->function);
+    CHECK_FRAME();
     jit_inc_synth_w(finishi, (jit_word_t)i0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
@@ -2016,6 +2040,7 @@ _emit_code(jit_state_t *_jit)
 		case_bff(unord, _d);
 		case_bfw(unord, _d, 64);
 	    case jit_code_jmpr:
+		CHECK_FRAME();
 		jmpr(rn(node->u.w));
 		break;
 	    case jit_code_jmpi:
@@ -2037,13 +2062,17 @@ _emit_code(jit_state_t *_jit)
 			patch(word, node);
 		    }
 		}
-		else
+		else {
+		    CHECK_FRAME();
 		    jmpi(node->u.w);
+		}
 		break;
 	    case jit_code_callr:
+		CHECK_FRAME();
 		callr(rn(node->u.w));
 		break;
 	    case jit_code_calli:
+		CHECK_FRAME();
 		if (node->flag & jit_flag_node) {
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
@@ -2095,6 +2124,7 @@ _emit_code(jit_state_t *_jit)
 		     * the reason of the undo. */
 		    undo.func.self.aoff = _jitc->function->frame +
 			_jitc->function->self.aoff;
+		    undo.func.need_frame = _jitc->function->need_frame;
 		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;
@@ -2308,6 +2338,7 @@ _patch(jit_state_t *_jit, jit_word_t instr, jit_node_t *node)
 static void
 _sse_from_x87_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_FRAME();
     x87_stxi_f(CVT_OFFSET, _RBP_REGNO, r1);
     sse_ldxi_f(r0, _RBP_REGNO, CVT_OFFSET);
 }
@@ -2315,6 +2346,7 @@ _sse_from_x87_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _sse_from_x87_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_FRAME();
     x87_stxi_d(CVT_OFFSET, _RBP_REGNO, r1);
     sse_ldxi_d(r0, _RBP_REGNO, CVT_OFFSET);
 }
@@ -2322,6 +2354,7 @@ _sse_from_x87_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_from_sse_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_FRAME();
     sse_stxi_f(CVT_OFFSET, _RBP_REGNO, r1);
     x87_ldxi_f(r0, _RBP_REGNO, CVT_OFFSET);
 }
@@ -2329,6 +2362,7 @@ _x87_from_sse_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_from_sse_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_FRAME();
     sse_stxi_d(CVT_OFFSET, _RBP_REGNO, r1);
     x87_ldxi_d(r0, _RBP_REGNO, CVT_OFFSET);
 }

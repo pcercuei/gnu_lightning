@@ -3621,6 +3621,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     jit_int32_t		reg;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
+	CHECK_FRAME();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -3633,14 +3634,25 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 				(_jitc->function->self.alen > 32 ?
 				 _jitc->function->self.alen : 32) -
 				/* align stack at 16 bytes */
-				_jitc->function->self.aoff) + 15) & -16) +
-	stack_adjust;
+				_jitc->function->self.aoff) + 15) & -16);
 #else
     _jitc->function->stack = (((_jitc->function->self.alen -
-			       _jitc->function->self.aoff) + 15) & -16) +
-	stack_adjust;
+			       _jitc->function->self.aoff) + 15) & -16);
 #endif
-    subi(_RSP_REGNO, _RSP_REGNO, stack_framesize - REAL_WORDSIZE);
+    if (_jitc->function->need_frame)
+	_jitc->function->stack += stack_adjust;
+    else {
+	/* check if any callee save register needs to be saved */
+	for (reg = 0; reg < _jitc->reglen; ++reg)
+	    if (jit_regset_tstbit(&_jitc->function->regset, reg) &&
+		(_rvs[reg].spec & jit_class_sav)) {
+		CHECK_FRAME();
+		break;
+	    }
+    }
+
+    if (_jitc->function->need_frame)
+	subi(_RSP_REGNO, _RSP_REGNO, stack_framesize - REAL_WORDSIZE);
     /* callee save registers */
 #if __X32
     if (jit_regset_tstbit(&_jitc->function->regset, _RDI))
@@ -3698,11 +3710,14 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	stxi( 8, _RSP_REGNO, _R15_REGNO);
 #  endif
 #endif
-    stxi(0, _RSP_REGNO, _RBP_REGNO);
-    movr(_RBP_REGNO, _RSP_REGNO);
+    if (_jitc->function->need_frame) {
+	stxi(0, _RSP_REGNO, _RBP_REGNO);
+	movr(_RBP_REGNO, _RSP_REGNO);
+    }
 
     /* alloca */
-    subi(_RSP_REGNO, _RSP_REGNO, _jitc->function->stack);
+    if (_jitc->function->stack)
+	subi(_RSP_REGNO, _RSP_REGNO, _jitc->function->stack);
     if (_jitc->function->allocar) {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), _jitc->function->self.aoff);
@@ -3748,8 +3763,9 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 {
     if (_jitc->function->assume_frame)
 	return;
+    if (_jitc->function->need_frame)
+	movr(_RSP_REGNO, _RBP_REGNO);
     /* callee save registers */
-    movr(_RSP_REGNO, _RBP_REGNO);
 #if __X32
     if (jit_regset_tstbit(&_jitc->function->regset, _RDI))
 	ldxi(_RDI_REGNO, _RSP_REGNO, 12);
@@ -3806,8 +3822,10 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	ldxi(_R15_REGNO, _RSP_REGNO,  8);
 #  endif
 #endif
-    ldxi(_RBP_REGNO, _RSP_REGNO, 0);
-    addi(_RSP_REGNO, _RSP_REGNO, stack_framesize - REAL_WORDSIZE);
+    if (_jitc->function->need_frame) {
+	ldxi(_RBP_REGNO, _RSP_REGNO, 0);
+	addi(_RSP_REGNO, _RSP_REGNO, stack_framesize - REAL_WORDSIZE);
+    }
 
     ic(0xc3);
 }
