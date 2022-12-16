@@ -2241,6 +2241,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     jit_int32_t		reg;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
+	CHECK_FRAME();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -2251,8 +2252,21 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     _jitc->function->stack = ((_jitc->function->self.alen -
 			      /* align stack at 16 bytes */
 			      _jitc->function->self.aoff) + 15) & -16;
-    STPI_POS(FP_REGNO, LR_REGNO, SP_REGNO, -(stack_framesize >> 3));
-    MOV_XSP(FP_REGNO, SP_REGNO);
+
+    if (!_jitc->function->need_frame) {
+	/* check if any callee save register needs to be saved */
+	for (reg = 0; reg < _jitc->reglen; ++reg)
+	    if (jit_regset_tstbit(&_jitc->function->regset, reg) &&
+		(_rvs[reg].spec & jit_class_sav)) {
+		CHECK_FRAME();
+		break;
+	    }
+    }
+
+    if (_jitc->function->need_frame) {
+	STPI_POS(FP_REGNO, LR_REGNO, SP_REGNO, -(stack_framesize >> 3));
+	MOV_XSP(FP_REGNO, SP_REGNO);
+    }
 #define SPILL(L, R, O)							\
     do {								\
 	if (jit_regset_tstbit(&_jitc->function->regset, _R##L)) {	\
@@ -2352,7 +2366,8 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
     LOAD(14, 144);
     LOAD(15, 152);
 #undef LOAD
-    LDPI_PRE(FP_REGNO, LR_REGNO, SP_REGNO, stack_framesize >> 3);
+    if (_jitc->function->need_frame)
+	LDPI_PRE(FP_REGNO, LR_REGNO, SP_REGNO, stack_framesize >> 3);
     RET();
 }
 
