@@ -311,7 +311,7 @@ _jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
     if (u->code >= jit_code_arg_c && u->code <= jit_code_arg)
 	return (jit_arg_reg_p(u->u.w));
     assert(u->code == jit_code_arg_f || u->code == jit_code_arg_d);
-    return (jit_arg_f_reg_p(u->u.w));
+    return (jit_arg_f_reg_p(u->u.w) || jit_arg_reg_p(u->u.w - 8));
 }
 
 void
@@ -561,14 +561,8 @@ _jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
     jit_inc_synth_fp(putargi_f, u, v);
     if (jit_arg_f_reg_p(v->u.w))
 	jit_movi_f(JIT_FA0 - v->u.w, u);
-    else if (jit_arg_reg_p(v->u.w - 8)) {
-	union {
-	    jit_float32_t	f;
-	    jit_int32_t		i;
-	} uu;
-	uu.f = u;
-	jit_movi(JIT_RA0 - (v->u.w - 8), uu.i);
-    }
+    else if (jit_arg_reg_p(v->u.w - 8))
+	jit_movi_f_w(JIT_RA0 - (v->u.w - 8), u);
     else {
 	regno = jit_get_reg(jit_class_fpr);
 	jit_movi_f(regno, u);
@@ -614,14 +608,8 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
     jit_inc_synth_dp(putargi_d, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movi_d(JIT_FA0 - v->u.w, u);
-    else if (jit_arg_reg_p(v->u.w - 8)) {
-	union {
-	    jit_float64_t	d;
-	    jit_int64_t		w;
-	} uu;
-	uu.d = u;
-	jit_movi(JIT_RA0 - (v->u.w - 8), uu.w);
-    }
+    else if (jit_arg_reg_p(v->u.w - 8))
+	jit_movi_d_w(JIT_RA0 - (v->u.w - 8), u);
     else {
 	regno = jit_get_reg(jit_class_fpr);
 	jit_movi_d(regno, u);
