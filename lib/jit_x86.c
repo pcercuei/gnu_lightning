@@ -1225,9 +1225,6 @@ _jit_finishr(jit_state_t *_jit, jit_int32_t r0)
 jit_node_t *
 _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 {
-#if __X64
-    jit_int32_t		reg;
-#endif
     jit_node_t		*node;
     assert(_jitc->function);
     CHECK_FRAME();
