@@ -1255,7 +1255,7 @@ _vfp_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
     if (jit_fpr_p(r0)) {
 	/* float arguments are packed, for others,
 	 * lightning only address even registers */
-	if (!(r0 & 1) && (r0 - 16) >= 0 &&
+	if (!(r0 & 1) && (r0 - 32) >= 0 &&
 	    ((code = encode_vfp_double(1, 0, u.i, u.i)) != -1 ||
 	     (code = encode_vfp_double(1, 1, ~u.i, ~u.i)) != -1))
 	    VIMM(code, r0);
