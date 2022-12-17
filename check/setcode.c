@@ -31,7 +31,7 @@ main(int argc, char *argv[])
     int			  mmap_fd;
 #endif
     void		(*function)(void);
-    int			  mmap_prot, mmap_flags;
+    int			  mmap_prot, mmap_flags, result;
 
 #if defined(__sgi)
     mmap_fd = open("/dev/zero", O_RDWR);
@@ -83,7 +83,8 @@ main(int argc, char *argv[])
 	abort();
 
 #if __NetBSD__
-    assert(mprotect(ptr, 1024 * 1024, PROT_READ | PROT_WRITE) == 0);
+    result = mprotect(ptr, 1024 * 1024, PROT_READ | PROT_WRITE);
+    assert(result == 0);
 #endif
     /* and calling again with enough space works */
     jit_set_code(ptr, 1024 * 1024);
@@ -93,7 +94,8 @@ main(int argc, char *argv[])
 
     jit_clear_state();
 #if __NetBSD__ ||  __OpenBSD__ || __APPLE__
-    assert(mprotect(ptr, 1024 * 1024, PROT_READ | PROT_EXEC) == 0);
+    result = mprotect(ptr, 1024 * 1024, PROT_READ | PROT_EXEC);
+    assert(result == 0);
 #endif
     (*function)();
     jit_destroy_state();

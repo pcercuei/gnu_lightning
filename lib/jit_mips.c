@@ -334,7 +334,7 @@ _jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
 	return (jit_arg_reg_p(u->u.w));
     assert(u->code == jit_code_arg_f || u->code == jit_code_arg_d);
 #if NEW_ABI
-    return (jit_arg_reg_p(u->u.w));
+    return (jit_arg_reg_p(u->u.w) || jit_arg_reg_p(u->u.w - 8));
 #else
     return (u->u.w < 8);
 #endif
@@ -649,7 +649,7 @@ _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     if (jit_arg_reg_p(v->u.w))
 	jit_movr_f(u, _F12 - v->u.w);
     else if (jit_arg_reg_p(v->u.w - 8))
-	jit_movr_w_f(u, _A0 - v->u.w - 8);
+	jit_movr_w_f(u, _A0 - (v->u.w - 8));
 #else
     if (v->u.w < 4)
 	jit_movr_w_f(u, _A0 - v->u.w);
@@ -670,7 +670,7 @@ _jit_putargr_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     if (jit_arg_reg_p(v->u.w))
 	jit_movr_f(_F12 - v->u.w, u);
     else if (jit_arg_reg_p(v->u.w - 8))
-	jit_movr_f_w(_A0 - v->u.w - 8, u);
+	jit_movr_f_w(_A0 - (v->u.w - 8), u);
 #else
     if (v->u.w < 4)
 	jit_movr_f_w(_A0 - v->u.w, u);
@@ -691,12 +691,8 @@ _jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
 #if NEW_ABI
     if (jit_arg_reg_p(v->u.w))
 	jit_movi_f(_F12 - v->u.w, u);
-    else if (jit_arg_reg_p(v->u.w - 8)) {
-	regno = jit_get_reg(jit_class_fpr);
-	jit_movi_f(regno, u);
-	jit_movr_f_w(_A0 - v->u.w - 8, u);
-	jit_unget_reg(regno);
-    }
+    else if (jit_arg_reg_p(v->u.w - 8))
+	jit_movi_f_w(_A0 - (v->u.w - 8), u);
 #else
     if (v->u.w < 4) {
 	regno = jit_get_reg(jit_class_fpr);
@@ -725,7 +721,7 @@ _jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     if (jit_arg_reg_p(v->u.w))
 	jit_movr_d(u, _F12 - v->u.w);
     else if (jit_arg_reg_p(v->u.w - 8))
-	jit_movr_d_w(_A0 - v->u.w - 8, u);
+	jit_movr_d_w(_A0 - (v->u.w - 8), u);
 #else
     if (v->u.w < 4)
 	jit_movr_ww_d(u, _A0 - v->u.w, _A0 - (v->u.w + 1));
@@ -746,7 +742,7 @@ _jit_putargr_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     if (jit_arg_reg_p(v->u.w))
 	jit_movr_d(_F12 - v->u.w, u);
     else if (jit_arg_reg_p(v->u.w - 8))
-	jit_movr_d_w(_A0 - v->u.w - 8, u);
+	jit_movr_d_w(_A0 - (v->u.w - 8), u);
 #else
     if (v->u.w < 4)
 	jit_movr_d_ww(_A0 - v->u.w, _A0 - (v->u.w + 1), u);
@@ -767,12 +763,8 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
 #if NEW_ABI
     if (jit_arg_reg_p(v->u.w))
 	jit_movi_d(_F12 - v->u.w, u);
-    else if (jit_arg_reg_p(v->u.w - 8)) {
-	regno = jit_get_reg(jit_class_fpr);
-	jit_movi_d(regno, u);
-	jit_movr_d_w(_A0 - v->u.w - 8, u);
-	jit_unget_reg(regno);
-    }
+    else if (jit_arg_reg_p(v->u.w - 8))
+	jit_movi_d_w(_A0 - (v->u.w - 8), u);
 #else
     if (v->u.w < 4) {
 	regno = jit_get_reg(jit_class_fpr);
