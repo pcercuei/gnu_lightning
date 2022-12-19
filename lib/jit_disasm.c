@@ -54,7 +54,7 @@ static FILE			 *disasm_stream;
 #endif
 
 #if BINUTILS_2_38
-static int fprintf_styled(void *, enum disassembler_style, const char* fmt, ...)
+static int fprintf_styled(void * stream, enum disassembler_style style, const char* fmt, ...)
 {
   va_list args;
   int r;
