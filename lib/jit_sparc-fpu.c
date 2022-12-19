@@ -1529,7 +1529,12 @@ _vaarg_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     assert(_jitc->function->self.call & jit_call_varargs);
 
     /* Load argument. */
+#if __WORDSIZE == 64
     ldr_d(r0, r1);
+#else
+    ldr_f(r0, r1);
+    ldxi_f(r0 + 1, r1, 4);
+#endif
 
     /* Update vararg stack pointer. */
     addi(r1, r1, 8);
