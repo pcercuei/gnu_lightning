@@ -409,9 +409,10 @@ _jit_epilog(jit_state_t *_jit)
 jit_bool_t
 _jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
 {
-    assert((u->code >= jit_code_arg_c && u->code <= jit_code_arg) ||
-	   u->code == jit_code_arg_f || u->code == jit_code_arg_d);
-    return (jit_arg_reg_p(u->u.w));
+    if (u->code >= jit_code_arg_c && u->code <= jit_code_arg)
+	return (jit_arg_reg_p(u->u.w));
+    assert(u->code == jit_code_arg_f || u->code == jit_code_arg_d);
+    return (jit_arg_reg_p(u->u.w) || jit_arg_reg_p(u->u.w - 8));
 }
 
 void
