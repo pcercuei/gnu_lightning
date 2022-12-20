@@ -2551,24 +2551,24 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 {
     if (_jitc->function->assume_frame)
 	return;
-    /* (most) other backends do not save incoming arguments, so,
-     * only save locals here */
+    if (_jitc->function->allocar)
+	subi(_SP_REGNO, _FP_REGNO, _jitc->function->stack);
     if (jit_regset_tstbit(&_jitc->function->regset, _L0))
-	ldxi(_L0_REGNO, _FP_REGNO, _jitc->function->stack + OFF(0));
+	ldxi(_L0_REGNO, _SP_REGNO, _jitc->function->stack + OFF(0));
     if (jit_regset_tstbit(&_jitc->function->regset, _L1))
-	ldxi(_L1_REGNO, _FP_REGNO, _jitc->function->stack + OFF(1));
+	ldxi(_L1_REGNO, _SP_REGNO, _jitc->function->stack + OFF(1));
     if (jit_regset_tstbit(&_jitc->function->regset, _L2))
-	ldxi(_L2_REGNO, _FP_REGNO, _jitc->function->stack + OFF(2));
+	ldxi(_L2_REGNO, _SP_REGNO, _jitc->function->stack + OFF(2));
     if (jit_regset_tstbit(&_jitc->function->regset, _L3))
-	ldxi(_L3_REGNO, _FP_REGNO, _jitc->function->stack + OFF(3));
+	ldxi(_L3_REGNO, _SP_REGNO, _jitc->function->stack + OFF(3));
     if (jit_regset_tstbit(&_jitc->function->regset, _L4))
-	ldxi(_L4_REGNO, _FP_REGNO, _jitc->function->stack + OFF(4));
+	ldxi(_L4_REGNO, _SP_REGNO, _jitc->function->stack + OFF(4));
     if (jit_regset_tstbit(&_jitc->function->regset, _L5))
-	ldxi(_L5_REGNO, _FP_REGNO, _jitc->function->stack + OFF(5));
+	ldxi(_L5_REGNO, _SP_REGNO, _jitc->function->stack + OFF(5));
     if (jit_regset_tstbit(&_jitc->function->regset, _L6))
-	ldxi(_L6_REGNO, _FP_REGNO, _jitc->function->stack + OFF(6));
+	ldxi(_L6_REGNO, _SP_REGNO, _jitc->function->stack + OFF(6));
     if (jit_regset_tstbit(&_jitc->function->regset, _L7))
-	ldxi(_L7_REGNO, _FP_REGNO, _jitc->function->stack + OFF(7));
+	ldxi(_L7_REGNO, _SP_REGNO, _jitc->function->stack + OFF(7));
     RESTOREI(0, 0, 0);
     RETL();
     NOP();
