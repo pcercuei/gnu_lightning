@@ -296,7 +296,7 @@ comr                 O1 = ~O2
 These unary ALU operations are only defined for float operands.
 @example
 absr         _f  _d  O1 = fabs(O2)
-sqrtr                O1 = sqrt(O2)
+sqrtr        _f  _d  O1 = sqrt(O2)
 @end example
 
 Besides requiring the @code{r} modifier, there are no unary operations
