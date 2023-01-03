@@ -3144,7 +3144,6 @@ _redundant_jump(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node)
 		}
 		break;
 	    case jit_code_name:		case jit_code_note:
-	    case jit_code_align:
 		break;
 	    default:
 		return (0);
