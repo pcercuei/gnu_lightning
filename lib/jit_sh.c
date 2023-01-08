@@ -24,8 +24,22 @@
 
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < NUM_WORD_ARGS)
 
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define C_DISP			0
+#  define S_DISP			0
+#  define I_DISP			0
+#else
+#  define C_DISP			STACK_SLOT - sizeof(jit_int8_t)
+#  define S_DISP			STACK_SLOT - sizeof(jit_int16_t)
+#  define I_DISP			STACK_SLOT - sizeof(jit_int32_t)
+#endif
+
 #define jit_make_arg(node)		_jit_make_arg(_jit,node)
 static jit_node_t *_jit_make_arg(jit_state_t*,jit_node_t*);
+#define jit_make_arg_f(node)		_jit_make_arg_f(_jit,node)
+static jit_node_t *_jit_make_arg_f(jit_state_t*,jit_node_t*);
+#define jit_make_arg_d(node)		_jit_make_arg_d(_jit,node)
+static jit_node_t *_jit_make_arg_d(jit_state_t*,jit_node_t*);
 #define patch(instr, node)		_patch(_jit, instr, node)
 static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 
@@ -148,6 +162,27 @@ _jit_allocai(jit_state_t *_jit, jit_int32_t length)
 	jit_dec_synth();
     }
     return (_jitc->function->self.aoff);
+}
+
+void
+_jit_allocar(jit_state_t *_jit, jit_int32_t u, jit_int32_t v)
+{
+    jit_int32_t		 reg;
+    assert(_jitc->function);
+    jit_inc_synth_ww(allocar, u, v);
+    if (!_jitc->function->allocar) {
+	_jitc->function->aoffoff = jit_allocai(sizeof(jit_int32_t));
+	_jitc->function->allocar = 1;
+    }
+    reg = jit_get_reg(jit_class_gpr);
+    jit_negr(reg, v);
+    jit_andi(reg, reg, -8);
+    jit_ldxi_i(u, JIT_FP, _jitc->function->aoffoff);
+    jit_addr(u, u, reg);
+    jit_addr(JIT_SP, JIT_SP, reg);
+    jit_stxi_i(_jitc->function->aoffoff, JIT_FP, u);
+    jit_unget_reg(reg);
+    jit_dec_synth();
 }
 
 void
@@ -835,47 +870,37 @@ _emit_code(jit_state_t *_jit)
 #endif
 	    case jit_code_live:			case jit_code_ellipsis:
 	    case jit_code_va_push:
-#if 0
 	    case jit_code_allocai:		case jit_code_allocar:
-#endif
 	    case jit_code_arg:
-#if 0
 	    case jit_code_arg_f:		case jit_code_arg_d:
 	    case jit_code_va_end:
-#endif
 	    case jit_code_ret:
 	    case jit_code_retr:			case jit_code_reti:
-#if 0
 	    case jit_code_retr_f:		case jit_code_reti_f:
 	    case jit_code_retr_d:		case jit_code_reti_d:
 	    case jit_code_getarg_c:		case jit_code_getarg_uc:
 	    case jit_code_getarg_s:		case jit_code_getarg_us:
-#endif
 	    case jit_code_getarg_i:		case jit_code_getarg_ui:
-#if 0
 	    case jit_code_getarg_l:
 	    case jit_code_getarg_f:		case jit_code_getarg_d:
 	    case jit_code_putargr:		case jit_code_putargi:
 	    case jit_code_putargr_f:		case jit_code_putargi_f:
 	    case jit_code_putargr_d:		case jit_code_putargi_d:
-#endif
 	    case jit_code_pushargr:		case jit_code_pushargi:
-#if 0
 	    case jit_code_pushargr_f:		case jit_code_pushargi_f:
 	    case jit_code_pushargr_d:		case jit_code_pushargi_d:
-#endif
 	    case jit_code_retval_c:		case jit_code_retval_uc:
 	    case jit_code_retval_s:		case jit_code_retval_us:
 	    case jit_code_retval_i:
 #if 0
 	    case jit_code_retval_ui:		case jit_code_retval_l:
-	    case jit_code_retval_f:		case jit_code_retval_d:
 #endif
+	    case jit_code_retval_f:		case jit_code_retval_d:
 	    case jit_code_prepare:
 	    case jit_code_finishr:		case jit_code_finishi:
 		break;
 	    default:
-		printf("ABORT MISSION\n");
+		printf("ABORT MISSION (%i)\n", node->code);
 		abort();
 	}
 	jit_regarg_clr(node, value);
@@ -995,6 +1020,53 @@ _jit_make_arg(jit_state_t *_jit, jit_node_t *node)
     return (node);
 }
 
+static jit_node_t *
+_jit_make_arg_f(jit_state_t *_jit, jit_node_t *node)
+{
+    jit_int32_t		 offset;
+
+    if (jit_arg_reg_p(_jitc->function->self.argi)) {
+	offset = _jitc->function->self.argi++;
+	if (_jitc->function->self.call & jit_call_varargs)
+	    offset += 8;
+    }
+    else {
+	offset = _jitc->function->self.size;
+	_jitc->function->self.size += STACK_SLOT;
+    }
+    if (node == (jit_node_t *)0)
+	node = jit_new_node(jit_code_arg_f);
+    else
+	link_node(node);
+    node->u.w = offset;
+    node->v.w = ++_jitc->function->self.argn;
+    jit_link_prolog();
+    return (node);
+}
+
+static jit_node_t *
+_jit_make_arg_d(jit_state_t *_jit, jit_node_t *node)
+{
+    jit_int32_t		 offset;
+    if (jit_arg_reg_p(_jitc->function->self.argi)) {
+	offset = _jitc->function->self.argi++;
+	if (_jitc->function->self.call & jit_call_varargs)
+	    offset += 8;
+    }
+    else {
+	offset = _jitc->function->self.size;
+	_jitc->function->self.size += STACK_SLOT;
+    }
+    if (node == (jit_node_t *)0)
+	node = jit_new_node(jit_code_arg_d);
+    else
+	link_node(node);
+    node->u.w = offset;
+    node->v.w = ++_jitc->function->self.argn;
+    jit_link_prolog();
+    return (node);
+}
+
 jit_node_t *
 _jit_arg(jit_state_t *_jit)
 {
@@ -1003,13 +1075,63 @@ _jit_arg(jit_state_t *_jit)
 }
 
 void
+_jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+    assert(v->code == jit_code_arg);
+    jit_inc_synth_wp(getarg_c, u, v);
+    if (jit_arg_reg_p(v->u.w))
+	jit_extr_c(u, JIT_RA0 + v->u.w);
+    else
+	jit_ldxi_c(u, JIT_FP, v->u.w + C_DISP);
+    jit_dec_synth();
+}
+
+void
+_jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+    assert(v->code == jit_code_arg);
+    jit_inc_synth_wp(getarg_uc, u, v);
+    if (jit_arg_reg_p(v->u.w))
+	jit_extr_uc(u, JIT_RA0 + v->u.w);
+    else
+	jit_ldxi_uc(u, JIT_FP, v->u.w + C_DISP);
+    jit_dec_synth();
+}
+
+void
+_jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+    assert(v->code == jit_code_arg);
+    jit_inc_synth_wp(getarg_s, u, v);
+    if (jit_arg_reg_p(v->u.w))
+	jit_extr_s(u, JIT_RA0 + v->u.w);
+    else
+	jit_ldxi_s(u, JIT_FP, v->u.w + S_DISP);
+    jit_dec_synth();
+}
+
+void
+_jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+    assert(v->code == jit_code_arg);
+    jit_inc_synth_wp(getarg_us, u, v);
+    if (jit_arg_reg_p(v->u.w))
+	jit_extr_us(u, JIT_RA0 + v->u.w);
+    else
+	jit_ldxi_us(u, JIT_FP, v->u.w + S_DISP);
+    jit_dec_synth();
+}
+
+void
 _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 {
     assert(v->code == jit_code_arg);
     jit_inc_synth_wp(getarg_i, u, v);
-
-    jit_movr(u, JIT_RA0 + v->u.w);
-
+    if (jit_arg_reg_p(v->u.w)) {
+	jit_movr(u, JIT_RA0 + v->u.w);
+    }
+    else
+	jit_ldxi_i(u, JIT_FP, v->u.w + I_DISP);
     jit_dec_synth();
 }
 
@@ -1125,4 +1247,276 @@ void
 _jit_retval_i(jit_state_t *_jit, jit_int32_t r0)
 {
 	jit_movr(r0, JIT_RET);
+}
+
+void
+_jit_ellipsis(jit_state_t *_jit)
+{
+    jit_inc_synth(ellipsis);
+    if (_jitc->prepare) {
+	jit_link_prepare();
+	assert(!(_jitc->function->call.call & jit_call_varargs));
+	_jitc->function->call.call |= jit_call_varargs;
+    }
+    else {
+	jit_link_prolog();
+	assert(!(_jitc->function->self.call & jit_call_varargs));
+	_jitc->function->self.call |= jit_call_varargs;
+	_jitc->function->vagp = _jitc->function->self.argi;
+    }
+    jit_dec_synth();
+}
+
+void
+_jit_va_push(jit_state_t *_jit, jit_int32_t u)
+{
+    jit_inc_synth_w(va_push, u);
+    jit_pushargr(u);
+    jit_dec_synth();
+}
+
+jit_bool_t
+_jit_arg_register_p(jit_state_t *_jit, jit_node_t *u)
+{
+    if (u->code == jit_code_arg)
+	return (jit_arg_reg_p(u->u.w));
+
+    assert(u->code == jit_code_arg_f || u->code == jit_code_arg_d);
+    return (jit_arg_reg_p(u->u.w));
+}
+
+jit_node_t *
+_jit_arg_f(jit_state_t *_jit)
+{
+    assert(_jitc->function);
+    return (jit_make_arg_f((jit_node_t*)0));
+}
+
+jit_node_t *
+_jit_arg_d(jit_state_t *_jit)
+{
+    assert(_jitc->function);
+    return (jit_make_arg_d((jit_node_t*)0));
+}
+
+void
+_jit_retval_f(jit_state_t *_jit, jit_int32_t r0)
+{
+	jit_movr_f(r0, JIT_FRET);
+}
+
+void
+_jit_retval_d(jit_state_t *_jit, jit_int32_t r0)
+{
+	jit_movr_d(r0, JIT_FRET);
+}
+
+void
+_jit_retr_f(jit_state_t *_jit, jit_int32_t u)
+{
+	jit_inc_synth_w(retr_f, u);
+	jit_movr_f(JIT_FRET, u);
+	jit_live(JIT_FRET);
+	jit_ret();
+	jit_dec_synth();
+}
+
+void
+_jit_reti_f(jit_state_t *_jit, jit_float32_t u)
+{
+	jit_inc_synth_w(reti_f, u);
+	jit_movi_f(JIT_FRET, u);
+	jit_live(JIT_FRET);
+	jit_ret();
+	jit_dec_synth();
+}
+
+void
+_jit_retr_d(jit_state_t *_jit, jit_int32_t u)
+{
+	jit_inc_synth_w(retr_d, u);
+	jit_movr_d(JIT_FRET, u);
+	jit_live(JIT_FRET);
+	jit_ret();
+	jit_dec_synth();
+}
+
+void
+_jit_reti_d(jit_state_t *_jit, jit_float64_t u)
+{
+	jit_inc_synth_w(reti_d, u);
+	jit_movi_d(JIT_FRET, u);
+	jit_live(JIT_FRET);
+	jit_ret();
+	jit_dec_synth();
+}
+
+void
+_jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
+{
+	jit_inc_synth_w(pushargr_f, u);
+	jit_link_prepare();
+	assert(_jitc->function);
+	if (jit_arg_reg_p(_jitc->function->call.argf)) {
+		jit_movr_f(JIT_FA0 + _jitc->function->call.argf, u);
+		++_jitc->function->call.argf;
+	}
+	else {
+		jit_stxi_f(_jitc->function->call.size + WORD_ADJUST, JIT_SP, u);
+		_jitc->function->call.size += STACK_SLOT;
+	}
+	jit_dec_synth();
+}
+
+void
+_jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
+{
+	jit_int32_t regno;
+
+	jit_inc_synth_w(pushargi_f, u);
+	jit_link_prepare();
+	assert(_jitc->function);
+	if (jit_arg_reg_p(_jitc->function->call.argf)) {
+		jit_movi_f(JIT_FA0 + _jitc->function->call.argf, u);
+		++_jitc->function->call.argf;
+	}
+	else {
+		regno = jit_get_reg(jit_class_fpr);
+		jit_movi_f(regno, u);
+		jit_stxi_f(_jitc->function->call.size + WORD_ADJUST, JIT_SP, regno);
+		_jitc->function->call.size += STACK_SLOT;
+		jit_unget_reg(regno);
+	}
+	jit_dec_synth();
+}
+
+void
+_jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
+{
+	jit_inc_synth_w(pushargr_d, u);
+	jit_link_prepare();
+	assert(_jitc->function);
+	if (jit_arg_reg_p(_jitc->function->call.argf * 2)) {
+		jit_movr_d(JIT_FA0 + _jitc->function->call.argf * 2, u);
+		++_jitc->function->call.argf;
+	}
+	else {
+		jit_stxi_d(_jitc->function->call.size + WORD_ADJUST, JIT_SP, u);
+		_jitc->function->call.size += STACK_SLOT;
+	}
+	jit_dec_synth();
+}
+
+void
+_jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
+{
+	jit_int32_t regno;
+
+	jit_inc_synth_w(pushargi_d, u);
+	jit_link_prepare();
+	assert(_jitc->function);
+	if (jit_arg_reg_p(_jitc->function->call.argf * 2)) {
+		jit_movi_d(JIT_FA0 + _jitc->function->call.argf * 2, u);
+		++_jitc->function->call.argf;
+	}
+	else {
+		regno = jit_get_reg(jit_class_fpr);
+		jit_movi_d(regno, u);
+		jit_stxi_d(_jitc->function->call.size + WORD_ADJUST, JIT_SP, regno);
+		_jitc->function->call.size += STACK_SLOT;
+		jit_unget_reg(regno);
+	}
+	jit_dec_synth();
+}
+
+void
+_jit_putargr_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+	assert(v->code == jit_code_arg);
+	jit_inc_synth_wp(putargr, u, v);
+	if (jit_arg_reg_p(v->u.w))
+		jit_movr_f(JIT_FA0 + v->u.w, u);
+	else
+		jit_stxi_f(v->u.w, JIT_FP, u);
+	jit_dec_synth();
+}
+
+void
+_jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
+{
+	jit_int32_t regno;
+
+	assert(v->code == jit_code_arg);
+	jit_inc_synth_wp(putargi, u, v);
+	if (jit_arg_reg_p(v->u.w)) {
+		jit_movi_f(JIT_FA0 + v->u.w, u);
+	} else {
+		regno = jit_get_reg(jit_class_fpr);
+
+		jit_movi_f(regno, u);
+		jit_stxi_f(v->u.w, JIT_FP, regno);
+
+		jit_unget_reg(regno);
+	}
+	jit_dec_synth();
+}
+
+void
+_jit_putargr_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+	assert(v->code == jit_code_arg);
+	jit_inc_synth_wp(putargr, u, v);
+	if (jit_arg_reg_p(v->u.w))
+		jit_movr_d(JIT_FA0 + v->u.w, u);
+	else
+		jit_stxi_d(v->u.w, JIT_FP, u);
+	jit_dec_synth();
+}
+
+void
+_jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
+{
+	jit_int32_t regno;
+
+	assert(v->code == jit_code_arg);
+	jit_inc_synth_wp(putargi, u, v);
+	if (jit_arg_reg_p(v->u.w)) {
+		jit_movi_d(JIT_FA0 + v->u.w, u);
+	} else {
+		regno = jit_get_reg(jit_class_fpr);
+
+		jit_movi_d(regno, u);
+		jit_stxi_d(v->u.w, JIT_FP, regno);
+
+		jit_unget_reg(regno);
+	}
+	jit_dec_synth();
+}
+
+void
+_jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+    assert(v->code == jit_code_arg_d);
+    jit_inc_synth_wp(getarg_d, u, v);
+
+    if (jit_arg_reg_p(v->u.w))
+	jit_movr_d(u, _F4 + v->u.w * 2);
+    else
+	jit_ldxi_d(u, JIT_FP, v->u.w);
+
+    jit_dec_synth();
+}
+
+void
+_jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+{
+    assert(v->code == jit_code_arg_f);
+    jit_inc_synth_wp(getarg_f, u, v);
+
+    if (jit_arg_reg_p(v->u.w))
+	jit_movr_f(u, _F4 + v->u.w * 2);
+    else
+	jit_ldxi_f(u, JIT_FP, v->u.w);
+
+    jit_dec_synth();
 }
