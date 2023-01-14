@@ -689,10 +689,10 @@ static jit_word_t _bler_u(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static jit_word_t _blei(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 #define blei_u(i0,r0,i1)		_blei_u(_jit,i0,r0,i1)
 static jit_word_t _blei_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
-#define beqr(i0,r0,r1)			_beqr(_jit,i0,r0,r1)
-static jit_word_t _beqr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define beqi(i0,r0,i1)			_beqi(_jit,i0,r0,i1)
-static jit_word_t _beqi(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
+#define beqr(i0,r0,r1,prev)		_beqr(_jit,i0,r0,r1,prev)
+static jit_word_t _beqr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t,jit_node_t*);
+#define beqi(i0,r0,i1,prev)		_beqi(_jit,i0,r0,i1,prev)
+static jit_word_t _beqi(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t,jit_node_t*);
 #define bger(i0,r0,r1)			_bger(_jit,i0,r0,r1)
 static jit_word_t _bger(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #define bger_u(i0,r0,r1)		_bger_u(_jit,i0,r0,r1)
@@ -778,6 +778,8 @@ static void _patch_at(jit_state_t*,jit_word_t,jit_word_t);
 #  define can_swap_ds(node,r0,r1)	_can_swap_ds(_jit,node,r0,r1)
 static jit_bool_t _can_swap_ds(jit_state_t *_jit, jit_node_t *prev,
 			      jit_uint32_t r0, jit_uint32_t r1);
+#define get_reg_can_swap(swap_ds)	_get_reg_can_swap(_jit, swap_ds)
+static jit_int32_t _get_reg_can_swap(jit_state_t *_jit, jit_bool_t swap_ds);
 #endif
 
 #if CODE
@@ -801,6 +803,82 @@ static jit_bool_t has_delay_slot(jit_instr_t instr)
 		return 1;
 	default:
 		return 0;
+	}
+}
+
+static jit_bool_t op_reads_register(jit_instr_t instr, jit_int32_t r0)
+{
+	switch (instr.hc.b) {
+	case MIPS_SPECIAL:
+		switch (instr.tc.b) {
+		case MIPS_JR:
+		case MIPS_JALR:
+		case MIPS_MTHI:
+		case MIPS_MTLO:
+			return r0 == instr.rs.b;
+		case MIPS_SLL:
+		case MIPS_SRL:
+		case MIPS_SRA:
+		case MIPS_DSLL:
+		case MIPS_DSRL:
+		case MIPS_DSRA:
+			return r0 == instr.rt.b;
+		case MIPS_SYNC:
+		case MIPS_MFHI:
+		case MIPS_MFLO:
+			return 0;
+		case MIPS_MOVN:
+		case MIPS_MOVZ:
+			return r0 == instr.rt.b || r0 == instr.rs.b || r0 == instr.rd.b;
+		default:
+			return r0 == instr.rt.b || r0 == instr.rs.b;
+		}
+	case MIPS_SPECIAL3:
+		switch (instr.tc.b) {
+		case MIPS_INS:
+		case MIPS_DINS:
+		case MIPS_DINSU:
+		case MIPS_DINSM:
+			return r0 == instr.rt.b || r0 == instr.rs.b;
+		case MIPS_BSHFL:
+			return r0 == instr.rt.b;
+		default:
+			return r0 == instr.rs.b;
+		}
+	case MIPS_COP1:
+		if (instr.tc.b)
+			return 0;
+
+		switch (instr.rs.b) {
+		case MIPS_MT:
+		case MIPS_DMT:
+			return r0 == instr.rt.b;
+		default:
+			return 0;
+	}
+	case MIPS_J:
+	case MIPS_JAL:
+	case MIPS_LUI:
+		return 0;
+	case MIPS_BEQ:
+		if (instr.rs.b == instr.rt.b)
+			return 0;
+		/* fallthrough */
+	case MIPS_SPECIAL2:
+	case MIPS_BNE:
+	case MIPS_LWL:
+	case MIPS_LWR:
+	case MIPS_SB:
+	case MIPS_SH:
+	case MIPS_SWL:
+	case MIPS_SW:
+	case MIPS_SWR:
+	case MIPS_SC:
+	case MIPS_SCD:
+	case MIPS_SD:
+		return r0 == instr.rt.b || r0 == instr.rs.b;
+	default:
+		return r0 == instr.rs.b;
 	}
 }
 
@@ -2244,6 +2322,26 @@ static jit_bool_t _can_swap_ds(jit_state_t *_jit, jit_node_t *prev,
         && (!r1 || !op_writes_register((jit_instr_t)*(_jit->pc.ui - 1), r1));
 }
 
+static jit_int32_t _get_reg_can_swap(jit_state_t *_jit, jit_bool_t swap_ds)
+{
+    jit_int32_t		reg, reg2;
+
+    reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
+
+    if (swap_ds && reg == _AT
+	&& op_reads_register((jit_instr_t)*(_jit->pc.ui - 1), rn(_AT))) {
+	    reg2 = jit_get_reg(jit_class_gpr);
+	    jit_unget_reg(reg);
+
+	    if (reg2 == JIT_NOREG)
+		    return JIT_NOREG;
+
+	    reg = reg2;
+    }
+
+    return reg;
+}
+
 static jit_word_t
 _bltr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
@@ -2404,33 +2502,57 @@ _blei_u(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 }
 
 static jit_word_t
-_beqr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
+_beqr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1, jit_node_t *prev)
 {
     jit_word_t		w;
+    jit_int32_t		op;
+    jit_bool_t		swap_ds;
+
+    swap_ds = can_swap_ds(prev, r0, r1);
+    if (swap_ds)
+        op = *--_jit->pc.ui;
 
     w = _jit->pc.w;
     BEQ(r0, r1, ((i0 - w) >> 2) - 1);
-    NOP(1);
+    if (swap_ds)
+        ii(op);
+    else
+        NOP(1);
 
     return (w);
 }
 
 static jit_word_t
-_beqi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+_beqi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1, jit_node_t *prev)
 {
     jit_word_t		w;
-    jit_int32_t		reg;
+    jit_int32_t		reg, op;
+    jit_bool_t		swap_ds;
 
     if (i1 == 0) {
-	w = _jit->pc.w;
-	BEQ(r0, _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-	NOP(1);
+        w = beqr(i0, r0, _ZERO_REGNO, prev);
     }
     else {
-	reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-	movi(rn(reg), i1);
-	w = beqr(i0, r0, rn(reg));
-	jit_unget_reg(reg);
+        swap_ds = can_swap_ds(prev, r0, 0);
+        reg = get_reg_can_swap(swap_ds);
+        if (reg == JIT_NOREG) {
+            swap_ds = 0;
+            reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
+        }
+
+        if (swap_ds)
+            op = *--_jit->pc.ui;
+
+        movi(rn(reg), i1);
+        w = _jit->pc.w;
+        BEQ(r0, rn(reg), ((i0 - w) >> 2) - 1);
+
+        if (swap_ds)
+            ii(op);
+        else
+            NOP(1);
+
+        jit_unget_reg(reg);
     }
 
     return (w);

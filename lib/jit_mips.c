@@ -1252,6 +1252,21 @@ _emit_code(jit_state_t *_jit)
 		    patch(word, node);					\
 		}							\
 		break
+#define case_brrn(name, type, prev)					\
+	    case jit_code_##name##r##type:				\
+		temp = node->u.n;					\
+		assert(temp->code == jit_code_label ||			\
+		       temp->code == jit_code_epilog);			\
+		if (temp->flag & jit_flag_patch)			\
+		    name##r##type(temp->u.w, rn(node->v.w),		\
+				  rn(node->w.w), prev);			\
+		else {							\
+		    word = name##r##type(_jit->pc.w,			\
+					 rn(node->v.w), rn(node->w.w),	\
+					 prev);				\
+		    patch(word, node);					\
+		}							\
+		break
 #define case_brw(name, type)						\
 	    case jit_code_##name##i##type:				\
 		temp = node->u.n;					\
@@ -1263,6 +1278,21 @@ _emit_code(jit_state_t *_jit)
 		else {							\
 		    word = name##i##type(_jit->pc.w,			\
 					 rn(node->v.w), node->w.w);	\
+		    patch(word, node);					\
+		}							\
+		break
+#define case_brwn(name, type, prev)					\
+	    case jit_code_##name##i##type:				\
+		temp = node->u.n;					\
+		assert(temp->code == jit_code_label ||			\
+		       temp->code == jit_code_epilog);			\
+		if (temp->flag & jit_flag_patch)			\
+		    name##i##type(temp->u.w,				\
+				  rn(node->v.w), node->w.w, prev);	\
+		else {							\
+		    word = name##i##type(_jit->pc.w,			\
+					 rn(node->v.w), node->w.w,	\
+					 prev);				\
 		    patch(word, node);					\
 		}							\
 		break
@@ -1488,8 +1518,8 @@ _emit_code(jit_state_t *_jit)
 		case_brw(ble,);
 		case_brr(ble, _u);
 		case_brw(ble, _u);
-		case_brr(beq,);
-		case_brw(beq,);
+		case_brrn(beq,, prev);
+		case_brwn(beq,, prev);
 		case_brr(bge,);
 		case_brw(bge,);
 		case_brr(bge, _u);
