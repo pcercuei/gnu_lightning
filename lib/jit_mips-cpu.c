@@ -52,6 +52,7 @@ typedef union {
     struct {	jit_uint32_t _:16;	jit_uint32_t b : 16; } is;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b : 26; } ii;
 #endif
+    jit_uint32_t			op_u32;
     int					op;
 } jit_instr_t;
 #if defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
@@ -712,8 +713,8 @@ static jit_word_t _bgti_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 static jit_word_t _bner(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #define bnei(i0,r0,i1)			_bnei(_jit,i0,r0,i1)
 static jit_word_t _bnei(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
-#  define jmpr(r0)			_jmpr(_jit,r0)
-static void _jmpr(jit_state_t*,jit_int32_t);
+#  define jmpr(r0,prev)			_jmpr(_jit,r0,prev)
+static void _jmpr(jit_state_t*,jit_int32_t,jit_node_t*);
 #  define jmpi(i0)			_jmpi(_jit,i0)
 static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #  define boaddr(i0,r0,r1)		_boaddr(_jit,i0,r0,r1)
@@ -774,9 +775,114 @@ static void _vaarg(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _patch_abs(jit_state_t*,jit_word_t,jit_word_t);
 #define patch_at(jump,label)		_patch_at(_jit,jump,label)
 static void _patch_at(jit_state_t*,jit_word_t,jit_word_t);
+#  define can_swap_ds(node,r0,r1)	_can_swap_ds(_jit,node,r0,r1)
+static jit_bool_t _can_swap_ds(jit_state_t *_jit, jit_node_t *prev,
+			      jit_uint32_t r0, jit_uint32_t r1);
 #endif
 
 #if CODE
+static jit_bool_t has_delay_slot(jit_instr_t instr)
+{
+    switch (instr.hc.b) {
+	case MIPS_SPECIAL:
+		switch (instr.tc.b) {
+		case MIPS_JR:
+		case MIPS_JALR:
+			return 1;
+		default:
+			return 0;
+		}
+	case MIPS_J:			case MIPS_JAL:
+	case MIPS_BLEZ:			case MIPS_BLEZL:
+	case MIPS_BEQ:			case MIPS_BEQL:
+	case MIPS_BGTZ:			case MIPS_BGTZL:
+	case MIPS_BNE:			case MIPS_BNEL:
+	case MIPS_REGIMM:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+static jit_bool_t op_writes_register(jit_instr_t instr, jit_int32_t r0)
+{
+    if (r0 == _ZERO_REGNO)
+	return 0;
+
+    switch (instr.hc.b) {
+    case MIPS_SPECIAL:
+        switch (instr.tc.b) {
+        case MIPS_JR:
+        case MIPS_SYSCALL:
+        case MIPS_BREAK:
+        case MIPS_MULT:
+        case MIPS_MULTU:
+        case MIPS_DIV:
+        case MIPS_DIVU:
+        case MIPS_MTHI:
+        case MIPS_MTLO:
+            return 0;
+        default:
+            return r0 == instr.rd.b;
+        }
+    case MIPS_SPECIAL2:
+        return r0 == instr.rd.b;
+    case MIPS_SPECIAL3:
+	switch(instr.tc.b) {
+	case MIPS_BSHFL:
+		return r0 == instr.rd.b;
+	default:
+		return r0 == instr.rt.b;
+	}
+    case MIPS_COP1:
+	if (instr.tc.b)
+		return 0;
+
+	switch (instr.rs.b) {
+	case MIPS_MF:
+	case MIPS_DMF:
+		return r0 == instr.rt.b;
+	default:
+		return 0;
+	}
+    case MIPS_ADDI:
+    case MIPS_ADDIU:
+    case MIPS_DADDI:
+    case MIPS_DADDIU:
+    case MIPS_SLTI:
+    case MIPS_SLTIU:
+    case MIPS_ANDI:
+    case MIPS_ORI:
+    case MIPS_XORI:
+    case MIPS_LUI:
+    case MIPS_LB:
+    case MIPS_LH:
+    case MIPS_LWL:
+    case MIPS_LW:
+    case MIPS_LWU:
+    case MIPS_LBU:
+    case MIPS_LHU:
+    case MIPS_LWR:
+    case MIPS_LL:
+    case MIPS_LLD:
+    case MIPS_LD:
+    case MIPS_LDC1:
+        return r0 == instr.rt.b;
+    case MIPS_JAL:
+        return r0 == 31;
+    case MIPS_REGIMM:
+        switch (instr.rt.b) {
+        case MIPS_BLTZAL:   case MIPS_BLTZALL:
+        case MIPS_BGEZAL:   case MIPS_BGEZALL:
+            return r0 == 31;
+        default:
+            return 0;
+        }
+    default:
+        return 0;
+    }
+}
+
 static void
 _hrrrit(jit_state_t *_jit,jit_int32_t hc,
 	jit_int32_t rs, jit_int32_t rt, jit_int32_t rd,
@@ -2056,6 +2162,88 @@ _nei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	SLTU(r0, _ZERO_REGNO, r1);
 }
 
+static jit_bool_t _can_swap_ds(jit_state_t *_jit, jit_node_t *prev,
+			      jit_uint32_t r0, jit_uint32_t r1)
+{
+    jit_int32_t		offset;
+
+    if (!prev)
+	    return 0;
+
+    switch (prev->code) {
+    case jit_code_ltr_f:
+    case jit_code_ler_f:
+    case jit_code_eqr_f:
+    case jit_code_ger_f:
+    case jit_code_gtr_f:
+    case jit_code_ner_f:
+    case jit_code_unltr_f:
+    case jit_code_unler_f:
+    case jit_code_uneqr_f:
+    case jit_code_unger_f:
+    case jit_code_ungtr_f:
+    case jit_code_ltgtr_f:
+    case jit_code_ordr_f:
+    case jit_code_unordr_f:
+    case jit_code_lti_f:
+    case jit_code_lei_f:
+    case jit_code_eqi_f:
+    case jit_code_gei_f:
+    case jit_code_gti_f:
+    case jit_code_nei_f:
+    case jit_code_unlti_f:
+    case jit_code_unlei_f:
+    case jit_code_uneqi_f:
+    case jit_code_ungei_f:
+    case jit_code_ungti_f:
+    case jit_code_ltgti_f:
+    case jit_code_ordi_f:
+    case jit_code_unordi_f:
+    case jit_code_ltr_d:
+    case jit_code_ler_d:
+    case jit_code_eqr_d:
+    case jit_code_ger_d:
+    case jit_code_gtr_d:
+    case jit_code_ner_d:
+    case jit_code_unltr_d:
+    case jit_code_unler_d:
+    case jit_code_uneqr_d:
+    case jit_code_unger_d:
+    case jit_code_ungtr_d:
+    case jit_code_ltgtr_d:
+    case jit_code_ordr_d:
+    case jit_code_unordr_d:
+    case jit_code_lti_d:
+    case jit_code_lei_d:
+    case jit_code_eqi_d:
+    case jit_code_gei_d:
+    case jit_code_gti_d:
+    case jit_code_nei_d:
+    case jit_code_unlti_d:
+    case jit_code_unlei_d:
+    case jit_code_uneqi_d:
+    case jit_code_ungei_d:
+    case jit_code_ungti_d:
+    case jit_code_ltgti_d:
+    case jit_code_ordi_d:
+    case jit_code_unordi_d:
+    case jit_code_casr:
+    case jit_code_casi:
+	    /* These instructions will generate a branch to the next opcode.
+	     * Therefore, we cannot swap the last opcode to the delay slot. */
+	    return 0;
+    default:
+	    break;
+    }
+
+    offset = ((jit_word_t)_jit->pc.ui - (jit_word_t)_jit->code.ptr) / sizeof(jit_instr_t);
+
+    return prev && !(prev->flag & jit_flag_patch)
+        && (offset < 2 || !has_delay_slot((jit_instr_t)*(_jit->pc.ui - 2)))
+        && (!r0 || !op_writes_register((jit_instr_t)*(_jit->pc.ui - 1), r0))
+        && (!r1 || !op_writes_register((jit_instr_t)*(_jit->pc.ui - 1), r1));
+}
+
 static jit_word_t
 _bltr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
@@ -2441,10 +2629,20 @@ _bnei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 }
 
 static void
-_jmpr(jit_state_t *_jit, jit_int32_t r0)
+_jmpr(jit_state_t *_jit, jit_int32_t r0, jit_node_t *prev)
 {
+    jit_int32_t		op, offset;
+    jit_bool_t		swap_ds;
+
+    swap_ds = can_swap_ds(prev, r0, 0);
+    if (swap_ds)
+        op = *--_jit->pc.ui;
+
     JR(r0);
-    NOP(1);
+    if (swap_ds)
+        ii(op);
+    else
+        NOP(1);
 }
 
 static jit_word_t
@@ -2461,7 +2659,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
     else {
 	reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
 	movi_p(rn(reg), i0);
-	jmpr(rn(reg));
+	jmpr(rn(reg), NULL);
 	jit_unget_reg(reg);
     }
 

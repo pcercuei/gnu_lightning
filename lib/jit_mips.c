@@ -1171,11 +1171,12 @@ _jit_retval_d(jit_state_t *_jit, jit_int32_t r0)
 jit_pointer_t
 _emit_code(jit_state_t *_jit)
 {
-    jit_node_t		*node;
+    jit_node_t		*node, *prev = NULL;
     jit_node_t		*temp;
     jit_word_t		 word;
     jit_int32_t		 value;
     jit_int32_t		 offset;
+
     struct {
 	jit_node_t	*node;
 	jit_word_t	 word;
@@ -1686,7 +1687,7 @@ _emit_code(jit_state_t *_jit)
 		case_brr(bunord, _d);
 		case_brf(bunord, _d, 64);
 	    case jit_code_jmpr:
-		jmpr(rn(node->u.w));
+		jmpr(rn(node->u.w), prev);
 		break;
 	    case jit_code_jmpi:
 		if (node->flag & jit_flag_node) {
@@ -1894,6 +1895,12 @@ _emit_code(jit_state_t *_jit)
 	assert(_jitc->synth == 0);
 	/* update register live state */
 	jit_reglive(node);
+
+	if (node->code != jit_code_note
+	    && node->code != jit_code_name
+	    && node->code != jit_code_prolog
+	    && node->code != jit_code_live)
+		prev = node;
     }
 #undef case_brf
 #undef case_brw
