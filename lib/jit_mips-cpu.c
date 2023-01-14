@@ -757,8 +757,8 @@ static jit_word_t _bmsi(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 static jit_word_t _bmcr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define bmci(i0,r0,i1)		_bmci(_jit,i0,r0,i1)
 static jit_word_t _bmci(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
-#  define callr(r0)			_callr(_jit,r0)
-static void _callr(jit_state_t*,jit_int32_t);
+#  define callr(r0,prev)		_callr(_jit,r0,prev)
+static void _callr(jit_state_t*,jit_int32_t,jit_node_t*);
 #  define calli(i0)			_calli(_jit,i0)
 static void _calli(jit_state_t*,jit_word_t);
 #  define calli_p(i0)			_calli_p(_jit,i0)
@@ -3167,13 +3167,25 @@ _bmci(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 }
 
 static void
-_callr(jit_state_t *_jit, jit_int32_t r0)
+_callr(jit_state_t *_jit, jit_int32_t r0, jit_node_t *prev)
 {
-    JALR(r0);
-    if (r0 != _T9_REGNO)
-	movr(_T9_REGNO, r0);
-    else
-	NOP(1);
+    jit_bool_t		swap_ds;
+    jit_int32_t		op;
+
+    if (r0 != _T9_REGNO) {
+        JALR(r0);
+        movr(_T9_REGNO, r0);
+    } else {
+        swap_ds = can_swap_ds(prev, r0, 0);
+        if (swap_ds)
+            op = *--_jit->pc.ui;
+
+        JALR(r0);
+        if (swap_ds)
+            ii(op);
+        else
+            NOP(1);
+    }
 }
 
 static void

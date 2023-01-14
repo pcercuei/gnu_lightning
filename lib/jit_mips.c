@@ -1705,7 +1705,7 @@ _emit_code(jit_state_t *_jit)
 		    jmpi(node->u.w);
 		break;
 	    case jit_code_callr:
-		callr(rn(node->u.w));
+		callr(rn(node->u.w), prev);
 		break;
 	    case jit_code_calli:
 		if (node->flag & jit_flag_node) {
