@@ -1528,8 +1528,8 @@ _emit_code(jit_state_t *_jit)
 		case_brw(bgt,);
 		case_brr(bgt, _u);
 		case_brw(bgt, _u);
-		case_brr(bne,);
-		case_brw(bne,);
+		case_brrn(bne,, no_flag);
+		case_brwn(bne,, no_flag);
 		case_brr(boadd,);
 		case_brw(boadd,);
 		case_brr(boadd, _u);
