@@ -715,8 +715,8 @@ static jit_word_t _bner(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static jit_word_t _bnei(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 #  define jmpr(r0,prev)			_jmpr(_jit,r0,prev)
 static void _jmpr(jit_state_t*,jit_int32_t,jit_node_t*);
-#  define jmpi(i0)			_jmpi(_jit,i0)
-static jit_word_t _jmpi(jit_state_t*,jit_word_t);
+#  define jmpi(i0,prev)			_jmpi(_jit,i0,prev)
+static jit_word_t _jmpi(jit_state_t*,jit_word_t,jit_node_t*);
 #  define boaddr(i0,r0,r1)		_boaddr(_jit,i0,r0,r1)
 static jit_word_t _boaddr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define boaddi(i0,r0,i1)		_boaddi(_jit,i0,r0,i1)
@@ -2646,21 +2646,47 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0, jit_node_t *prev)
 }
 
 static jit_word_t
-_jmpi(jit_state_t *_jit, jit_word_t i0)
+_jmpi(jit_state_t *_jit, jit_word_t i0, jit_node_t *prev)
 {
     jit_word_t		w;
-    jit_int32_t		reg;
+    jit_int32_t		reg, op, offset;
+    jit_bool_t		swap_ds;
+
+    swap_ds = can_swap_ds(prev, 0, 0);
 
     w = _jit->pc.w;
     if (((w + sizeof(jit_int32_t)) & 0xf0000000) == (i0 & 0xf0000000)) {
-	J((i0 & ~0xf0000000) >> 2);
-	NOP(1);
+        if (swap_ds) {
+            op = *--_jit->pc.ui;
+            w -= sizeof(jit_int32_t);
+        }
+
+        J((i0 & ~0xf0000000) >> 2);
+        if (swap_ds)
+            ii(op);
+        else
+            NOP(1);
     }
     else {
-	reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-	movi_p(rn(reg), i0);
-	jmpr(rn(reg), NULL);
-	jit_unget_reg(reg);
+        reg = get_reg_can_swap(swap_ds);
+        if (reg == JIT_NOREG) {
+            swap_ds = 0;
+            reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
+        }
+
+        if (swap_ds)
+            op = *--_jit->pc.ui;
+
+        movi_p(rn(reg), i0);
+
+        w = _jit->pc.w;
+        JR(rn(reg));
+        if (swap_ds)
+            ii(op);
+        else
+            NOP(1);
+
+        jit_unget_reg(reg);
     }
 
     return (w);

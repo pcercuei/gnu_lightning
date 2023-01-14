@@ -1695,14 +1695,14 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			jmpi(temp->u.w);
+			jmpi(temp->u.w, prev);
 		    else {
-			word = jmpi(_jit->pc.w);
+			word = jmpi(_jit->pc.w, prev);
 			patch(word, node);
 		    }
 		}
 		else
-		    jmpi(node->u.w);
+		    jmpi(node->u.w, prev);
 		break;
 	    case jit_code_callr:
 		callr(rn(node->u.w), prev);
