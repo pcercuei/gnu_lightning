@@ -673,14 +673,10 @@ static void _gti_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _ner(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define nei(r0,r1,i0)			_nei(_jit,r0,r1,i0)
 static void _nei(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#define bltr(i0,r0,r1)			_bltr(_jit,i0,r0,r1)
-static jit_word_t _bltr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define bltr_u(i0,r0,r1)		_bltr_u(_jit,i0,r0,r1)
-static jit_word_t _bltr_u(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define blti(i0,r0,i1)			_blti(_jit,i0,r0,i1)
-static jit_word_t _blti(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
-#define blti_u(i0,r0,i1)		_blti_u(_jit,i0,r0,i1)
-static jit_word_t _blti_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
+#define bltr(i0,r0,r1,prev)		bger(i0,r1,r0,prev)
+#define bltr_u(i0,r0,r1,prev)		bger_u(i0,r1,r0,prev)
+#define blti(i0,r0,i1,prev)		_bgei(_jit,i0,r0,i1,0,1,prev)
+#define blti_u(i0,r0,i1,prev)		_bgei(_jit,i0,r0,i1,1,1,prev)
 #define bler(i0,r0,r1,prev)		_bgtr(_jit,i0,r1,r0,0,1,prev)
 #define bler_u(i0,r0,r1,prev)		_bgtr(_jit,i0,r1,r0,1,1,prev)
 #define blei(i0,r0,i1,prev)		_bgti(_jit,i0,r0,i1,0,1,prev)
@@ -689,14 +685,13 @@ static jit_word_t _blti_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 static jit_word_t _beqr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t,jit_node_t*);
 #define beqi(i0,r0,i1,prev)		_beqi(_jit,i0,r0,i1,prev)
 static jit_word_t _beqi(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t,jit_node_t*);
-#define bger(i0,r0,r1)			_bger(_jit,i0,r0,r1)
-static jit_word_t _bger(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define bger_u(i0,r0,r1)		_bger_u(_jit,i0,r0,r1)
-static jit_word_t _bger_u(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define bgei(i0,r0,i1)			_bgei(_jit,i0,r0,i1)
-static jit_word_t _bgei(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
-#define bgei_u(i0,r0,i1)		_bgei_u(_jit,i0,r0,i1)
-static jit_word_t _bgei_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
+#define bger(i0,r0,r1,prev)		_bger(_jit,i0,r0,r1,0,prev)
+#define bger_u(i0,r0,r1,prev)		_bger(_jit,i0,r0,r1,1,prev)
+static jit_word_t _bger(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t,jit_bool_t,jit_node_t*);
+#define bgei(i0,r0,i1,prev)		_bgei(_jit,i0,r0,i1,0,0,prev)
+#define bgei_u(i0,r0,i1,prev)		_bgei(_jit,i0,r0,i1,1,0,prev)
+static jit_word_t _bgei(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t,
+			jit_bool_t,jit_bool_t,jit_node_t*);
 #define bgtr(i0,r0,r1,prev)		_bgtr(_jit,i0,r0,r1,0,0,prev)
 #define bgtr_u(i0,r0,r1,prev)		_bgtr(_jit,i0,r0,r1,1,0,prev)
 static jit_word_t _bgtr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t,
@@ -2339,91 +2334,6 @@ static jit_int32_t _get_reg_can_swap(jit_state_t *_jit, jit_bool_t swap_ds)
 }
 
 static jit_word_t
-_bltr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_word_t		w;
-    jit_int32_t		reg;
-
-    reg = jit_get_reg(jit_class_gpr);
-    SLT(rn(reg), r0, r1);
-    w = _jit->pc.w;
-    BNE(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-    NOP(1);
-    jit_unget_reg(reg);
-
-    return (w);
-}
-
-static jit_word_t
-_bltr_u(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_word_t		w;
-    jit_int32_t		reg;
-
-    reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    SLTU(rn(reg), r0, r1);
-    w = _jit->pc.w;
-    BNE(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-    NOP(1);
-    jit_unget_reg(reg);
-
-    return (w);
-}
-
-static jit_word_t
-_blti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
-{
-    jit_word_t		w;
-    jit_word_t		d;
-    jit_int32_t		reg;
-    jit_bool_t		zero_p;
-
-    if (!(zero_p = i1 == 0))
-	reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    if (can_sign_extend_short_p(i1)) {
-	if (!zero_p)
-	    SLTI(rn(reg), r0, i1);
-	w = _jit->pc.w;
-	d = ((i0 - w) >> 2) - 1;
-	if (!zero_p)
-	    BNE(rn(reg), _ZERO_REGNO, d);
-	else
-	    BLTZ(r0, d);
-	NOP(1);
-    }
-    else {
-	movi(rn(reg), i1);
-	w = bltr(i0, r0, rn(reg));
-    }
-    if (!zero_p)
-	jit_unget_reg(reg);
-
-    return (w);
-}
-
-static jit_word_t
-_blti_u(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
-{
-    jit_word_t		w;
-    jit_int32_t		reg;
-
-    reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    if (can_sign_extend_short_p(i1)) {
-	SLTIU(rn(reg), r0, i1);
-	w = _jit->pc.w;
-	BNE(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-	NOP(1);
-    }
-    else {
-	movi(rn(reg), i1);
-	w = bltr_u(i0, r0, rn(reg));
-    }
-    jit_unget_reg(reg);
-
-    return (w);
-}
-
-static jit_word_t
 _beqr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1, jit_node_t *prev)
 {
     jit_word_t		w;
@@ -2481,86 +2391,107 @@ _beqi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1, jit_node_
 }
 
 static jit_word_t
-_bger(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
+_bger(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1,
+      jit_bool_t sltu, jit_node_t *prev)
 {
     jit_word_t		w;
-    jit_int32_t		reg;
+    jit_int32_t		reg, op;
+    jit_bool_t		swap_ds;
 
-    reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    SLT(rn(reg), r0, r1);
+    swap_ds = can_swap_ds(prev, r0, r1);
+    reg = get_reg_can_swap(swap_ds);
+    if (reg == JIT_NOREG) {
+        swap_ds = 0;
+        reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
+    }
+
+    if (swap_ds)
+        op = *--_jit->pc.ui;
+
+    if (sltu)
+        SLTU(rn(reg), r0, r1);
+    else
+        SLT(rn(reg), r0, r1);
+
     w = _jit->pc.w;
     BEQ(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-    NOP(1);
+
+    if (swap_ds)
+        ii(op);
+    else
+        NOP(1);
+
     jit_unget_reg(reg);
 
     return (w);
 }
 
 static jit_word_t
-_bger_u(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_word_t		w;
-    jit_int32_t		reg;
-
-    reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    SLTU(rn(reg), r0, r1);
-    w = _jit->pc.w;
-    BEQ(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-    NOP(1);
-    jit_unget_reg(reg);
-
-    return (w);
-}
-
-static jit_word_t
-_bgei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+_bgei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1,
+      jit_bool_t sltiu, jit_bool_t bne, jit_node_t *prev)
 {
     jit_word_t		w;
     jit_word_t		d;
-    jit_int32_t		reg;
-    jit_bool_t		zero_p;
+    jit_int32_t		reg, op;
+    jit_bool_t		zero_p, swap_ds;
 
-    if (!(zero_p = i1 == 0))
-	reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
+    zero_p = !sltiu && i1 == 0;
+
+    swap_ds = can_swap_ds(prev, r0, 0);
+
+    if (!zero_p) {
+        reg = get_reg_can_swap(swap_ds);
+        if (reg == JIT_NOREG) {
+            swap_ds = 0;
+            reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
+        }
+    }
+    if (swap_ds)
+        op = *--_jit->pc.ui;
+
     if (can_sign_extend_short_p(i1)) {
-	if (!zero_p)
-	    SLTI(rn(reg), r0, i1);
-	w = _jit->pc.w;
-	d = ((i0 - w) >> 2) - 1;
-	if (!zero_p)
-	    BEQ(rn(reg), _ZERO_REGNO, d);
-	else
-	    BGEZ(r0, d);
-	NOP(1);
+        if (!zero_p) {
+            if (sltiu)
+                SLTIU(rn(reg), r0, i1);
+            else
+                SLTI(rn(reg), r0, i1);
+        }
+
+        w = _jit->pc.w;
+        d = ((i0 - w) >> 2) - 1;
+        if (bne) {
+            if (!zero_p)
+                BNE(rn(reg), _ZERO_REGNO, d);
+            else
+                BLTZ(r0, d);
+        } else {
+            if (!zero_p)
+                BEQ(rn(reg), _ZERO_REGNO, d);
+            else
+                BGEZ(r0, d);
+        }
     }
     else {
-	movi(rn(reg), i1);
-	w = bger(i0, r0, rn(reg));
+        movi(rn(reg), i1);
+        if (sltiu)
+            SLTU(rn(reg), r0, rn(reg));
+        else
+            SLT(rn(reg), r0, rn(reg));
+
+        w = _jit->pc.w;
+        if (bne)
+            BNE(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
+        else
+            BEQ(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
     }
+
+    if (swap_ds)
+        ii(op);
+    else
+        NOP(1);
+
     if (!zero_p)
-	jit_unget_reg(reg);
-
-    return (w);
-}
-
-static jit_word_t
-_bgei_u(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
-{
-    jit_word_t		w;
-    jit_int32_t		reg;
-
-    reg = jit_get_reg(jit_class_gpr|jit_class_nospill);
-    if (can_sign_extend_short_p(i1)) {
-	SLTIU(rn(reg), r0, i1);
-	w = _jit->pc.w;
-	BEQ(rn(reg), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-	NOP(1);
-    }
-    else {
-	movi(rn(reg), i1);
-	w = bger_u(i0, r0, rn(reg));
-    }
-    jit_unget_reg(reg);
+        jit_unget_reg(reg);
 
     return (w);
 }
