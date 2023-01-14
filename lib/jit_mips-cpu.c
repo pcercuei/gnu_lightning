@@ -1948,8 +1948,7 @@ static void
 _eqr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     subr(r0, r1, r2);
-    SLTU(r0, _ZERO_REGNO, r0);
-    XORI(r0, r0, 1);
+    SLTIU(r0, r0, 1);
 }
 
 static void
@@ -1957,11 +1956,10 @@ _eqi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     if (i0) {
 	subi(r0, r1, i0);
-	SLTU(r0, _ZERO_REGNO, r0);
+	SLTIU(r0, r0, 1);
+    } else {
+	SLTIU(r0, r1, 1);
     }
-    else
-	SLTU(r0, _ZERO_REGNO, r1);
-    XORI(r0, r0, 1);
 }
 
 static void
