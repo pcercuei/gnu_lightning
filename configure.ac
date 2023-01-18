@@ -248,7 +248,7 @@ elif test $cpu = x86; then
     int main(void) {
 	int		    ac, flags;
 	unsigned int	    eax, ebx, ecx, edx;
-	if (__WORDSIZE == 64)
+	if (sizeof(long) == 8)
 	    return 1;
 	__asm__ volatile ("pushfl;\n\t"
 			  "popl %0;\n\t"
