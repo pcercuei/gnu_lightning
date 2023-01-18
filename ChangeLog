@@ -1,3 +1,16 @@
+2023-01-18 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning/jit_private.h: Include new framesize field
+	of jit_compiler_t; add new alist field for jit_function_t; add
+	new cvt_offset and need_stack fields specific to x86.
+	* lib/jit_x86.c, lib/jit_x86-cpu: Rewrite code to create stack
+	frames, so that less stack space can be used if no, or very few
+	callee save registers are modified in a function.
+	* jit_x86-sse.c, jit_x86-x87.c: Make CVT_OFFSET variable, and
+	dynamically allocated; this is required to avoid needing to
+	modify twice %rsp at function prologs, even if no stack space
+	is used.
+
 2022-11-09 Paulo Andrade <pcpa@gnu.org>
 
 	* configure.ac: Add new --enable-devel-strong-type-checking

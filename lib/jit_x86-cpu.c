@@ -3618,7 +3618,7 @@ _jmpsi(jit_state_t *_jit, jit_uint8_t i0)
 static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, offs;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
 	CHECK_FRAME();
@@ -3639,77 +3639,38 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     _jitc->function->stack = (((_jitc->function->self.alen -
 			       _jitc->function->self.aoff) + 15) & -16);
 #endif
-    if (_jitc->function->need_frame)
-	_jitc->function->stack += stack_adjust;
-    else {
+
+    if (_jitc->function->stack)
+	_jitc->function->need_stack = 1;
+
+    if (!_jitc->function->need_frame && !_jitc->function->need_stack) {
 	/* check if any callee save register needs to be saved */
 	for (reg = 0; reg < _jitc->reglen; ++reg)
 	    if (jit_regset_tstbit(&_jitc->function->regset, reg) &&
 		(_rvs[reg].spec & jit_class_sav)) {
-		CHECK_FRAME();
+		_jitc->function->need_stack = 1;
 		break;
 	    }
     }
 
-    if (_jitc->function->need_frame)
-	subi(_RSP_REGNO, _RSP_REGNO, stack_framesize - REAL_WORDSIZE);
+    if (_jitc->function->need_frame || _jitc->function->need_stack)
+	subi(_RSP_REGNO, _RSP_REGNO, FRAMESIZE());
     /* callee save registers */
-#if __X32
-    if (jit_regset_tstbit(&_jitc->function->regset, _RDI))
-	stxi(12, _RSP_REGNO, _RDI_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RSI))
-	stxi( 8, _RSP_REGNO, _RSI_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RBX))
-	stxi( 4, _RSP_REGNO, _RBX_REGNO);
-#else
-#  if __CYGWIN__ || _WIN32
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM15))
-	sse_stxi_d(136, _RSP_REGNO, _XMM15_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM14))
-	sse_stxi_d(128, _RSP_REGNO, _XMM14_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM13))
-	sse_stxi_d(120, _RSP_REGNO, _XMM13_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM12))
-	sse_stxi_d(112, _RSP_REGNO, _XMM12_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM11))
-	sse_stxi_d(104, _RSP_REGNO, _XMM11_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM10))
-	sse_stxi_d(96, _RSP_REGNO, _XMM10_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM9))
-	sse_stxi_d(88, _RSP_REGNO, _XMM9_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM8))
-	sse_stxi_d(80, _RSP_REGNO, _XMM8_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM7))
-	sse_stxi_d(72, _RSP_REGNO, _XMM7_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM6))
-	sse_stxi_d(64, _RSP_REGNO, _XMM6_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R15))
-	stxi(56, _RSP_REGNO, _R15_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R14))
-	stxi(48, _RSP_REGNO, _R14_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R13))
-	stxi(40, _RSP_REGNO, _R13_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R12))
-	stxi(32, _RSP_REGNO, _R12_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RSI))
-	stxi(24, _RSP_REGNO, _RSI_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RDI))
-	stxi(16, _RSP_REGNO, _RDI_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RBX))
-	stxi( 8, _RSP_REGNO, _RBX_REGNO);
-#  else
-    if (jit_regset_tstbit(&_jitc->function->regset, _RBX))
-	stxi(40, _RSP_REGNO, _RBX_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R12))
-	stxi(32, _RSP_REGNO, _R12_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R13))
-	stxi(24, _RSP_REGNO, _R13_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R14))
-	stxi(16, _RSP_REGNO, _R14_REGNO);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R15))
-	stxi( 8, _RSP_REGNO, _R15_REGNO);
-#  endif
+    for (reg = 0, offs = REAL_WORDSIZE; reg < jit_size(iregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    stxi(offs, _RSP_REGNO, rn(iregs[reg]));
+	    offs += REAL_WORDSIZE;
+	}
+    }
+#if __X64 && (__CYGWIN__ || _WIN32)
+    for (reg = 0; reg < jit_size(fregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg])) {
+	    sse_stxi_d(offs, _RSP_REGNO, rn(fregs[reg]));
+	    offs += sizeof(jit_float64_t);
+	}
+    }
 #endif
+
     if (_jitc->function->need_frame) {
 	stxi(0, _RSP_REGNO, _RBP_REGNO);
 	movr(_RBP_REGNO, _RSP_REGNO);
@@ -3761,71 +3722,38 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 static void
 _epilog(jit_state_t *_jit, jit_node_t *node)
 {
+    jit_int32_t		reg, offs;
     if (_jitc->function->assume_frame)
 	return;
     if (_jitc->function->need_frame)
 	movr(_RSP_REGNO, _RBP_REGNO);
+
     /* callee save registers */
-#if __X32
-    if (jit_regset_tstbit(&_jitc->function->regset, _RDI))
-	ldxi(_RDI_REGNO, _RSP_REGNO, 12);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RSI))
-	ldxi(_RSI_REGNO, _RSP_REGNO,  8);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RBX))
-	ldxi(_RBX_REGNO, _RSP_REGNO,  4);
-#else
-#  if __CYGWIN__ || _WIN32
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM15))
-	sse_ldxi_d(_XMM15_REGNO, _RSP_REGNO, 136);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM14))
-	sse_ldxi_d(_XMM14_REGNO, _RSP_REGNO, 128);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM13))
-	sse_ldxi_d(_XMM13_REGNO, _RSP_REGNO, 120);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM12))
-	sse_ldxi_d(_XMM12_REGNO, _RSP_REGNO, 112);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM11))
-	sse_ldxi_d(_XMM11_REGNO, _RSP_REGNO, 104);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM10))
-	sse_ldxi_d(_XMM10_REGNO, _RSP_REGNO, 96);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM9))
-	sse_ldxi_d(_XMM9_REGNO, _RSP_REGNO, 88);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM8))
-	sse_ldxi_d(_XMM8_REGNO, _RSP_REGNO, 80);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM7))
-	sse_ldxi_d(_XMM7_REGNO, _RSP_REGNO, 72);
-    if (jit_regset_tstbit(&_jitc->function->regset, _XMM6))
-	sse_ldxi_d(_XMM6_REGNO, _RSP_REGNO, 64);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R15))
-	ldxi(_R15_REGNO, _RSP_REGNO, 56);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R14))
-	ldxi(_R14_REGNO, _RSP_REGNO, 48);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R13))
-	ldxi(_R13_REGNO, _RSP_REGNO, 40);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R12))
-	ldxi(_R12_REGNO, _RSP_REGNO, 32);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RSI))
-	ldxi(_RSI_REGNO, _RSP_REGNO, 24);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RDI))
-	ldxi(_RDI_REGNO, _RSP_REGNO, 16);
-    if (jit_regset_tstbit(&_jitc->function->regset, _RBX))
-	ldxi(_RBX_REGNO, _RSP_REGNO,  8);
-#  else
-    if (jit_regset_tstbit(&_jitc->function->regset, _RBX))
-	ldxi(_RBX_REGNO, _RSP_REGNO, 40);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R12))
-	ldxi(_R12_REGNO, _RSP_REGNO, 32);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R13))
-	ldxi(_R13_REGNO, _RSP_REGNO, 24);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R14))
-	ldxi(_R14_REGNO, _RSP_REGNO, 16);
-    if (jit_regset_tstbit(&_jitc->function->regset, _R15))
-	ldxi(_R15_REGNO, _RSP_REGNO,  8);
-#  endif
+    for (reg = 0, offs = REAL_WORDSIZE; reg < jit_size(iregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    ldxi(rn(iregs[reg]), _RSP_REGNO, offs);
+	    offs += REAL_WORDSIZE;
+	}
+    }
+#if __X64 && (__CYGWIN__ || _WIN32)
+    for (reg = 0; reg < jit_size(fregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg])) {
+	    sse_ldxi_d(rn(fregs[reg]), _RSP_REGNO, offs);
+	    offs += sizeof(jit_float64_t);
+	}
+    }
 #endif
+
     if (_jitc->function->need_frame) {
 	ldxi(_RBP_REGNO, _RSP_REGNO, 0);
-	addi(_RSP_REGNO, _RSP_REGNO, stack_framesize - REAL_WORDSIZE);
+	addi(_RSP_REGNO, _RSP_REGNO, FRAMESIZE());
     }
+    /* This condition does not happen as much as expected because
+     * it is not safe to not create a frame pointer if any function
+     * is called, even jit functions, as those might call external
+     * functions. */
+    else if (_jitc->function->need_stack)
+	addi(_RSP_REGNO, _RSP_REGNO, FRAMESIZE());
 
     ic(0xc3);
 }
@@ -3835,7 +3763,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
 {
 #if __X32 || __CYGWIN__ || _WIN32
     assert(_jitc->function->self.call & jit_call_varargs);
-    addi(r0, _RBP_REGNO, _jitc->function->self.size);
+    addi(r0, _RBP_REGNO, SELFSIZE());
 #else
     jit_int32_t		reg;
 
@@ -3854,7 +3782,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     stxi_i(offsetof(jit_va_list_t, fpoff), r0, rn(reg));
 
     /* Initialize overflow pointer to the first stack argument. */
-    addi(rn(reg), _RBP_REGNO, _jitc->function->self.size);
+    addi(rn(reg), _RBP_REGNO, SELFSIZE());
     stxi(offsetof(jit_va_list_t, over), r0, rn(reg));
 
     /* Initialize register save area pointer. */

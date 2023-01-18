@@ -662,7 +662,7 @@ _x87_sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    CHECK_FRAME();
+    CHECK_CVT_OFFSET();
 #if defined(sun)
     /* for the sake of passing test cases in x87 mode, otherwise only sse
      * is supported */
@@ -693,7 +693,7 @@ _x87_truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    CHECK_FRAME();
+    CHECK_CVT_OFFSET();
     fldr(r1);
     fisttpqm(CVT_OFFSET, _RBP_REGNO, _NOREG, _SCL1);
     ldxi(r0, _RBP_REGNO, CVT_OFFSET);
@@ -703,7 +703,7 @@ _x87_truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    CHECK_FRAME();
+    CHECK_CVT_OFFSET();
     stxi(CVT_OFFSET, _RBP_REGNO, r1);
 #  if __X32
     fildlm(CVT_OFFSET, _RBP_REGNO, _NOREG, _SCL1);
@@ -848,7 +848,7 @@ _x87_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 	fldln2();
     else {
 	if (_jitc->no_data) {
-	    CHECK_FRAME();
+	    CHECK_CVT_OFFSET();
 	    reg = jit_get_reg(jit_class_gpr);
 	    movi(rn(reg), data.i);
 	    stxi_i(CVT_OFFSET, _RBP_REGNO, rn(reg));
@@ -1040,7 +1040,7 @@ _x87_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	fldln2();
     else {
 	if (_jitc->no_data) {
-	    CHECK_FRAME();
+	    CHECK_CVT_OFFSET();
 	    reg = jit_get_reg(jit_class_gpr);
 #if __X32 || __X64_32
 	    movi(rn(reg), data.ii[0]);

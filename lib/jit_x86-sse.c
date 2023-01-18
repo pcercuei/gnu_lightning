@@ -1295,7 +1295,7 @@ _sse_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	    movdqxr(r0, rn(reg));
 	    jit_unget_reg(reg);
 #else
-	    CHECK_FRAME();
+	    CHECK_CVT_OFFSET();
 	    movi(rn(reg), data.ii[0]);
 	    stxi_i(CVT_OFFSET, _RBP_REGNO, rn(reg));
 	    movi(rn(reg), data.ii[1]);

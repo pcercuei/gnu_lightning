@@ -510,9 +510,14 @@ struct jit_function {
     } call;
     jit_node_t		*prolog;
     jit_node_t		*epilog;
+    jit_node_t		*alist;
     jit_int32_t		*regoff;
     jit_regset_t	 regset;
     jit_int32_t		 stack;
+#if defined(__i386__) || defined(__x86_64__)
+    jit_int32_t		 cvt_offset;	/* allocai'd offset for x87<->xmm or
+					 * fpr<->gpr transfer using the stack */
+#endif
 
     /* Helper for common jit generation pattern, used in GNU Smalltalk
      * and possibly others, where a static frame layout is required or
@@ -522,6 +527,7 @@ struct jit_function {
     jit_uint32_t	 assume_frame : 1;
 
     jit_uint32_t	 need_frame : 1;	/* need frame pointer? */
+    jit_uint32_t	 need_stack : 1;	/* need stack pointer? */
 
     /* alloca offset offset */
     jit_int32_t		 aoffoff;
@@ -566,6 +572,8 @@ struct jit_compiler {
 #endif
     jit_uint32_t	  no_data : 1;
     jit_uint32_t	  no_note : 1;
+    jit_int32_t		  framesize;	/* space for callee save registers,
+					 * frame pointer and return address */
     jit_int32_t		  reglen;	/* number of registers */
     jit_regset_t	  regarg;	/* cannot allocate */
     jit_regset_t	  regsav;	/* automatic spill only once */
