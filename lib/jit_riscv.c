@@ -18,7 +18,7 @@
  */
 
 /* callee save					  + variadic arguments
- * align16(ra+fp+s[1-9]+s10+s11+fs[0-9]+fs10+fs11)+align16(fa[0-7]) */
+ * align16(ra+fp+s[1-9]+s10+s11+fs[0-9]+fs10+fs11)+align16(a[0-7]) */
 #define stack_framesize		(208 + 64)
 #define DIFFSIZE()		(stack_framesize - _jitc->framesize)
 #define FRAMESIZE()		(stack_framesize - DIFFSIZE())
