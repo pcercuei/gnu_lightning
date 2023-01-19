@@ -531,7 +531,6 @@ _jit_allocar(jit_state_t *_jit, jit_int32_t u, jit_int32_t v)
 {
     jit_int32_t		 reg;
     assert(_jitc->function);
-    CHECK_FRAME();
     jit_inc_synth_ww(allocar, u, v);
     if (!_jitc->function->allocar) {
 	_jitc->function->aoffoff = jit_allocai(sizeof(jit_int32_t));
