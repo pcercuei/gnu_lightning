@@ -1,3 +1,10 @@
+2023-01-19 Paulo Andrade <pcpa@gnu.org>
+
+	* lib/jit_riscv.c, lib/jit_riscv-cpu.c: Adapt code to use a
+	variable framesize. Previously it was aligning the stack at
+	8 bytes, not 16. Now functions are called with a 16 byte aligned
+	stack.
+
 2023-01-18 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning/jit_private.h: Include new framesize field

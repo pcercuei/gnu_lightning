@@ -17,6 +17,18 @@
  *	Paulo Cesar Pereira de Andrade
  */
 
+/* callee save					  + variadic arguments
+ * align16(ra+fp+s[1-9]+s10+s11+fs[0-9]+fs10+fs11)+align16(fa[0-7]) */
+#define stack_framesize		(208 + 64)
+#define DIFFSIZE()		(stack_framesize - _jitc->framesize)
+#define FRAMESIZE()		(stack_framesize - DIFFSIZE())
+#define SELFSIZE()		(_jitc->function->self.size - DIFFSIZE())
+#define LINK_ALIST(node)						\
+    do {								\
+	node->link = _jitc->function->alist;				\
+	_jitc->function->alist = node;					\
+    } while (0)
+
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < 8)
 #define jit_arg_f_reg_p(i)		((i) >= 0 && (i) < 8)
 
@@ -36,6 +48,10 @@ typedef jit_pointer_t jit_va_list_t;
 /*
  * Prototypes
  */
+#define compute_framesize()		_compute_framesize(_jit)
+static void _compute_framesize(jit_state_t*);
+#define patch_alist(revert)		_patch_alist(_jit, revert)
+static void _patch_alist(jit_state_t*, jit_bool_t);
 #if __WORDSIZE == 64
 #  define load_const(r0, i0)		_load_const(_jit, r0, i0)
 static void _load_const(jit_state_t*, jit_int32_t, jit_word_t);
@@ -125,6 +141,14 @@ jit_register_t		_rvs[] = {
     { rc(arg) | rc(fpr) | 0x0b,		"fa1" },
     { rc(arg) | rc(fpr) | 0x0a,		"fa0" },
     { _NOREG,				"<none>" },
+};
+
+static jit_int32_t iregs[] = {
+    _S1, _S2, _S3, _S4, _S5, _S6, _S7, _S8, _S9, _S10, _S11
+};
+
+static jit_int32_t fregs[] = {
+    _FS0, _FS1, _FS2, _FS3, _FS4, _FS5, _FS6, _FS7, _FS8, _FS9, _FS10, _FS11
 };
 
 /*
@@ -419,8 +443,10 @@ _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_c, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_c(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_c(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_c(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -431,8 +457,10 @@ _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_uc, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_uc(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_uc(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_uc(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -443,8 +471,10 @@ _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_s, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_s(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_s(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_s(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -455,8 +485,10 @@ _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_us, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_us(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_us(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_us(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -467,8 +499,10 @@ _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_i, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_i(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_i(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_i(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -479,8 +513,10 @@ _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_ui, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_extr_ui(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_ui(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_ui(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -491,8 +527,10 @@ _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_l, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(u, JIT_RA0 - v->u.w);
-    else
-	jit_ldxi_l(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_l(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -503,8 +541,10 @@ _jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v, jit_code_t code)
     jit_code_inc_synth_wp(code, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(JIT_RA0 - v->u.w, u);
-    else
-	jit_stxi(v->u.w, JIT_FP, u);
+    else {
+	jit_node_t	*node = jit_stxi(v->u.w, JIT_FP, u);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -517,9 +557,11 @@ _jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
     if (jit_arg_reg_p(v->u.w))
 	jit_movi(JIT_RA0 - v->u.w, u);
     else {
+	jit_node_t	*node;
 	regno = jit_get_reg(jit_class_gpr);
 	jit_movi(regno, u);
-	jit_stxi(v->u.w, JIT_FP, regno);
+	node = jit_stxi(v->u.w, JIT_FP, regno);
+	LINK_ALIST(node);
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
@@ -534,8 +576,10 @@ _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_movr_f(u, JIT_FA0 - v->u.w);
     else if (jit_arg_reg_p(v->u.w - 8))
 	jit_movr_w_f(u, JIT_RA0 - (v->u.w - 8));
-    else
-	jit_ldxi_f(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_f(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -548,8 +592,10 @@ _jit_putargr_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_movr_f(JIT_FA0 - v->u.w, u);
     else if (jit_arg_reg_p(v->u.w - 8))
 	jit_movr_f_w(JIT_RA0 - (v->u.w - 8), u);
-    else
-	jit_stxi_f(v->u.w, JIT_FP, u);
+    else {
+	jit_node_t	*node = jit_stxi_f(v->u.w, JIT_FP, u);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -564,9 +610,11 @@ _jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
     else if (jit_arg_reg_p(v->u.w - 8))
 	jit_movi_f_w(JIT_RA0 - (v->u.w - 8), u);
     else {
+	jit_node_t	*node;
 	regno = jit_get_reg(jit_class_fpr);
 	jit_movi_f(regno, u);
-	jit_stxi_f(v->u.w, JIT_FP, regno);
+	node = jit_stxi_f(v->u.w, JIT_FP, regno);
+	LINK_ALIST(node);
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
@@ -581,8 +629,10 @@ _jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_movr_d(u, JIT_FA0 - v->u.w);
     else if (jit_arg_reg_p(v->u.w - 8))
 	jit_movr_w_d(u, JIT_RA0 - (v->u.w - 8));
-    else
-	jit_ldxi_d(u, JIT_FP, v->u.w);
+    else {
+	jit_node_t	*node = jit_ldxi_d(u, JIT_FP, v->u.w);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -595,8 +645,10 @@ _jit_putargr_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_movr_d(JIT_FA0 - v->u.w, u);
     else if (jit_arg_reg_p(v->u.w - 8))
 	jit_movr_d_w(JIT_RA0 - (v->u.w - 8), u);
-    else
-	jit_stxi_d(v->u.w, JIT_FP, u);
+    else {
+	jit_node_t	*node = jit_stxi_d(v->u.w, JIT_FP, u);
+	LINK_ALIST(node);
+    }
     jit_dec_synth();
 }
 
@@ -611,9 +663,11 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
     else if (jit_arg_reg_p(v->u.w - 8))
 	jit_movi_d_w(JIT_RA0 - (v->u.w - 8), u);
     else {
+	jit_node_t	*node;
 	regno = jit_get_reg(jit_class_fpr);
 	jit_movi_d(regno, u);
-	jit_stxi_d(v->u.w, JIT_FP, regno);
+	node = jit_stxi_d(v->u.w, JIT_FP, regno);
+	LINK_ALIST(node);
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
@@ -1478,7 +1532,6 @@ _emit_code(jit_state_t *_jit)
 		callr(rn(node->u.w));
 		break;
 	    case jit_code_calli:
-		CHECK_FRAME();
 		if (node->flag & jit_flag_node) {
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
@@ -1495,8 +1548,10 @@ _emit_code(jit_state_t *_jit)
 			patch(word, node);
 		    }
 		}
-		else
+		else {
+		    CHECK_FRAME();
 		    calli(node->u.w);
+		}
 		break;
 	    case jit_code_prolog:
 		_jitc->function = _jitc->functions.ptr + node->w.w;
@@ -1508,6 +1563,8 @@ _emit_code(jit_state_t *_jit)
 #endif
 		undo.patch_offset = _jitc->patches.offset;
 	    restart_function:
+		compute_framesize();
+		patch_alist(0);
 		_jitc->again = 0;
 		prolog(node);
 		break;
@@ -1533,11 +1590,15 @@ _emit_code(jit_state_t *_jit)
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;
 		    undo.func.allocar = _jitc->function->allocar;
+		    /* this will be recomputed but undo anyway to have it
+		     * better self documented.*/
+		    undo.func.need_stack = _jitc->function->need_stack;
 		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;
 #endif
 		    _jitc->patches.offset = undo.patch_offset;
+		    patch_alist(1);
 		    goto restart_function;
 		}
 		/* remember label is defined */
@@ -1865,6 +1926,66 @@ void
 _emit_stxi_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     stxi_d(i0, rn(r0), rn(r1));
+}
+
+#if __WORDSIZE != 64
+# error "only 64 bit ports tested"
+#endif
+static void
+_compute_framesize(jit_state_t *_jit)
+{
+    jit_int32_t		reg;
+    /* Save stack pointer in first slot */
+    _jitc->framesize = 16;	/* ra+fp */
+    for (reg = 0; reg < jit_size(iregs); reg++)
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg]))
+	    _jitc->framesize += sizeof(jit_word_t);
+
+    for (reg = 0; reg < jit_size(fregs); reg++)
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg]))
+	    _jitc->framesize += sizeof(jit_float64_t);
+
+    /* Space to store variadic arguments */
+    if (_jitc->function->self.call & jit_call_varargs)
+	_jitc->framesize += (8 - _jitc->function->vagp) * 8;
+
+    /* Make sure functions called have a 16 byte aligned stack */
+    _jitc->framesize = (_jitc->framesize + 15) & -16;
+}
+
+static void
+_patch_alist(jit_state_t *_jit, jit_bool_t revert)
+{
+    jit_int32_t		 diff;
+    jit_node_t		*node;
+    diff = DIFFSIZE();
+    if (diff) {
+	if (revert)
+	    diff = -diff;
+	for (node = _jitc->function->alist; node; node = node->link) {
+	    switch (node->code) {
+		case jit_code_ldxi_c:	case jit_code_ldxi_uc:
+		case jit_code_ldxi_s:	case jit_code_ldxi_us:
+		case jit_code_ldxi_i:
+#if __WORDSIZE == 64
+		case jit_code_ldxi_ui:	case jit_code_ldxi_l:
+#endif
+		case jit_code_ldxi_f:	case jit_code_ldxi_d:
+		    node->w.w -= diff;
+		    break;
+		case jit_code_stxi_c:	case jit_code_stxi_s:
+		case jit_code_stxi_i:
+#if __WORDSIZE == 64
+		case jit_code_stxi_l:
+#endif
+		case jit_code_stxi_f:	case jit_code_stxi_d:
+		    node->u.w -= diff;
+		    break;
+		default:
+		    abort();
+	    }
+	}
+    }
 }
 
 static void
