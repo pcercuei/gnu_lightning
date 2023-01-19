@@ -31,7 +31,6 @@
 # define _RA_REGNO			1
 # define _SP_REGNO			3
 # define _FP_REGNO			22
-# define stack_framesize		160
 # define ldr(u, v)			ldr_l(u, v)
 # define ldi(u, v)			ldi_l(u, v)
 # define ldxi(u, v, w)			ldxi_l(u, v, w)
@@ -2531,7 +2530,7 @@ _calli_p(jit_state_t *_jit, jit_word_t i0)
 static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, offs;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
 	CHECK_FRAME();
@@ -2557,44 +2556,24 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (_jitc->function->need_frame) {
-	subi(_SP_REGNO, _SP_REGNO, stack_framesize);
+	subi(_SP_REGNO, _SP_REGNO, FRAMESIZE());
 	stxi(0, _SP_REGNO, _RA_REGNO);
 	stxi(8, _SP_REGNO, _FP_REGNO);
     }
-    if (jit_regset_tstbit(&_jitc->function->regset, _S0))
-	stxi(16, _SP_REGNO, rn(_S0));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S1))
-	stxi(24, _SP_REGNO, rn(_S1));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S2))
-	stxi(32, _SP_REGNO, rn(_S2));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S3))
-	stxi(40, _SP_REGNO, rn(_S3));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S4))
-	stxi(48, _SP_REGNO, rn(_S4));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S5))
-	stxi(56, _SP_REGNO, rn(_S5));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S6))
-	stxi(64, _SP_REGNO, rn(_S6));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S7))
-	stxi(72, _SP_REGNO, rn(_S7));
-    if (jit_regset_tstbit(&_jitc->function->regset, _S8))
-	stxi(80, _SP_REGNO, rn(_S8));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS0))
-	stxi_d(88, _SP_REGNO, rn(_FS0));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS1))
-	stxi_d(96, _SP_REGNO, rn(_FS1));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS2))
-	stxi_d(104, _SP_REGNO, rn(_FS2));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS3))
-	stxi_d(112, _SP_REGNO, rn(_FS3));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS4))
-	stxi_d(120, _SP_REGNO, rn(_FS4));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS5))
-	stxi_d(128, _SP_REGNO, rn(_FS5));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS6))
-	stxi_d(136, _SP_REGNO, rn(_FS6));
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS7))
-	stxi_d(144, _SP_REGNO, rn(_FS7));
+    /* callee save registers */
+    for (reg = 0, offs = 16; reg < jit_size(iregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    stxi(offs, _SP_REGNO, rn(iregs[reg]));
+	    offs += sizeof(jit_word_t);
+	}
+    }
+    for (reg = 0; reg < jit_size(fregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg])) {
+	    stxi_d(offs, _SP_REGNO, rn(fregs[reg]));
+	    offs += sizeof(jit_float64_t);
+	}
+    }
+
     if (_jitc->function->need_frame)
 	movr(_FP_REGNO, _SP_REGNO);
     if (_jitc->function->stack)
@@ -2607,7 +2586,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
     if (_jitc->function->self.call & jit_call_varargs) {
 	for (reg = _jitc->function->vagp; jit_arg_reg_p(reg); ++reg)
-	    stxi(stack_framesize - ((8 - reg) * 8),
+	    stxi(FRAMESIZE() - ((8 - reg) * 8),
 		 _FP_REGNO, rn(JIT_RA0 - reg));
     }
 }
@@ -2615,6 +2594,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 static void
 _epilog(jit_state_t *_jit, jit_node_t *node)
 {
+    jit_int32_t		reg, offs;
     if (_jitc->function->assume_frame)
 	return;
     if (_jitc->function->need_frame) {
@@ -2622,42 +2602,23 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	ldxi(_RA_REGNO, _SP_REGNO, 0);
 	ldxi(_FP_REGNO, _SP_REGNO, 8);
     }
-    if (jit_regset_tstbit(&_jitc->function->regset, _S0))
-	ldxi(rn(_S0), _SP_REGNO, 16);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S1))
-	ldxi(rn(_S1), _SP_REGNO, 24);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S2))
-	ldxi(rn(_S2), _SP_REGNO, 32);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S3))
-	ldxi(rn(_S3), _SP_REGNO, 40);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S4))
-	ldxi(rn(_S4), _SP_REGNO, 48);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S5))
-	ldxi(rn(_S5), _SP_REGNO, 56);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S6))
-	ldxi(rn(_S6), _SP_REGNO, 64);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S7))
-	ldxi(rn(_S7), _SP_REGNO, 72);
-    if (jit_regset_tstbit(&_jitc->function->regset, _S8))
-	ldxi(rn(_S8), _SP_REGNO, 80);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS0))
-	ldxi_d(rn(_FS0), _SP_REGNO, 88);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS1))
-	ldxi_d(rn(_FS1), _SP_REGNO, 96);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS2))
-	ldxi_d(rn(_FS2), _SP_REGNO, 104);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS3))
-	ldxi_d(rn(_FS3), _SP_REGNO, 112);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS4))
-	ldxi_d(rn(_FS4), _SP_REGNO, 120);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS5))
-	ldxi_d(rn(_FS5), _SP_REGNO, 128);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS6))
-	ldxi_d(rn(_FS6), _SP_REGNO, 136);
-    if (jit_regset_tstbit(&_jitc->function->regset, _FS7))
-	ldxi_d(rn(_FS7), _SP_REGNO, 144);
+
+    /* callee save registers */
+    for (reg = 0, offs = 16; reg < jit_size(iregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    ldxi(rn(iregs[reg]), _SP_REGNO, offs);
+	    offs += sizeof(jit_word_t);
+	}
+    }
+    for (reg = 0; reg < jit_size(fregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg])) {
+	    ldxi_d(rn(fregs[reg]), _SP_REGNO, offs);
+	    offs += sizeof(jit_float64_t);
+	}
+    }
+
     if (_jitc->function->need_frame)
-	addi(_SP_REGNO, _SP_REGNO, stack_framesize);
+	addi(_SP_REGNO, _SP_REGNO, FRAMESIZE());
     JIRL(_ZERO_REGNO, _RA_REGNO, 0);
 }
 
@@ -2667,9 +2628,9 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     assert(_jitc->function->self.call & jit_call_varargs);
     /* Initialize va_list to the first stack argument. */
     if (jit_arg_reg_p(_jitc->function->vagp))
-	addi(r0, _FP_REGNO, stack_framesize - ((8 - _jitc->function->vagp) * 8));
+	addi(r0, _FP_REGNO, FRAMESIZE() - ((8 - _jitc->function->vagp) * 8));
     else
-	addi(r0, _FP_REGNO, _jitc->function->self.size);
+	addi(r0, _FP_REGNO, SELFSIZE());
 }
 
 static void
