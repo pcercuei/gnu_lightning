@@ -1539,6 +1539,9 @@ _emit_code(jit_state_t *_jit)
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;
 		    undo.func.allocar = _jitc->function->allocar;
+		    /* this will be recomputed but undo anyway to have it
+		     * better self documented.*/
+		    undo.func.need_stack = _jitc->function->need_stack;
 		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;

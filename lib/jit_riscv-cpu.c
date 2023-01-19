@@ -2161,18 +2161,21 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 			      /* align stack at 16 bytes */
 			      _jitc->function->self.aoff) + 15) & -16;
 
-    if (!_jitc->function->need_frame) {
+    if (_jitc->function->stack)
+	_jitc->function->need_stack = 1;
+    if (!_jitc->function->need_frame && !_jitc->function->need_stack) {
 	/* check if any callee save register needs to be saved */
 	for (reg = 0; reg < _jitc->reglen; ++reg)
 	    if (jit_regset_tstbit(&_jitc->function->regset, reg) &&
 		(_rvs[reg].spec & jit_class_sav)) {
-		CHECK_FRAME();
+		_jitc->function->need_stack = 1;
 		break;
 	    }
     }
 
-    if (_jitc->function->need_frame) {
+    if (_jitc->function->need_frame || _jitc->function->need_stack)
 	subi(_SP_REGNO, _SP_REGNO, FRAMESIZE());
+    if (_jitc->function->need_frame) {
 	stxi(0, _SP_REGNO, _RA_REGNO);
 	stxi(8, _SP_REGNO, _FP_REGNO);
     }
@@ -2233,7 +2236,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	}
     }
 
-    if (_jitc->function->need_frame)
+    if (_jitc->function->need_frame || _jitc->function->need_stack)
 	addi(_SP_REGNO, _SP_REGNO, FRAMESIZE());
     RET();
 }
