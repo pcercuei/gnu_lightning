@@ -33,7 +33,7 @@
 #  define jit_arg_reg_p(i)		0
 #  define jit_arg_f_reg_p(i)		0
 /* callee save                        + 16 byte align
- * align16(%esp + %rbx + %rsi + %rdi) + (16 - 4)  */
+ * align16(%ebp + %rbx + %rsi + %rdi) + (16 - 4)  */
 #  define stack_framesize		28
 #  define REAL_WORDSIZE			4
 #  define va_gp_increment		4
@@ -43,14 +43,14 @@
 #    define jit_arg_reg_p(i)		((i) >= 0 && (i) < 4)
 #    define jit_arg_f_reg_p(i)		jit_arg_reg_p(i)
 /* callee save                                                + 16 byte align
- * align16(%rsp+%rbx+%rdi+%rsi+%r1[2-5]+%xmm[6-9]+%xmm1[0-5]) + (16 - 8) */
+ * align16(%rbp+%rbx+%rdi+%rsi+%r1[2-5]+%xmm[6-9]+%xmm1[0-5]) + (16 - 8) */
 #    define stack_framesize		152
 #    define va_fp_increment		8
 #  else
 #    define jit_arg_reg_p(i)		((i) >= 0 && (i) < 6)
 #    define jit_arg_f_reg_p(i)		((i) >= 0 && (i) < 8)
 /* callee save                                      + 16 byte align
- * align16(%rsp + %r15 + %r14 + %r13 + %r12 + %rbx) + (16 - 8) */
+ * align16(%rbp + %r15 + %r14 + %r13 + %r12 + %rbx) + (16 - 8) */
 #    define stack_framesize		56
 #    define first_gp_argument		rdi
 #    define first_gp_offset		offsetof(jit_va_list_t, rdi)
@@ -85,7 +85,6 @@
 	    _jitc->again = 1;						\
 	    _jitc->function->cvt_offset =				\
 		 jit_allocai(sizeof(jit_float64_t));			\
-	    CHECK_FRAME();						\
 	}								\
     } while (0)
 
