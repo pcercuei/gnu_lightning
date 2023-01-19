@@ -210,7 +210,6 @@ typedef union {
     jit_int32_t		w;
 #  undef ui
 } instr_t;
-#  define stack_framesize		160
 #  define s26_p(d)			((d) >= -33554432 && (d) <= 33554431)
 #  define ii(i)				*_jit->pc.ui++ = i
 #  define ldr(r0,r1)			ldr_l(r0,r1)
@@ -2227,18 +2226,10 @@ _calli_p(jit_state_t *_jit, jit_word_t i0)
     return (w);
 }
 
-/*
- * prolog and epilog not as "optimized" as one would like, but the
- * problem of overallocating stack space to save callee save registers
- * exists on all ports, and is still a todo to use a variable
- *	stack_framesize
- * value, what would cause needing to patch some calls, most likely
- * the offset of jit_arg* of stack arguments.
- */
 static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, rreg, offs;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
 	CHECK_FRAME();
@@ -2264,41 +2255,39 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (_jitc->function->need_frame) {
-	STPI_POS(FP_REGNO, LR_REGNO, SP_REGNO, -(stack_framesize >> 3));
+	STPI_POS(FP_REGNO, LR_REGNO, SP_REGNO, -(FRAMESIZE() >> 3));
 	MOV_XSP(FP_REGNO, SP_REGNO);
     }
-#define SPILL(L, R, O)							\
-    do {								\
-	if (jit_regset_tstbit(&_jitc->function->regset, _R##L)) {	\
-	    if (jit_regset_tstbit(&_jitc->function->regset, _R##R))	\
-		STPI(L, R, SP_REGNO, O);				\
-	    else							\
-		STRI(L, SP_REGNO, O);					\
-	}								\
-	else if (jit_regset_tstbit(&_jitc->function->regset, _R##R))	\
-	    STRI(R, SP_REGNO, O + 1);					\
-    } while (0)
-    SPILL(19, 20,  2);
-    SPILL(21, 22,  4);
-    SPILL(23, 24,  6);
-    SPILL(25, 26,  8);
-    SPILL(27, 28, 10);
-#undef SPILL
-#define SPILL(R, O)							\
-    do {								\
-	if (jit_regset_tstbit(&_jitc->function->regset, _V##R))		\
-		stxi_d(O, SP_REGNO, R);					\
-    } while (0)
-    SPILL( 8,  96);
-    SPILL( 9, 104);
-    SPILL(10, 112);
-    SPILL(11, 120);
-    SPILL(12, 128);
-    SPILL(13, 136);
-    SPILL(14, 144);
-    SPILL(15, 152);
-#undef SPILL
-    if (_jitc->function->stack)
+    /* callee save registers */
+    for (reg = 0, offs = 2; reg < jit_size(iregs);) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    for (rreg = reg + 1; rreg < jit_size(iregs); rreg++) {
+		if (jit_regset_tstbit(&_jitc->function->regset, iregs[rreg]))
+		    break;
+	    }
+	    if (rreg < jit_size(iregs)) {
+		STPI(rn(iregs[reg]), rn(iregs[rreg]), SP_REGNO, offs);
+		offs += 2;
+		reg = rreg + 1;
+	    }
+	    else {
+		STRI(rn(iregs[reg]), SP_REGNO, offs);
+		++offs;
+		/* No pair found */
+		break;
+	    }
+	}
+	else
+	    ++reg;
+    }
+    for (reg = 0, offs <<= 3; reg < jit_size(fregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg])) {
+	    stxi_d(offs, SP_REGNO, rn(fregs[reg]));
+	    offs += sizeof(jit_float64_t);
+	}
+    }
+
+  if (_jitc->function->stack)
 	subi(SP_REGNO, SP_REGNO, _jitc->function->stack);
     if (_jitc->function->allocar) {
 	reg = jit_get_reg(jit_class_gpr);
@@ -2331,43 +2320,42 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 static void
 _epilog(jit_state_t *_jit, jit_node_t *node)
 {
+    jit_int32_t		reg, rreg, offs;
     if (_jitc->function->assume_frame)
 	return;
     if (_jitc->function->stack)
 	MOV_XSP(SP_REGNO, FP_REGNO);
-#define LOAD(L, R, O)							\
-    do {								\
-	if (jit_regset_tstbit(&_jitc->function->regset, _R##L)) {	\
-	    if (jit_regset_tstbit(&_jitc->function->regset, _R##R))	\
-		LDPI(L, R, SP_REGNO, O);				\
-	    else							\
-		LDRI(L, SP_REGNO, O);					\
-	}								\
-	else if (jit_regset_tstbit(&_jitc->function->regset, _R##R))	\
-	    LDRI(R, SP_REGNO, O + 1);					\
-    } while (0)
-    LOAD(19, 20,  2);
-    LOAD(21, 22,  4);
-    LOAD(23, 24,  6);
-    LOAD(25, 26,  8);
-    LOAD(27, 28, 10);
-#undef LOAD
-#define LOAD(R, O)							\
-    do {								\
-	if (jit_regset_tstbit(&_jitc->function->regset, _V##R))		\
-		ldxi_d(R, SP_REGNO, O);					\
-    } while (0)
-    LOAD( 8,  96);
-    LOAD( 9, 104);
-    LOAD(10, 112);
-    LOAD(11, 120);
-    LOAD(12, 128);
-    LOAD(13, 136);
-    LOAD(14, 144);
-    LOAD(15, 152);
-#undef LOAD
+    /* callee save registers */
+    for (reg = 0, offs = 2; reg < jit_size(iregs);) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    for (rreg = reg + 1; rreg < jit_size(iregs); rreg++) {
+		if (jit_regset_tstbit(&_jitc->function->regset, iregs[rreg]))
+		    break;
+	    }
+	    if (rreg < jit_size(iregs)) {
+		LDPI(rn(iregs[reg]), rn(iregs[rreg]), SP_REGNO, offs);
+		offs += 2;
+		reg = rreg + 1;
+	    }
+	    else {
+		LDRI(rn(iregs[reg]), SP_REGNO, offs);
+		++offs;
+		/* No pair found */
+		break;
+	    }
+	}
+	else
+	    ++reg;
+    }
+    for (reg = 0, offs <<= 3; reg < jit_size(fregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[reg])) {
+	    ldxi_d(rn(fregs[reg]), SP_REGNO, offs);
+	    offs += sizeof(jit_float64_t);
+	}
+    }
+
     if (_jitc->function->need_frame)
-	LDPI_PRE(FP_REGNO, LR_REGNO, SP_REGNO, stack_framesize >> 3);
+	LDPI_PRE(FP_REGNO, LR_REGNO, SP_REGNO, FRAMESIZE() >> 3);
     RET();
 }
 
@@ -2385,7 +2373,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     reg = jit_get_reg(jit_class_gpr);
 
     /* Initialize stack pointer to the first stack argument. */
-    addi(rn(reg), FP_REGNO, _jitc->function->self.size);
+    addi(rn(reg), FP_REGNO, SELFSIZE());
     stxi(offsetof(jit_va_list_t, stack), r0, rn(reg));
 
     /* Initialize gp top pointer to the first stack argument. */
@@ -2407,7 +2395,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     jit_unget_reg(reg);
 #else
     assert(_jitc->function->self.call & jit_call_varargs);
-    addi(r0, FP_REGNO, _jitc->function->self.size);
+    addi(r0, FP_REGNO, SELFSIZE());
 #endif
 }
 
