@@ -1,3 +1,9 @@
+2023-01-20 Paulo Andrade <pcpa@gnu.org>
+
+	* lib/jit_mips-cpu.c, lib/jit_mips.c, lib/jit_rewind.c: Adapt
+	code to implement a variable framesize and optimize frame pointer
+	for simple leaf functions.
+
 2023-01-19 Paulo Andrade <pcpa@gnu.org>
 
 	* lib/jit_riscv.c, lib/jit_riscv-cpu.c: Adapt code to use a
