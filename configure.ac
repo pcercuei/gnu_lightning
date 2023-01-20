@@ -196,11 +196,16 @@ else
 fi
 AM_CONDITIONAL(strong_type_checking, [test $STRONG_TYPE_CHECKING = yes])
 
-case "$host_os" in
-    *bsd*|osf*)		SHLIB=""	;;
-    *hpux*)		SHLIB="-ldld"	;;
-    *)			SHLIB="-ldl"	;;
-esac
+AC_CHECK_LIB(dl, dlopen, [HAVE_LIBDL="yes"])
+AC_CHECK_LIB(dld, dlopen, [HAVE_LIBDLD="yes"])
+
+if test "x$HAVE_LIBDL" = xyes; then
+    SHLIB="-ldl";
+elif test "x$HAVE_LIBDLD" = xyes; then
+    SHLIB="-ldld";
+else
+    SHLIB="";
+fi
 AC_SUBST(SHLIB)
 
 cpu=
