@@ -2045,7 +2045,6 @@ _emit_code(jit_state_t *_jit)
 
 	if (node->code != jit_code_note
 	    && node->code != jit_code_name
-	    && node->code != jit_code_prolog
 	    && node->code != jit_code_live)
 		prev = node;
     }

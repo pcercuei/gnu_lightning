@@ -2230,11 +2230,13 @@ static jit_bool_t _can_swap_ds(jit_state_t *_jit, jit_node_t *prev,
 {
     jit_int32_t		offset;
 
-    /* FIXME this fixes tramp.tst and ctramp.c tests */
-    if (1||!prev)
+    if (!prev)
 	    return 0;
 
     switch (prev->code) {
+    case jit_code_prolog:
+	if (!_jitc->function->assume_frame)
+	    break;
     case jit_code_ltr_f:
     case jit_code_ler_f:
     case jit_code_eqr_f:
