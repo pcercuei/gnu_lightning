@@ -1,3 +1,10 @@
+2023-01-23 Paulo Andrade <pcpa@gnu.org>
+
+	* lib/jit_mips-cpu.c, lib/jit_mips-cpu.c: Use pseudo instructions
+	"b" (BEQ(0,0,disp)) and "bal" (BGEZAL(0,disp)) for mips2, when an
+	unconditional branch or function call is known to be in range of a
+	relative jump. This should significantly reduce jit size generation.
+
 2023-01-20 Paulo Andrade <pcpa@gnu.org>
 
 	* lib/jit_mips-cpu.c, lib/jit_mips.c, lib/jit_rewind.c: Adapt

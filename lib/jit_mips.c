@@ -1187,14 +1187,12 @@ jit_node_t *
 _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 {
     jit_node_t		*call;
-    jit_node_t		*node;
     assert(_jitc->function);
     CHECK_FRAME();
     jit_inc_synth_w(finishi, (jit_word_t)i0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
-    node = jit_movi(_T9, (jit_word_t)i0);
-    call = jit_callr(_T9);
+    call = jit_calli(i0);
     call->v.w = _jitc->function->call.argi;
 #if NEW_ABI
     call->w.w = call->v.w;
@@ -1205,7 +1203,7 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 	_jitc->function->call.size = 0;
     _jitc->prepare = 0;
     jit_dec_synth();
-    return (node);
+    return (call);
 }
 
 void
@@ -1830,15 +1828,20 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			jmpi(temp->u.w, prev);
+			jmpi(temp->u.w, prev, 0);
 		    else {
-			word = jmpi(_jit->pc.w, prev);
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (can_relative_jump_p(word))
+			    word = jmpi(_jit->pc.w, prev, 1);
+			else
+			    word = jmpi_p(_jit->pc.w, prev);
 			patch(word, node);
 		    }
 		}
 		else {
 		    CHECK_FRAME();
-		    jmpi(node->u.w, prev);
+		    jmpi(node->u.w, prev, 0);
 		}
 		break;
 	    case jit_code_callr:
@@ -1851,15 +1854,20 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			calli(temp->u.w);
+			calli(temp->u.w, NULL, 0);
 		    else {
-			word = calli_p(_jit->pc.w);
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (can_relative_jump_p(word))
+			    word = calli(_jit->pc.w, prev, 1);
+			else
+			    word = calli_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
 		else {
 		    CHECK_FRAME();
-		    calli(node->u.w);
+		    calli(node->u.w, NULL, 0);
 		}
 		break;
 	    case jit_code_prolog:

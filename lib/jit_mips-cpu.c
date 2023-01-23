@@ -55,7 +55,7 @@ typedef union {
     jit_uint32_t			op_u32;
     int					op;
 } jit_instr_t;
-#if defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
+#if _MIPS_ARCH_MIPS3 || defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
 #  define jit_mips2_p()			1
 #else
 #  define jit_mips2_p()			0
@@ -103,6 +103,8 @@ typedef union {
 #    define sti(u,v)			sti_l(u,v)
 #    define stxi(u,v,w)			stxi_l(u,v,w)
 #  endif
+/* can_relative_jump_p(im) => can_sign_extend_short_p(im << 2) */
+#  define can_relative_jump_p(im)	((im) >= -130712 && (im) <= 131068)
 #  define can_sign_extend_short_p(im)	((im) >= -32678 && (im) <= 32767)
 #  define can_zero_extend_short_p(im)	((im) >= 0 && (im) <= 65535)
 #  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
@@ -393,6 +395,7 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define BGEZ(rs,im)			hrri(MIPS_REGIMM,rs,MIPS_BGEZ,im)
 #  define BGTZ(rs,im)			hrri(MIPS_BGTZ,rs,_ZERO_REGNO,im)
 #  define BNE(rs,rt,im)			hrri(MIPS_BNE,rs,rt,im)
+#  define BGEZAL(rs,im)			hrri(MIPS_REGIMM,rs,MIPS_BGEZAL,im)
 #  define JALR(r0)			hrrrit(MIPS_SPECIAL,r0,0,_RA_REGNO,0,MIPS_JALR)
 #  if 1 /* supports MIPS32 R6 */
 #   define JR(r0)			hrrrit(MIPS_SPECIAL,r0,0,0,0,MIPS_JALR)
@@ -700,8 +703,10 @@ static jit_word_t _bner(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t,jit_node
 static jit_word_t _bnei(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t,jit_node_t*);
 #  define jmpr(r0,prev)			_jmpr(_jit,r0,prev)
 static void _jmpr(jit_state_t*,jit_int32_t,jit_node_t*);
-#  define jmpi(i0,prev)			_jmpi(_jit,i0,prev)
-static jit_word_t _jmpi(jit_state_t*,jit_word_t,jit_node_t*);
+#  define jmpi(i0,prev,patch)		_jmpi(_jit,i0,prev,patch)
+static jit_word_t _jmpi(jit_state_t*,jit_word_t,jit_node_t*,jit_bool_t);
+#  define jmpi_p(i0,prev)		_jmpi_p(_jit,i0,prev)
+static jit_word_t _jmpi_p(jit_state_t*,jit_word_t,jit_node_t*);
 #  define boaddr(i0,r0,r1)		_boaddr(_jit,i0,r0,r1)
 static jit_word_t _boaddr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define boaddi(i0,r0,i1)		_boaddi(_jit,i0,r0,i1)
@@ -744,8 +749,8 @@ static jit_word_t _bmcr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static jit_word_t _bmci(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 #  define callr(r0,prev)		_callr(_jit,r0,prev)
 static void _callr(jit_state_t*,jit_int32_t,jit_node_t*);
-#  define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
+#  define calli(i0,prev,patch)		_calli(_jit,i0,prev,patch)
+static jit_word_t _calli(jit_state_t*,jit_word_t,jit_node_t*,jit_bool_t);
 #  define calli_p(i0)			_calli_p(_jit,i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #  define prolog(node)			_prolog(_jit,node)
@@ -2664,10 +2669,40 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0, jit_node_t *prev)
 }
 
 static jit_word_t
-_jmpi(jit_state_t *_jit, jit_word_t i0, jit_node_t *prev)
+_jmpi(jit_state_t *_jit, jit_word_t i0, jit_node_t *prev, jit_bool_t patch)
+{
+    jit_int32_t		op;
+    jit_bool_t		swap_ds;
+    jit_word_t		w, disp;
+
+    if (jit_mips2_p()) {
+	swap_ds = can_swap_ds(prev, 0, 0);
+	w = _jit->pc.w;
+	disp = ((i0 - w) >> 2) - 1;
+	if (patch && swap_ds) {
+	    op = *--_jit->pc.ui;
+	    w -= sizeof(jit_int32_t);
+	    BEQ(_ZERO_REGNO, _ZERO_REGNO, disp);
+	    ii(op);
+	    goto done;
+	}
+	if (patch || can_sign_extend_short_p(disp)) {
+	    BEQ(_ZERO_REGNO, _ZERO_REGNO, disp);
+	    NOP(1);
+	    goto done;
+	}
+    }
+    w = jmpi_p(i0, prev);
+
+done:
+    return (w);
+}
+
+static jit_word_t
+_jmpi_p(jit_state_t *_jit, jit_word_t i0, jit_node_t *prev)
 {
     jit_word_t		w;
-    jit_int32_t		reg, op, offset;
+    jit_int32_t		reg, op;
     jit_bool_t		swap_ds;
 
     swap_ds = can_swap_ds(prev, 0, 0);
@@ -3232,11 +3267,30 @@ _callr(jit_state_t *_jit, jit_int32_t r0, jit_node_t *prev)
     }
 }
 
-static void
-_calli(jit_state_t *_jit, jit_word_t i0)
+static jit_word_t
+_calli(jit_state_t *_jit, jit_word_t i0, jit_node_t *prev, jit_bool_t patch)
 {
-    jit_word_t		w;
+    jit_int32_t		op;
+    jit_bool_t		swap_ds;
+    jit_word_t		w, disp;
+
     w = _jit->pc.w;
+    if (jit_mips2_p()) {
+	swap_ds = can_swap_ds(prev, 0, 0);
+	disp = ((i0 - w) >> 2) - 1;
+	if (patch && swap_ds) {
+	    op = *--_jit->pc.ui;
+	    w -= sizeof(jit_int32_t);
+	    BGEZAL(_ZERO_REGNO, disp);
+	    ii(op);
+	    goto done;
+	}
+	if (patch || can_sign_extend_short_p(disp)) {
+	    BGEZAL(_ZERO_REGNO, disp);
+	    NOP(1);
+	    goto done;
+	}
+    }
     if (((w + sizeof(jit_int32_t)) & 0xf0000000) == (i0 & 0xf0000000)) {
 	if (can_sign_extend_short_p(i0)) {
 	    JAL((i0 & ~0xf0000000) >> 2);
@@ -3266,6 +3320,8 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 	JALR(_T9_REGNO);
 	NOP(1);
     }
+    done:
+    return (w);
 }
 
 static jit_word_t
