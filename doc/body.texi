@@ -589,6 +589,10 @@ bxsubr    _u          O2 -= O3@r{, goto }O1@r{ if no overflow}
 bxsubi    _u          O2 -= O3@r{, goto }O1@r{ if no overflow}
 @end example
 
+Note that the @code{C} code does not have an @code{O1} argument. It is
+required to always use the return value as an argument to @code{patch},
+@code{patch_at} or @code{patch_abs}.
+
 @item Jump and return operations
 These accept one argument except @code{ret} and @code{jmpi} which
 have none; the difference between @code{finishi} and @code{calli}
@@ -1180,26 +1184,13 @@ maps to @code{%g2} on the SPARC).
 @table @b
 @item x86_64
 @example
-    sub   $0x30,%rsp
-    mov   %rbp,(%rsp)
-    mov   %rsp,%rbp
-    sub   $0x18,%rsp
-    mov   %rdi,%rax            mov %rdi, %rax
-    add   $0x1,%rax            inc %rax
-    mov   %rbp,%rsp
-    mov   (%rsp),%rbp
-    add   $0x30,%rsp
-    retq                       retq
+    mov   %rdi,%rax
+    add   $0x1,%rax
+    ret
 @end example
-In this case, the main overhead is due to the function's prolog and
-epilog, and stack alignment after reserving stack space for word
-to/from float conversions or moving data from/to x87 to/from SSE.
-Note that besides allocating space to save callee saved registers,
-no registers are saved/restored because @lightning{} notices those
-registers are not modified. There is currently no logic to detect
-if it needs to allocate stack space for type conversions neither
-proper leaf function detection, but these are subject to change
-(FIXME).
+In this case, for the x86 port, @lightning{} has simple optimizations
+to understand it is a leaf function, and that it is not required to
+create a stack frame nor update the stack pointer.
 @end table
 
 @node printf
