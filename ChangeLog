@@ -1,3 +1,14 @@
+2023-01-26 Paulo Andrade <pcpa@gnu.org>
+
+	* check/riprel.c, check/riprel.ok: New check files.
+	* check/Makefile.am: Support for new riprel test.
+	* lib/jit_x86-cpu.c, lib/jit_x86-sse.c, lib/jit_x86.c: Implement
+	%rip relative addressing when reliable. Currently disabled for
+	x32 and _WIN32; could be added for positive relative addresses
+	only where it should work.
+	* lib/lightning.c: Correct problem added in previous patch due
+	to not testing on a 32 bit environment.
+
 2023-01-23 Paulo Andrade <pcpa@gnu.org>
 
 	* lib/jit_mips-cpu.c, lib/jit_mips-cpu.c: Use pseudo instructions

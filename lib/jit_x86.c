@@ -21,6 +21,8 @@
 #include <lightning/jit_private.h>
 
 #if __X32
+#  define CAN_RIP_ADDRESS		0
+#  define address_p(i0)			1
 #  define jit_arg_reg_p(i)		0
 #  define jit_arg_f_reg_p(i)		0
 /* callee save                        + 16 byte align
@@ -30,6 +32,16 @@
 #  define va_gp_increment		4
 #  define va_fp_increment		8
 #else
+#  if _WIN32 || __X64_32
+#    define CAN_RIP_ADDRESS		0
+#  else
+#    define CAN_RIP_ADDRESS		1
+#  endif
+#  if __X64_32
+#    define address_p(i0)		((jit_word_t)(i0) >= 0)
+#  else
+#    define address_p(i0)		can_sign_extend_int_p(i0)
+#  endif
 #  if __CYGWIN__ || _WIN32
 #    define jit_arg_reg_p(i)		((i) >= 0 && (i) < 4)
 #    define jit_arg_f_reg_p(i)		jit_arg_reg_p(i)
@@ -1784,7 +1796,14 @@ _emit_code(jit_state_t *_jit)
 		    else {
 			assert(temp->code == jit_code_label ||
 			       temp->code == jit_code_epilog);
-			word = movi_p(rn(node->u.w), node->v.w);
+#if CAN_RIP_ADDRESS
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if ((jit_int32_t)word == word)
+			    word = movi(rn(node->u.w), _jit->pc.w);
+			else
+#endif
+			    word = movi_p(rn(node->u.w), node->v.w);
 			patch(word, node);
 		    }
 		}

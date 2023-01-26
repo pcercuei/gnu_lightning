@@ -352,7 +352,13 @@ static void _movr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define imovi(r0, i0)			_imovi(_jit, r0, i0)
 static void _imovi(jit_state_t*, jit_int32_t, jit_word_t);
 #  define movi(r0, i0)			_movi(_jit, r0, i0)
-static void _movi(jit_state_t*, jit_int32_t, jit_word_t);
+static
+#  if CAN_RIP_ADDRESS
+jit_word_t
+#  else
+void
+#  endif
+_movi(jit_state_t*, jit_int32_t, jit_word_t);
 #  define movi_p(r0, i0)		_movi_p(_jit, r0, i0)
 static jit_word_t _movi_p(jit_state_t*, jit_int32_t, jit_word_t);
 #  define movcr(r0, r1)			_movcr(_jit, r0, r1)
@@ -731,11 +737,16 @@ _rx(jit_state_t *_jit, jit_int32_t rd, jit_int32_t md,
 {
     if (ri == _NOREG) {
 	if (rb == _NOREG) {
-#if __X32
-	    mrm(0x00, r7(rd), 0x05);
-#else
-	    mrm(0x00, r7(rd), 0x04);
-	    sib(_SCL1, 0x04, 0x05);
+	    /* Use ms == _SCL8 to tell it is a %rip relative displacement */
+#if __X64
+	    if (ms == _SCL8)
+#endif
+		mrm(0x00, r7(rd), 0x05);
+#if __X64
+	    else {
+		mrm(0x00, r7(rd), 0x04);
+		sib(_SCL1, 0x04, 0x05);
+	    }
 #endif
 	    ii(md);
 	}
@@ -1978,8 +1989,8 @@ _ci0(jit_state_t *_jit, jit_int32_t code, jit_int32_t r0, jit_int32_t r1)
 	ixorr(rn(reg), rn(reg));
 	testr(r1, r1);
 	cc(code, rn(reg));
-	movr(r0, rn(reg));
-	jit_unget_reg(reg);
+	movr(r0, rn(reg));	
+jit_unget_reg(reg);
     }
 }
 
@@ -2170,13 +2181,34 @@ _imovi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 #endif
 }
 
+#if CAN_RIP_ADDRESS
+static jit_word_t
+#else
 static void
+#endif
 _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
+#if CAN_RIP_ADDRESS
+    jit_word_t		w, rel;
+    w = _jit->pc.w;
+    rel = i0 - (w + 8);
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	/* lea rel(%rip), %r0 */
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	w = _jit->pc.w;
+	ic(0x8d);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
     if (i0)
 	imovi(r0, i0);
     else
 	ixorr(r0, r0);
+#if CAN_RIP_ADDRESS
+    return (w);
+#endif
 }
 
 static jit_word_t
@@ -2402,7 +2434,18 @@ static void
 _ldi_c(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x0f);
+	ic(0xbe);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x0f);
 	ic(0xbe);
@@ -2429,7 +2472,18 @@ static void
 _ldi_uc(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x0f);
+	ic(0xb6);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x0f);
 	ic(0xb6);
@@ -2456,7 +2510,18 @@ static void
 _ldi_s(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x0f);
+	ic(0xbf);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x0f);
 	ic(0xbf);
@@ -2483,7 +2548,18 @@ static void
 _ldi_us(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x0f);
+	ic(0xb7);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x0f);
 	ic(0xb7);
@@ -2514,7 +2590,17 @@ static void
 _ldi_i(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x63);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 #if __X64
 	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x63);
@@ -2545,7 +2631,17 @@ static void
 _ldi_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#  if !__X64_32
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, 0, r0, _NOREG, _NOREG);
+	ic(0x63);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	rex(0, 0, r0, _NOREG, _NOREG);
 	ic(0x63);
 	rx(r0, i0, _NOREG, _NOREG, _SCL1);
@@ -2575,8 +2671,15 @@ static void
 _ldi_l(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
-	rex(0, 1, r0, _NOREG, _NOREG);
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x8b);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else if (can_sign_extend_int_p(i0)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x8b);
 	rx(r0, i0, _NOREG, _NOREG, _SCL1);
     }
@@ -2840,7 +2943,27 @@ static void
 _sti_c(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 16 : rel + 16;
+    if (can_sign_extend_int_p(rel)) {
+	if (reg8_p(r0)) {
+	    rex(0, 0, r0, _NOREG, _NOREG);
+	    ic(0x88);
+	    rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+	}
+	else {
+	    reg = jit_get_reg(jit_class_gpr|jit_class_rg8);
+	    movr(rn(reg), r0);
+	    rex(0, 0, rn(reg), _NOREG, _NOREG);
+	    ic(0x88);
+	    rx(rn(reg), i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+	    jit_unget_reg(reg);
+	}
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	if (reg8_p(r0)) {
 	    rex(0, 0, r0, _NOREG, _NOREG);
 	    ic(0x88);
@@ -2876,7 +2999,18 @@ static void
 _sti_s(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	ic(0x66);
+	rex(0, 0, r0, _NOREG, _NOREG);
+	ic(0x89);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	ic(0x66);
 	rex(0, 0, r0, _NOREG, _NOREG);
 	ic(0x89);
@@ -2902,7 +3036,17 @@ static void
 _sti_i(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, 0, r0, _NOREG, _NOREG);
+	ic(0x89);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
+    if (address_p(i0)) {
 	rex(0, 0, r0, _NOREG, _NOREG);
 	ic(0x89);
 	rx(r0, i0, _NOREG, _NOREG, _SCL1);
@@ -2928,8 +3072,18 @@ static void
 _sti_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - _jit->pc.w;
+    rel = rel < 0 ? rel - 8 : rel + 8;
+    if (can_sign_extend_int_p(rel)) {
+	rex(0, WIDE, r0, _NOREG, _NOREG);
+	ic(0x89);
+	rx(r0, i0 - (_jit->pc.w + 5), _NOREG, _NOREG, _SCL8);
+    }
+    else
+#endif
     if (can_sign_extend_int_p(i0)) {
-	rex(0, 1, r0, _NOREG, _NOREG);
+	rex(0, WIDE, r0, _NOREG, _NOREG);
 	ic(0x89);
 	rx(r0, i0, _NOREG, _NOREG, _SCL1);
     }
@@ -3107,9 +3261,9 @@ _jcc(jit_state_t *_jit, jit_int32_t code, jit_word_t i0)
 {
     jit_word_t		d;
     jit_word_t		w;
-    ic(0x0f);
     w = _jit->pc.w;
-    d = i0 - (w + 5);
+    ic(0x0f);
+    d = i0 - (w + 6);
     ic(0x80 | code);
     ii(d);
     return (w);
@@ -3933,16 +4087,29 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
     jit_uint8_t		*code = (jit_uint8_t *)instr;
     ++instr;
     switch (code[0]) {
-	/* movi */
+	/* movi_p */
 	case 0xb8 ... 0xbf:
 	    *(jit_word_t *)instr = label;
 	    break;
+	    /* forward pc relative address known to be in range */
+#if CAN_RIP_ADDRESS
+	/* movi */
+	case 0x8d:
+	    ++instr;
+	    goto apply;
+#endif
+	/* jcc */
+	case 0x0f:
+	    ++instr;
+	    if (code[1] < 0x80 || code[1] > 0x8f)
+		goto fail;
 	/* calli */
 	case 0xe8:
 	/* jmpi */
 	case 0xe9:
-	    /* jcc */
-	case 0x80 ... 0x8f:
+#if CAN_RIP_ADDRESS
+	apply:
+#endif
 	    disp = label - (instr + 4);
 	    assert((jit_int32_t)disp == disp);
 	    *(jit_int32_t *)instr = disp;
@@ -3956,6 +4123,7 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    *(jit_int8_t *)instr = disp;
 	    break;
 	default:
+	fail:
 	    abort();
     }
 }

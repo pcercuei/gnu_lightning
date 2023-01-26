@@ -18,15 +18,6 @@
  */
 
 #if PROTO
-#  if __X32
-#    define sse_address_p(i0)		1
-#  else
-#    if __X64_32
-#      define sse_address_p(i0)		((jit_word_t)(i0) >= 0)
-#    else
-#      define sse_address_p(i0)		can_sign_extend_int_p(i0)
-#    endif
-#  endif
 #  define _XMM6_REGNO			6
 #  define _XMM7_REGNO			7
 #  define _XMM8_REGNO			8
@@ -809,7 +800,7 @@ _sse_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 	ldi = !_jitc->no_data;
 #if __X64
 	/* if will allocate a register for offset, just use immediate */
-	if (ldi && !sse_address_p(i0))
+	if (ldi && !address_p(i0))
 	    ldi = 0;
 #endif
 	if (ldi)
@@ -926,7 +917,13 @@ static void
 _sse_ldi_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (sse_address_p(i0))
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    if (can_sign_extend_int_p(rel))
+	movssmr(rel, _NOREG, _NOREG, _SCL8, r0);
+    else
+#endif
+    if (address_p(i0))
 	movssmr(i0, _NOREG, _NOREG, _SCL1, r0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
@@ -973,7 +970,13 @@ static void
 _sse_sti_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
-    if (sse_address_p(i0))
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    if (can_sign_extend_int_p(rel))
+	movssrm(r0, rel, _NOREG, _NOREG, _SCL8);
+    else
+#endif
+    if (address_p(i0))
 	movssrm(r0, i0, _NOREG, _NOREG, _SCL1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
@@ -1283,7 +1286,7 @@ _sse_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	ldi = !_jitc->no_data;
 #if __X64
 	/* if will allocate a register for offset, just use immediate */
-	if (ldi && !sse_address_p(i0))
+	if (ldi && !address_p(i0))
 	    ldi = 0;
 #endif
 	if (ldi)
@@ -1311,7 +1314,13 @@ static void
 _sse_ldi_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (sse_address_p(i0))
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    if (can_sign_extend_int_p(rel))
+	movsdmr(rel, _NOREG, _NOREG, _SCL8, r0);
+    else
+#endif
+    if (address_p(i0))
 	movsdmr(i0, _NOREG, _NOREG, _SCL1, r0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
@@ -1358,7 +1367,13 @@ static void
 _sse_sti_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
-    if (sse_address_p(i0))
+#if CAN_RIP_ADDRESS
+    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    if (can_sign_extend_int_p(rel))
+	movsdrm(r0, rel, _NOREG, _NOREG, _SCL8);
+    else
+#endif
+    if (address_p(i0))
 	movsdrm(r0, i0, _NOREG, _NOREG, _SCL1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
