@@ -2533,7 +2533,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     jit_int32_t		reg, offs;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
-	CHECK_FRAME();
+	jit_check_frame();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -2558,7 +2558,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (_jitc->function->need_frame || _jitc->function->need_stack)
-	subi(_SP_REGNO, _SP_REGNO, FRAMESIZE());
+	subi(_SP_REGNO, _SP_REGNO, jit_framesize());
     if (_jitc->function->need_frame) {
 	stxi(0, _SP_REGNO, _RA_REGNO);
 	stxi(8, _SP_REGNO, _FP_REGNO);
@@ -2589,7 +2589,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
     if (_jitc->function->self.call & jit_call_varargs) {
 	for (reg = _jitc->function->vagp; jit_arg_reg_p(reg); ++reg)
-	    stxi(FRAMESIZE() - ((8 - reg) * 8),
+	    stxi(jit_framesize() - ((8 - reg) * 8),
 		 _FP_REGNO, rn(JIT_RA0 - reg));
     }
 }
@@ -2621,7 +2621,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (_jitc->function->need_frame || _jitc->function->need_stack)
-	addi(_SP_REGNO, _SP_REGNO, FRAMESIZE());
+	addi(_SP_REGNO, _SP_REGNO, jit_framesize());
     JIRL(_ZERO_REGNO, _RA_REGNO, 0);
 }
 
@@ -2631,9 +2631,9 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     assert(_jitc->function->self.call & jit_call_varargs);
     /* Initialize va_list to the first stack argument. */
     if (jit_arg_reg_p(_jitc->function->vagp))
-	addi(r0, _FP_REGNO, FRAMESIZE() - ((8 - _jitc->function->vagp) * 8));
+	addi(r0, _FP_REGNO, jit_framesize() - ((8 - _jitc->function->vagp) * 8));
     else
-	addi(r0, _FP_REGNO, SELFSIZE());
+	addi(r0, _FP_REGNO, jit_selfsize());
 }
 
 static void

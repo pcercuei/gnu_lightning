@@ -20,15 +20,6 @@
 #include <lightning.h>
 #include <lightning/jit_private.h>
 
-#define DIFFSIZE()	(stack_framesize - _jitc->framesize)
-#define FRAMESIZE()	(stack_framesize - DIFFSIZE())
-#define SELFSIZE()	(_jitc->function->self.size - DIFFSIZE())
-#define LINK_ALIST(node)						\
-    do {								\
-	node->link = _jitc->function->alist;				\
-	_jitc->function->alist = node;					\
-    } while (0)
-
 #if __X32
 #  define jit_arg_reg_p(i)		0
 #  define jit_arg_f_reg_p(i)		0
@@ -70,14 +61,6 @@
 #  define REAL_WORDSIZE			8
 #endif
 #define CVT_OFFSET			_jitc->function->cvt_offset
-
-#define CHECK_FRAME()							\
-    do {								\
-	if (!_jitc->function->need_frame) {				\
-	    _jitc->again = 1;						\
-	    _jitc->function->need_frame = 1;				\
-	}								\
-    } while (0)
 
 #define CHECK_CVT_OFFSET()						\
     do {								\
@@ -470,7 +453,7 @@ _jit_prolog(jit_state_t *_jit)
     _jitc->function->cvt_offset = 0;
 #if __X64 && (__CYGWIN__ || _WIN32)
     /* force framepointer */
-    CHECK_FRAME();
+    jit_check_frame();
 #endif
     _jitc->function->self.call = jit_call_default;
     jit_alloc((jit_pointer_t *)&_jitc->function->regoff,
@@ -497,7 +480,7 @@ jit_int32_t
 _jit_allocai(jit_state_t *_jit, jit_int32_t length)
 {
     assert(_jitc->function);
-    CHECK_FRAME();
+    jit_check_frame();
 #if __X32
     /* Stack is 4 bytes aligned but jit functions keep it 8 bytes aligned.
      * Called functions have 16 byte aligned stack. */
@@ -641,7 +624,7 @@ void
 _jit_ellipsis(jit_state_t *_jit)
 {
     jit_inc_synth(ellipsis);
-    CHECK_FRAME();
+    jit_check_frame();
     if (_jitc->prepare) {
 	jit_link_prepare();
 	/* Remember that a varargs function call is being constructed. */
@@ -707,7 +690,7 @@ _jit_arg(jit_state_t *_jit, jit_code_t code)
     {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += REAL_WORDSIZE;
-	CHECK_FRAME();
+	jit_check_frame();
     }
     node = jit_new_node_ww(code, offset,
 			   ++_jitc->function->self.argn);
@@ -737,7 +720,7 @@ _jit_arg_f(jit_state_t *_jit)
     {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += REAL_WORDSIZE;
-	CHECK_FRAME();
+	jit_check_frame();
     }
     node = jit_new_node_ww(jit_code_arg_f, offset,
 			   ++_jitc->function->self.argn);
@@ -767,7 +750,7 @@ _jit_arg_d(jit_state_t *_jit)
     {
 	offset = _jitc->function->self.size;
 	_jitc->function->self.size += sizeof(jit_float64_t);
-	CHECK_FRAME();
+	jit_check_frame();
     }
     node = jit_new_node_ww(jit_code_arg_d, offset,
 			   ++_jitc->function->self.argn);
@@ -787,7 +770,7 @@ _jit_getarg_c(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_c(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -804,7 +787,7 @@ _jit_getarg_uc(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_uc(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -821,7 +804,7 @@ _jit_getarg_s(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_s(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -838,7 +821,7 @@ _jit_getarg_us(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_us(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -860,7 +843,7 @@ _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_i(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -875,7 +858,7 @@ _jit_getarg_ui(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_extr_ui(u, JIT_RA0 - v->u.w);
     else {
 	jit_node_t	*node = jit_ldxi_ui(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -889,7 +872,7 @@ _jit_getarg_l(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	jit_movr(u, JIT_RA0 - v->u.w);
     else {
 	jit_node_t	*node = jit_ldxi_l(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -907,7 +890,7 @@ _jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v, jit_code_t code)
 #endif
     {
 	jit_node_t	*node = jit_stxi(v->u.w, _RBP, u);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -928,7 +911,7 @@ _jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
 	regno = jit_get_reg(jit_class_gpr);
 	jit_movi(regno, u);
 	node = jit_stxi(v->u.w, _RBP, regno);
-	LINK_ALIST(node);
+	jit_link_alist(node);
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
@@ -946,7 +929,7 @@ _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_f(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -963,7 +946,7 @@ _jit_putargr_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_stxi_f(v->u.w, _RBP, u);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -984,7 +967,7 @@ _jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
 	regno = jit_get_reg(jit_class_fpr);
 	jit_movi_f(regno, u);
 	node = jit_stxi_f(v->u.w, _RBP, regno);
-	LINK_ALIST(node);
+	jit_link_alist(node);
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
@@ -1002,7 +985,7 @@ _jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_ldxi_d(u, _RBP, v->u.w);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -1019,7 +1002,7 @@ _jit_putargr_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 #endif
     {
 	jit_node_t	*node = jit_stxi_d(v->u.w, _RBP, u);
-	LINK_ALIST(node);
+	jit_link_alist(node);
     }
     jit_dec_synth();
 }
@@ -1040,7 +1023,7 @@ _jit_putargi_d(jit_state_t *_jit, jit_float64_t u, jit_node_t *v)
 	regno = jit_get_reg(jit_class_fpr);
 	jit_movi_d(regno, u);
 	node = jit_stxi_d(v->u.w, _RBP, regno);
-	LINK_ALIST(node);
+	jit_link_alist(node);
 	jit_unget_reg(regno);
     }
     jit_dec_synth();
@@ -1067,7 +1050,7 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
     {
 	jit_stxi(_jitc->function->call.size, _RSP, u);
 	_jitc->function->call.size += REAL_WORDSIZE;
-	CHECK_FRAME();
+	jit_check_frame();
     }
     jit_dec_synth();
 }
@@ -1098,7 +1081,7 @@ _jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 	jit_stxi(_jitc->function->call.size, _RSP, regno);
 	_jitc->function->call.size += REAL_WORDSIZE;
 	jit_unget_reg(regno);
-	CHECK_FRAME();
+	jit_check_frame();
     }
     jit_dec_synth();
 }
@@ -1133,7 +1116,7 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
     {
 	jit_stxi_f(_jitc->function->call.size, _RSP, u);
 	_jitc->function->call.size += REAL_WORDSIZE;
-	CHECK_FRAME();
+	jit_check_frame();
     }
     jit_dec_synth();
 }
@@ -1172,7 +1155,7 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 	jit_stxi_f(_jitc->function->call.size, _RSP, regno);
 	_jitc->function->call.size += REAL_WORDSIZE;
 	jit_unget_reg(regno);
-	CHECK_FRAME();
+	jit_check_frame();
     }
     jit_dec_synth();
 }
@@ -1207,7 +1190,7 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
     {
 	jit_stxi_d(_jitc->function->call.size, _RSP, u);
 	_jitc->function->call.size += sizeof(jit_float64_t);
-	CHECK_FRAME();
+	jit_check_frame();
     }
     jit_dec_synth();
 }
@@ -1246,7 +1229,7 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
 	jit_stxi_d(_jitc->function->call.size, _RSP, regno);
 	_jitc->function->call.size += sizeof(jit_float64_t);
 	jit_unget_reg(regno);
-	CHECK_FRAME();
+	jit_check_frame();
     }
     jit_dec_synth();
 }
@@ -1280,7 +1263,7 @@ _jit_finishr(jit_state_t *_jit, jit_int32_t r0)
     jit_int32_t		 reg;
     jit_node_t		*call;
     assert(_jitc->function);
-    CHECK_FRAME();
+    jit_check_frame();
     reg = r0;
     jit_inc_synth_w(finishr, r0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
@@ -1315,7 +1298,7 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 {
     jit_node_t		*node;
     assert(_jitc->function);
-    CHECK_FRAME();
+    jit_check_frame();
     jit_inc_synth_w(finishi, (jit_word_t)i0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
@@ -2125,7 +2108,7 @@ _emit_code(jit_state_t *_jit)
 		case_bff(unord, _d);
 		case_bfw(unord, _d, 64);
 	    case jit_code_jmpr:
-		CHECK_FRAME();
+		jit_check_frame();
 		jmpr(rn(node->u.w));
 		break;
 	    case jit_code_jmpi:
@@ -2148,12 +2131,12 @@ _emit_code(jit_state_t *_jit)
 		    }
 		}
 		else {
-		    CHECK_FRAME();
+		    jit_check_frame();
 		    jmpi(node->u.w);
 		}
 		break;
 	    case jit_code_callr:
-		CHECK_FRAME();
+		jit_check_frame();
 		callr(rn(node->u.w));
 		break;
 	    case jit_code_calli:
@@ -2176,7 +2159,7 @@ _emit_code(jit_state_t *_jit)
 		    }
 		}
 		else {
-		    CHECK_FRAME();
+		    jit_check_frame();
 		    calli(node->u.w);
 		}
 		break;
@@ -2434,7 +2417,7 @@ _patch_alist(jit_state_t *_jit, jit_bool_t revert)
 {
     jit_int32_t		 diff;
     jit_node_t		*node;
-    diff = DIFFSIZE();
+    diff = jit_diffsize();
     if (diff) {
 	if (revert)
 	    diff = -diff;

@@ -2232,7 +2232,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     jit_int32_t		reg, rreg, offs;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
-	CHECK_FRAME();
+	jit_check_frame();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -2249,13 +2249,13 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	for (reg = 0; reg < _jitc->reglen; ++reg)
 	    if (jit_regset_tstbit(&_jitc->function->regset, reg) &&
 		(_rvs[reg].spec & jit_class_sav)) {
-		CHECK_FRAME();
+		jit_check_frame();
 		break;
 	    }
     }
 
     if (_jitc->function->need_frame) {
-	STPI_POS(FP_REGNO, LR_REGNO, SP_REGNO, -(FRAMESIZE() >> 3));
+	STPI_POS(FP_REGNO, LR_REGNO, SP_REGNO, -(jit_framesize() >> 3));
 	MOV_XSP(FP_REGNO, SP_REGNO);
     }
     /* callee save registers */
@@ -2355,7 +2355,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (_jitc->function->need_frame)
-	LDPI_PRE(FP_REGNO, LR_REGNO, SP_REGNO, FRAMESIZE() >> 3);
+	LDPI_PRE(FP_REGNO, LR_REGNO, SP_REGNO, jit_framesize() >> 3);
     RET();
 }
 
@@ -2373,7 +2373,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     reg = jit_get_reg(jit_class_gpr);
 
     /* Initialize stack pointer to the first stack argument. */
-    addi(rn(reg), FP_REGNO, SELFSIZE());
+    addi(rn(reg), FP_REGNO, jit_selfsize());
     stxi(offsetof(jit_va_list_t, stack), r0, rn(reg));
 
     /* Initialize gp top pointer to the first stack argument. */
@@ -2395,7 +2395,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     jit_unget_reg(reg);
 #else
     assert(_jitc->function->self.call & jit_call_varargs);
-    addi(r0, FP_REGNO, SELFSIZE());
+    addi(r0, FP_REGNO, jit_selfsize());
 #endif
 }
 

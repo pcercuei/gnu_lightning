@@ -3621,7 +3621,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     jit_int32_t		reg, offs;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
-	CHECK_FRAME();
+	jit_check_frame();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -3654,7 +3654,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (_jitc->function->need_frame || _jitc->function->need_stack)
-	subi(_RSP_REGNO, _RSP_REGNO, FRAMESIZE());
+	subi(_RSP_REGNO, _RSP_REGNO, jit_framesize());
     /* callee save registers */
     for (reg = 0, offs = REAL_WORDSIZE; reg < jit_size(iregs); reg++) {
 	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
@@ -3746,14 +3746,14 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 
     if (_jitc->function->need_frame) {
 	ldxi(_RBP_REGNO, _RSP_REGNO, 0);
-	addi(_RSP_REGNO, _RSP_REGNO, FRAMESIZE());
+	addi(_RSP_REGNO, _RSP_REGNO, jit_framesize());
     }
     /* This condition does not happen as much as expected because
      * it is not safe to not create a frame pointer if any function
      * is called, even jit functions, as those might call external
      * functions. */
     else if (_jitc->function->need_stack)
-	addi(_RSP_REGNO, _RSP_REGNO, FRAMESIZE());
+	addi(_RSP_REGNO, _RSP_REGNO, jit_framesize());
 
     ic(0xc3);
 }
@@ -3763,7 +3763,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
 {
 #if __X32 || __CYGWIN__ || _WIN32
     assert(_jitc->function->self.call & jit_call_varargs);
-    addi(r0, _RBP_REGNO, SELFSIZE());
+    addi(r0, _RBP_REGNO, jit_selfsize());
 #else
     jit_int32_t		reg;
 
@@ -3782,7 +3782,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
     stxi_i(offsetof(jit_va_list_t, fpoff), r0, rn(reg));
 
     /* Initialize overflow pointer to the first stack argument. */
-    addi(rn(reg), _RBP_REGNO, SELFSIZE());
+    addi(rn(reg), _RBP_REGNO, jit_selfsize());
     stxi(offsetof(jit_va_list_t, over), r0, rn(reg));
 
     /* Initialize register save area pointer. */

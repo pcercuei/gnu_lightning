@@ -252,6 +252,22 @@ extern jit_node_t *_jit_data(jit_state_t*, const void*,
     jit_code_inc_synth_dp(jit_code_##name, u, v)
 #define jit_dec_synth()		jit_synth_dec()
 
+#define jit_link_alist(node)						\
+    do {								\
+	node->link = _jitc->function->alist;				\
+	_jitc->function->alist = node;					\
+    } while (0)
+#define jit_check_frame()						\
+    do {								\
+	if (!_jitc->function->need_frame) {				\
+	    _jitc->again = 1;						\
+	    _jitc->function->need_frame = 1;				\
+	}								\
+    } while (0)
+#define jit_diffsize()	(stack_framesize - _jitc->framesize)
+#define jit_framesize()	(stack_framesize - jit_diffsize())
+#define jit_selfsize()	(_jitc->function->self.size - jit_diffsize())
+
 #define jit_link_prolog()						\
     do {								\
 	_jitc->tail->link = _jitc->function->prolog->link;		\
