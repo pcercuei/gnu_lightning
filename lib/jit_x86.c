@@ -113,8 +113,6 @@ typedef struct jit_va_list {
  */
 #define compute_framesize()		_compute_framesize(_jit)
 static void _compute_framesize(jit_state_t*);
-#define patch_alist(revert)		_patch_alist(_jit, revert)
-static void _patch_alist(jit_state_t*, jit_bool_t);
 #define patch(instr, node)		_patch(_jit, instr, node)
 static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 #define sse_from_x87_f(r0, r1)		_sse_from_x87_f(_jit, r0, r1)
@@ -2410,41 +2408,6 @@ _compute_framesize(jit_state_t *_jit)
     /* Make sure functions called have a 16 byte aligned stack */
     _jitc->framesize = (_jitc->framesize + 15) & -16;
     _jitc->framesize += 16 - REAL_WORDSIZE;
-}
-
-static void
-_patch_alist(jit_state_t *_jit, jit_bool_t revert)
-{
-    jit_int32_t		 diff;
-    jit_node_t		*node;
-    diff = jit_diffsize();
-    if (diff) {
-	if (revert)
-	    diff = -diff;
-	for (node = _jitc->function->alist; node; node = node->link) {
-	    switch (node->code) {
-		case jit_code_ldxi_c:	case jit_code_ldxi_uc:
-		case jit_code_ldxi_s:	case jit_code_ldxi_us:
-		case jit_code_ldxi_i:
-#if __WORDSIZE == 64
-		case jit_code_ldxi_ui:	case jit_code_ldxi_l:
-#endif
-		case jit_code_ldxi_f:	case jit_code_ldxi_d:
-		    node->w.w -= diff;
-		    break;
-		case jit_code_stxi_c:	case jit_code_stxi_s:
-		case jit_code_stxi_i:
-#if __WORDSIZE == 64
-		case jit_code_stxi_l:
-#endif
-		case jit_code_stxi_f:	case jit_code_stxi_d:
-		    node->u.w -= diff;
-		    break;
-		default:
-		    abort();
-	    }
-	}
-    }
 }
 
 static void
