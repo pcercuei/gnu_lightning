@@ -800,8 +800,17 @@ _sse_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 	ldi = !_jitc->no_data;
 #if __X64
 	/* if will allocate a register for offset, just use immediate */
+#  if CAN_RIP_ADDRESS
+	if (ldi) {
+	    jit_word_t	rel = (jit_word_t)i0 - (_jit->pc.w + 8 + !!(r0 & 8));
+	    ldi = can_sign_extend_int_p(rel);
+	    if (!ldi && address_p(i0))
+		ldi = 1;
+	}
+#  else
 	if (ldi && !address_p(i0))
 	    ldi = 0;
+#  endif
 #endif
 	if (ldi)
 	    sse_ldi_f(r0, (jit_word_t)i0);
@@ -918,7 +927,7 @@ _sse_ldi_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
 #if CAN_RIP_ADDRESS
-    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    jit_word_t		rel = i0 - (_jit->pc.w + 8 + !!(r0 & 8));
     if (can_sign_extend_int_p(rel))
 	movssmr(rel, _NOREG, _NOREG, _SCL8, r0);
     else
@@ -971,7 +980,7 @@ _sse_sti_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
 #if CAN_RIP_ADDRESS
-    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    jit_word_t		rel = i0 - (_jit->pc.w + 8 + !!(r0 & 8));
     if (can_sign_extend_int_p(rel))
 	movssrm(r0, rel, _NOREG, _NOREG, _SCL8);
     else
@@ -1286,8 +1295,17 @@ _sse_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	ldi = !_jitc->no_data;
 #if __X64
 	/* if will allocate a register for offset, just use immediate */
+#  if CAN_RIP_ADDRESS
+	if (ldi) {
+	    jit_word_t	rel = (jit_word_t)i0 - (_jit->pc.w + 8 + !!(r0 & 8));
+	    ldi = can_sign_extend_int_p(rel);
+	    if (!ldi && address_p(i0))
+		ldi = 1;
+	}
+#  else
 	if (ldi && !address_p(i0))
 	    ldi = 0;
+#  endif
 #endif
 	if (ldi)
 	    sse_ldi_d(r0, (jit_word_t)i0);
@@ -1315,7 +1333,7 @@ _sse_ldi_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
 #if CAN_RIP_ADDRESS
-    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    jit_word_t		rel = i0 - (_jit->pc.w + 8 + !!(r0 & 8));
     if (can_sign_extend_int_p(rel))
 	movsdmr(rel, _NOREG, _NOREG, _SCL8, r0);
     else
@@ -1368,7 +1386,7 @@ _sse_sti_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
 #if CAN_RIP_ADDRESS
-    jit_word_t		rel = i0 - (_jit->pc.w + 9);
+    jit_word_t		rel = i0 - (_jit->pc.w + 8 + !!(r0 & 8));
     if (can_sign_extend_int_p(rel))
 	movsdrm(r0, rel, _NOREG, _NOREG, _SCL8);
     else
