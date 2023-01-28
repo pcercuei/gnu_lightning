@@ -58,6 +58,8 @@ typedef enum {
 	_R14,
 	_R15,
 
+	_GBR,
+
 	/* floating-point registers */
 #define JIT_F0			_F0
 #define JIT_F1			_F2

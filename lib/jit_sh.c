@@ -66,6 +66,7 @@ jit_register_t _rvs[] = {
     { rc(sav) | rc(gpr) | 0xd,		"r13" },
     { rc(sav) | 0xe,			"r14" },
     { rc(sav) | 0xf,			"r15" },
+    { rc(sav) | 0x10,			"gbr" },
 
     /* Only use half of the floating-point registers.
      * This makes it much easier to switch between
