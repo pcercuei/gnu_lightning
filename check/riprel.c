@@ -10,6 +10,7 @@
 #if defined(__sgi)
 #  include <fcntl.h>
 #endif
+#include <unistd.h>
 
 #ifndef MAP_ANON
 #  define MAP_ANON			MAP_ANONYMOUS
@@ -32,7 +33,11 @@ main(int argc, char *argv[])
     int			  mmap_fd;
 #endif
     void		(*function)(void);
-    int			  mmap_prot, mmap_flags, result;
+    int			  mmap_prot, mmap_flags, result, pagesize;
+
+    pagesize = sysconf(_SC_PAGESIZE);
+    if (pagesize < 4096)
+	pagesize = 4096;
 
 #if defined(__sgi)
     mmap_fd = open("/dev/zero", O_RDWR);
@@ -49,7 +54,7 @@ main(int argc, char *argv[])
     mmap_flags = MAP_PRIVATE;
 #endif
     mmap_flags |= MAP_ANON;
-    ptr = mmap(NULL, 16384,  mmap_prot, mmap_flags, mmap_fd, 0);
+    ptr = mmap(NULL, pagesize * 2,  mmap_prot, mmap_flags, mmap_fd, 0);
     assert(ptr != MAP_FAILED);
 #if defined(__sgi)
     close(mmap_fd);
@@ -136,10 +141,10 @@ main(int argc, char *argv[])
 
     jit_realize();
 
-    jit_set_code(ptr + 4096, 16384 - 4096);
+    jit_set_code(ptr + pagesize, pagesize);
 
- #if __NetBSD__
-    result = mprotect(ptr, 16384, PROT_READ | PROT_WRITE);
+ #if __NetBSD__ || __OpenBSD__ || __APPLE__
+    result = mprotect(ptr, pagesize, PROT_READ | PROT_WRITE);
     assert(result == 0);
 #endif
     function = jit_emit();
@@ -149,14 +154,14 @@ main(int argc, char *argv[])
     //jit_disassemble();
     jit_clear_state();
 #if __NetBSD__ ||  __OpenBSD__ || __APPLE__
-    result = mprotect(ptr + 4096, 16384 - 4096, PROT_READ | PROT_EXEC);
+    result = mprotect(ptr + pagesize, pagesize, PROT_READ | PROT_EXEC);
     assert(result == 0);
 #endif
     (*function)();
     jit_destroy_state();
     finish_jit();
 
-    munmap(ptr, 16384);
+    munmap(ptr, pagesize * 2);
 
     return (0);
 }
