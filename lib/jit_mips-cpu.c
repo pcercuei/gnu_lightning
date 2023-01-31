@@ -1657,120 +1657,90 @@ _ldi_l(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 static void
 _ldxr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_c(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_c(r0, r0);
 }
 
 static void
 _ldxi_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LB(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_c(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_c(r0, r0);
     }
 }
 
 static void
 _ldxr_uc(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_uc(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_uc(r0, r0);
 }
 
 static void
 _ldxi_uc(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LBU(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_uc(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_uc(r0, r0);
     }
 }
 
 static void
 _ldxr_s(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_s(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_s(r0, r0);
 }
 
 static void
 _ldxi_s(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LH(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_s(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_s(r0, r0);
     }
 }
 
 static void
 _ldxr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_us(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_us(r0, r0);
 }
 
 static void
 _ldxi_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LHU(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_us(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_us(r0, r0);
     }
 }
 
 static void
 _ldxr_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_i(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_i(r0, r0);
 }
 
 static void
 _ldxi_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LW(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_i(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_i(r0, r0);
     }
 }
 
@@ -1778,48 +1748,36 @@ _ldxi_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ldxr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_ui(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_ui(r0, r0);
 }
 
 static void
 _ldxi_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LWU(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_ui(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_ui(r0, r0);
     }
 }
 
 static void
 _ldxr_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    addr(rn(reg), r1, r2);
-    ldr_l(r0, rn(reg));
-    jit_unget_reg(reg);
+    addr(r0, r1, r2);
+    ldr_l(r0, r0);
 }
 
 static void
 _ldxi_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
 	LD(r0, i0, r1);
     else {
-	reg = jit_get_reg(jit_class_gpr);
-	addi(rn(reg), r1, i0);
-	ldr_l(r0, rn(reg));
-	jit_unget_reg(reg);
+	addi(r0, r1, i0);
+	ldr_l(r0, r0);
     }
 }
 #endif
