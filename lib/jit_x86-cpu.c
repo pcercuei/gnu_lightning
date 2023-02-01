@@ -1989,8 +1989,8 @@ _ci0(jit_state_t *_jit, jit_int32_t code, jit_int32_t r0, jit_int32_t r1)
 	ixorr(rn(reg), rn(reg));
 	testr(r1, r1);
 	cc(code, rn(reg));
-	movr(r0, rn(reg));	
-jit_unget_reg(reg);
+	movr(r0, rn(reg));
+	jit_unget_reg(reg);
     }
 }
 

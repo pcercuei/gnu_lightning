@@ -1707,7 +1707,6 @@ static void
 _compute_framesize(jit_state_t *_jit)
 {
     jit_int32_t		reg;
-    /* Save stack pointer in first slot */
     _jitc->framesize = 16;	/* ra+fp */
     for (reg = 0; reg < jit_size(iregs); reg++)
 	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg]))
