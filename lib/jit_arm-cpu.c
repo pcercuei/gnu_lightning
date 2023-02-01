@@ -3876,6 +3876,8 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
 	assert(_jitc->function->self.aoff >= frame);
+	if (jit_swf_p())
+	    CHECK_SWF_OFFSET();
 	if (_jitc->function->assume_frame) {
 	    if (jit_thumb_p() && !_jitc->thumb)
 		_jitc->thumb = _jit->pc.w;

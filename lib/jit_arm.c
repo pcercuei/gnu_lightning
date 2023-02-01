@@ -45,6 +45,14 @@
 
 /* FIXME is it really required to not touch _R10? */
 
+#define CHECK_SWF_OFFSET()						\
+    do {								\
+	if (!_jitc->function->swf_offset) {				\
+	    _jitc->again = _jitc->function->swf_offset = 1;		\
+	    _jitc->function->self.aoff = -64;				\
+	}								\
+    } while (0)
+
 /*
  * Types
  */
@@ -245,12 +253,8 @@ _jit_prolog(jit_state_t *_jit)
     _jitc->function = _jitc->functions.ptr + _jitc->functions.offset++;
     _jitc->function->self.size = stack_framesize;
     _jitc->function->self.argi = _jitc->function->self.argf =
-	_jitc->function->self.alen = 0;
-    if (jit_swf_p())
-	/* 8 soft float registers */
-	_jitc->function->self.aoff = -64;
-    else
-	_jitc->function->self.aoff = 0;
+	_jitc->function->self.alen = _jitc->function->self.aoff = 0;
+    _jitc->function->swf_offset = 0;
     _jitc->function->self.call = jit_call_default;
     jit_alloc((jit_pointer_t *)&_jitc->function->regoff,
 	      _jitc->reglen * sizeof(jit_int32_t));
@@ -276,6 +280,8 @@ jit_int32_t
 _jit_allocai(jit_state_t *_jit, jit_int32_t length)
 {
     assert(_jitc->function);
+    if (jit_swf_p())
+	CHECK_SWF_OFFSET();
     switch (length) {
 	case 0:	case 1:						break;
 	case 2:		_jitc->function->self.aoff &= -2;	break;
@@ -1853,6 +1859,8 @@ _emit_code(jit_state_t *_jit)
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;
 		    undo.func.allocar = _jitc->function->allocar;
+		    /* swf_offset must also not be undone */
+		    undo.func.swf_offset = _jitc->function->swf_offset;
 		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;

@@ -550,6 +550,14 @@ struct jit_function {
     /* uses allocar flag */
     jit_uint32_t	 allocar : 1;
 
+#if __arm__
+    /* If will, or might use float registers and vfp is not available.
+     * Use the first 64 bytes always, as the access to the virtual float
+     * registers use hardcoded instructions that can only reach 64 byte
+     * displacements, and to keep code simpler, do not use temporaries. */
+    jit_uint32_t	  swf_offset : 1;
+#endif
+
     /* varargs state offsets */
     jit_int32_t		 vaoff;		/* offset of jit_va_list */
     jit_int32_t		 vagp;		/* first gp va argument */
