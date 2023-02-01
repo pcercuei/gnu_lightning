@@ -3898,26 +3898,12 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	BX(_R12_REGNO);
 	if (!_jitc->thumb)
 	    _jitc->thumb = _jit->pc.w;
-	if (jit_cpu.abi) {
-	    T2_PUSH(0xf);
-	    T2_PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
-	    VPUSH_F64(_D8_REGNO, 8);
-	}
-	else {
-	    T2_PUSH(0xf);
-	    T2_PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
-	}
+	T2_PUSH(0xf);
+	T2_PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
     }
     else {
-	if (jit_cpu.abi) {
-	    PUSH(0xf);
-	    PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
-	    VPUSH_F64(_D8_REGNO, 8);
-	}
-	else {
-	    PUSH(0xf);
-	    PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
-	}
+	PUSH(0xf);
+	PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
     }
     movr(_FP_REGNO, _SP_REGNO);
     if (_jitc->function->stack)
@@ -3937,8 +3923,6 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	return;
 
     movr(_SP_REGNO, _FP_REGNO);
-    if (jit_cpu.abi)
-	VPOP_F64(_D8_REGNO, 8);
     if (jit_thumb_p())
 	T2_POP(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
     else

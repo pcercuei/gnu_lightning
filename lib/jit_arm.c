@@ -32,8 +32,7 @@
 
 #define jit_fpr_p(rn)			((rn) > 15)
 
-#define arg_base()							\
-    (stack_framesize - 16 + (jit_cpu.abi ? 64 : 0))
+#define arg_base()			(stack_framesize - 16)
 #define arg_offset(n)							\
     ((n) < 4 ? arg_base() + ((n) << 2) : (n))
 
@@ -245,8 +244,6 @@ _jit_prolog(jit_state_t *_jit)
     }
     _jitc->function = _jitc->functions.ptr + _jitc->functions.offset++;
     _jitc->function->self.size = stack_framesize;
-    if (jit_cpu.abi)
-	_jitc->function->self.size += 64;
     _jitc->function->self.argi = _jitc->function->self.argf =
 	_jitc->function->self.alen = 0;
     if (jit_swf_p())
