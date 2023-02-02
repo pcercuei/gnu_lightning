@@ -556,6 +556,8 @@ struct jit_function {
      * registers use hardcoded instructions that can only reach 64 byte
      * displacements, and to keep code simpler, do not use temporaries. */
     jit_uint32_t	  swf_offset : 1;
+    /* If need to call C functions for some operation, or variadic function */
+    jit_uint32_t	  save_reg_args : 1;
 #endif
 
     /* varargs state offsets */

@@ -38,7 +38,6 @@
 #  define jit_armv6_p()			(jit_cpu.version >= 6)
 #  define jit_armv7_p()			(jit_cpu.version >= 7)
 #  define jit_armv7r_p()		0
-#  define stack_framesize		48
 extern int	__aeabi_idivmod(int, int);
 extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define _R0_REGNO			0x00
@@ -852,6 +851,8 @@ static void _tdmb(jit_state_t *_jit, int im);
 #  define T2_POP(im)			tpp(THUMB2_POP,im)
 #  define jit_get_reg_args()						\
     do {								\
+	CHECK_REG_ARGS();						\
+	jit_check_frame();						\
 	(void)jit_get_reg(_R0|jit_class_named|jit_class_gpr);		\
 	(void)jit_get_reg(_R1|jit_class_named|jit_class_gpr);		\
 	(void)jit_get_reg(_R2|jit_class_named|jit_class_gpr);		\
@@ -1526,7 +1527,7 @@ _tpp(jit_state_t *_jit, int o, int im)
     assert(!(o & 0x0000ffff));
     if (o == THUMB2_PUSH)
 	assert(!(im & 0x8000));
-    assert(__builtin_popcount(im & 0x1fff) > 1);
+    assert(__builtin_popcount(im & 0x7fff) > 1);
     thumb.i = o|im;
     iss(thumb.s[0], thumb.s[1]);
 }
@@ -3872,12 +3873,14 @@ _calli_p(jit_state_t *_jit, jit_word_t i0)
 static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, mask, count;
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
+	jit_check_frame();
 	assert(_jitc->function->self.aoff >= frame);
 	if (jit_swf_p())
 	    CHECK_SWF_OFFSET();
+	CHECK_REG_ARGS();
 	if (_jitc->function->assume_frame) {
 	    if (jit_thumb_p() && !_jitc->thumb)
 		_jitc->thumb = _jit->pc.w;
@@ -3891,6 +3894,24 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 			      /* align stack at 8 bytes */
 			      _jitc->function->self.aoff) + 7) & -8;
 
+    for (reg = mask = count = 0; reg < jit_size(iregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    mask |= 1 << rn(iregs[reg]);
+	    ++count;
+	}
+    }
+    /* One extra register to keep stack 8 bytes aligned */
+    if (count & 1) {
+	for (reg = 4; reg < 10; reg++) {
+	    if (!(mask & (1 << reg))) {
+		mask |= 1 << reg;
+		break;
+	    }
+	}
+    }
+    if (_jitc->function->need_frame)
+	mask |= (1 << _FP_REGNO) | (1 << _LR_REGNO);
+
     if (jit_thumb_p()) {
 	/*  switch to thumb mode (better approach would be to
 	 * ORR 1 address being called, but no clear distinction
@@ -3900,14 +3921,19 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	BX(_R12_REGNO);
 	if (!_jitc->thumb)
 	    _jitc->thumb = _jit->pc.w;
-	T2_PUSH(0xf);
-	T2_PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
+	if (_jitc->function->save_reg_args)
+	    T2_PUSH(0xf);
+	if (mask)
+	    T2_PUSH(mask);
     }
     else {
-	PUSH(0xf);
-	PUSH(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
+	if (_jitc->function->save_reg_args)
+	    PUSH(0xf);
+	if (mask)
+	    PUSH(mask);
     }
-    movr(_FP_REGNO, _SP_REGNO);
+    if (_jitc->function->need_frame)
+	movr(_FP_REGNO, _SP_REGNO);
     if (_jitc->function->stack)
 	subi(_SP_REGNO, _SP_REGNO, _jitc->function->stack);
     if (_jitc->function->allocar) {
@@ -3921,15 +3947,37 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 static void
 _epilog(jit_state_t *_jit, jit_node_t *node)
 {
+    jit_int32_t		reg, mask, count;
     if (_jitc->function->assume_frame)
 	return;
 
-    movr(_SP_REGNO, _FP_REGNO);
-    if (jit_thumb_p())
-	T2_POP(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
-    else
-	POP(0x3f0|(1<<_FP_REGNO)|(1<<_LR_REGNO));
-    addi(_SP_REGNO, _SP_REGNO, 16);
+    for (reg = mask = count = 0; reg < jit_size(iregs); reg++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
+	    mask |= 1 << rn(iregs[reg]);
+	    ++count;
+	}
+    }
+    /* One extra register to keep stack 8 bytes aligned */
+    if (count & 1) {
+	for (reg = 4; reg < 10; reg++) {
+	    if (!(mask & (1 << reg))) {
+		mask |= 1 << reg;
+		break;
+	    }
+	}
+    }
+    if (_jitc->function->need_frame) {
+	mask |= (1 << _FP_REGNO) | (1 << _LR_REGNO);
+	movr(_SP_REGNO, _FP_REGNO);
+    }
+    if (mask) {
+	if (jit_thumb_p())
+	    T2_POP(mask);
+	else
+	    POP(mask);
+    }
+    if (_jitc->function->save_reg_args)
+	addi(_SP_REGNO, _SP_REGNO, 16);
     if (jit_thumb_p())
 	T1_BX(_LR_REGNO);
     else
@@ -3947,8 +3995,7 @@ _vastart(jit_state_t *_jit, jit_int32_t r0)
      * The -16 is to account for the 4 argument registers
      * always saved, and _jitc->function->vagp is to account
      * for declared arguments. */
-    addi(r0, _FP_REGNO, _jitc->function->self.size -
-	 16 + _jitc->function->vagp);
+    addi(r0, _FP_REGNO, jit_selfsize() - 16 + _jitc->function->vagp);
 }
 
 static void

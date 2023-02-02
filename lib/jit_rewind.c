@@ -54,8 +54,8 @@ _rewind_prolog(jit_state_t *_jit)
     _jitc->function->self.size = stack_framesize;
 #if __arm__
     assert(jit_cpu.abi);
-#endif
-#if __mips__
+    _jitc->function->alist = NULL;
+#elif __mips__
     _jitc->function->alist = NULL;
 #endif
     _jitc->function->self.argi =
