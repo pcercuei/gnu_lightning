@@ -4054,6 +4054,7 @@ generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 #endif
 
+#if defined(stack_framesize)
 static maybe_unused void
 _patch_alist(jit_state_t *_jit, jit_bool_t revert)
 {
@@ -4088,3 +4089,4 @@ _patch_alist(jit_state_t *_jit, jit_bool_t revert)
 	}
     }
 }
+#endif
