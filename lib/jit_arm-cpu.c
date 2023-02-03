@@ -1148,10 +1148,10 @@ static void _prolog(jit_state_t*,jit_node_t*);
 static void _epilog(jit_state_t*,jit_node_t*);
 #  define callr(r0)			_callr(_jit,r0)
 static void _callr(jit_state_t*,jit_int32_t);
-#  define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
-#  define calli_p(i0)			_calli_p(_jit,i0)
-static jit_word_t _calli_p(jit_state_t*,jit_word_t);
+#  define calli(i0,i1)			_calli(_jit,i0,i1)
+static void _calli(jit_state_t*,jit_word_t,jit_bool_t);
+#  define calli_p(i0,i1)		_calli_p(_jit,i0,i1)
+static jit_word_t _calli_p(jit_state_t*,jit_word_t,jit_bool_t);
 #  define vastart(r0)			_vastart(_jit, r0)
 static void _vastart(jit_state_t*, jit_int32_t);
 #  define vaarg(r0, r1)			_vaarg(_jit, r0, r1)
@@ -2742,8 +2742,8 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0, jit_bool_t i1)
     jit_word_t		w;
     jit_word_t		d;
     jit_int32_t		reg;
+    /* i1 means jump is reachable in signed 24 bits  */
     if (i1) {
-	/* Assume jump is not longer than 23 bits if inside jit */
 	w = _jit->pc.w;
 	/* if thumb and in thumb mode */
 	if (jit_thumb_p() && _jitc->thumb) {
@@ -3836,14 +3836,29 @@ _callr(jit_state_t *_jit, jit_int32_t r0)
 }
 
 static void
-_calli(jit_state_t *_jit, jit_word_t i0)
+_calli(jit_state_t *_jit, jit_word_t i0, jit_bool_t exchange_p)
 {
     jit_word_t		d;
     jit_int32_t		reg;
-    d = ((i0 - _jit->pc.w) >> 2) - 2;
-    if (!jit_exchange_p() && !jit_thumb_p() && _s24P(d))
-	BLI(d & 0x00ffffff);
+    if (!exchange_p) {
+	if (jit_thumb_p()) {
+	    if (jit_exchange_p())
+		/* skip switch from  arm to thumb 
+		 * exchange_p set to zero means a jit function
+		 * call in the same jit code buffer */
+		d = ((i0 + 8 - _jit->pc.w) >> 1) - 2;
+	    else
+		d = ((i0 - _jit->pc.w) >> 1) - 2;
+	}
+	else			d = ((i0 - _jit->pc.w) >> 2) - 2;
+	if (_s24P(d)) {
+	    if (jit_thumb_p())	T2_BLI(encode_thumb_jump(d));
+	    else		BLI(d & 0x00ffffff);
+	}
+	else			goto fallback;
+    }
     else {
+    fallback:
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
 	if (jit_thumb_p())
@@ -3855,18 +3870,30 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 }
 
 static jit_word_t
-_calli_p(jit_state_t *_jit, jit_word_t i0)
+_calli_p(jit_state_t *_jit, jit_word_t i0, jit_bool_t i1)
 {
     jit_word_t		w;
+    jit_word_t		d;
     jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    w = _jit->pc.w;
-    movi_p(rn(reg), i0);
-    if (jit_thumb_p())
-	T1_BLX(rn(reg));
-    else
-	BLX(rn(reg));
-    jit_unget_reg(reg);
+    /* i1 means call is reachable in signed 24 bits  */
+    if (i1) {
+	w = _jit->pc.w;
+	if (jit_thumb_p())	d = ((i0 - _jit->pc.w) >> 1) - 2;
+	else			d = ((i0 - _jit->pc.w) >> 2) - 2;
+	assert(_s24P(d));
+	if (jit_thumb_p())	T2_BLI(encode_thumb_jump(d));
+	else			BLI(d & 0x00ffffff);
+    }
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	w = _jit->pc.w;
+	movi_p(rn(reg), i0);
+	if (jit_thumb_p())
+	    T1_BLX(rn(reg));
+	else
+	    BLX(rn(reg));
+	jit_unget_reg(reg);
+    }
     return (w);
 }
 
@@ -3920,8 +3947,10 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	 * ORR 1 address being called, but no clear distinction
 	 * of what is a pointer to a jit function, or if patching
 	 * a pointer to a jit function) */
-	ADDI(_R12_REGNO, _R15_REGNO, 1);
-	BX(_R12_REGNO);
+	if (jit_exchange_p()) {
+	    ADDI(_R12_REGNO, _R15_REGNO, 1);
+	    BX(_R12_REGNO);
+	}
 	if (!_jitc->thumb)
 	    _jitc->thumb = _jit->pc.w;
 	if (jit_swf_p() || (_jitc->function->save_reg_args &&
@@ -4031,7 +4060,28 @@ _patch_at(jit_state_t *_jit,
 	jit_word_t	 w;
     } u;
     u.w = instr;
-    if (kind == arm_patch_jump) {
+    if (kind == arm_patch_call) {
+	if (jit_thumb_p() && (jit_uword_t)instr >= _jitc->thumb) {
+	    code2thumb(thumb.s[0], thumb.s[1], u.s[0], u.s[1]);
+	    assert((thumb.i & THUMB2_BLI) == THUMB2_BLI);
+	    /* skip code to switch from arm to thumb mode */
+	    if (jit_exchange_p())
+		d = ((label + 8 - instr) >> 1) - 2;
+	    else
+		d = ((label - instr) >> 1) - 2;
+	    assert(_s24P(d));
+	    thumb.i = THUMB2_BLI | encode_thumb_jump(d);
+	    thumb2code(thumb.s[0], thumb.s[1], u.s[0], u.s[1]);
+	}
+	else {
+	    thumb.i = u.i[0];
+	    assert((thumb.i & 0x0f000000) == ARM_BLI);
+	    d = ((label - instr) >> 2) - 2;
+	    assert(_s24P(d));
+	    u.i[0] = (thumb.i & 0xff000000) | (d & 0x00ffffff);
+	}
+    }
+    else if (kind == arm_patch_jump) {
 	if (jit_thumb_p() && (jit_uword_t)instr >= _jitc->thumb) {
 	    code2thumb(thumb.s[0], thumb.s[1], u.s[0], u.s[1]);
 	    if ((thumb.i & THUMB2_B) == THUMB2_B) {

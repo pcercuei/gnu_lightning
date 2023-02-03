@@ -99,7 +99,11 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 #  elif defined(__hppa__)
     movi(_R26_REGNO, i1);
 #  endif
+#  if defined(__arm__)
+    calli(i0, jit_exchange_p());
+#  else
     calli(i0);
+#  endif
 }
 
 static void

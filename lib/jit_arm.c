@@ -30,7 +30,8 @@
 #define arm_patch_node			0x80000000
 #define arm_patch_word			0x40000000
 #define arm_patch_jump			0x20000000
-#define arm_patch_load			0x00000000
+#define arm_patch_load			0x10000000
+#define arm_patch_call			0x08000000
 
 #define jit_fpr_p(rn)			((rn) > 15)
 
@@ -95,8 +96,8 @@ static void _flush_consts(jit_state_t*);
 static void _invalidate_consts(jit_state_t*);
 #define compute_framesize()		_compute_framesize(_jit)
 static void _compute_framesize(jit_state_t*);
-#define patch(instr, node)		_patch(_jit, instr, node)
-static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
+#define patch(instr, node, kind)	_patch(_jit, instr, node, kind)
+static void _patch(jit_state_t*,jit_word_t,jit_node_t*,jit_int32_t);
 
 #if defined(__GNUC__)
 /* libgcc */
@@ -1396,7 +1397,7 @@ _emit_code(jit_state_t *_jit)
 		else {							\
 		    word = name##r##type(_jit->pc.w,			\
 					 rn(node->v.w), rn(node->w.w));	\
-		    patch(word, node);					\
+		    patch(word, node, arm_patch_jump);			\
 		}							\
 		break
 #define case_bvv(name, type)						\
@@ -1421,7 +1422,7 @@ _emit_code(jit_state_t *_jit)
 			word = vfp_##name##r##type(_jit->pc.w,		\
 						   rn(node->v.w),	\
 						   rn(node->w.w));	\
-		    patch(word, node);					\
+		    patch(word, node, arm_patch_jump);			\
 		}							\
 		break
 #define case_brw(name, type)						\
@@ -1435,7 +1436,7 @@ _emit_code(jit_state_t *_jit)
 		else {							\
 		    word = name##i##type(_jit->pc.w,			\
 					 rn(node->v.w), node->w.w);	\
-		    patch(word, node);					\
+		    patch(word, node, arm_patch_jump);			\
 		}							\
 		break;
 #define case_bvf(name)							\
@@ -1460,7 +1461,7 @@ _emit_code(jit_state_t *_jit)
 			word = vfp_##name##i_f(_jit->pc.w,		\
 					       rn(node->v.w),		\
 					       node->w.f);		\
-		    patch(word, node);					\
+		    patch(word, node, arm_patch_jump);			\
 		}							\
 		break
 #define case_bvd(name)							\
@@ -1485,7 +1486,7 @@ _emit_code(jit_state_t *_jit)
 			word = vfp_##name##i_d(_jit->pc.w,		\
 					       rn(node->v.w),		\
 					       node->w.d);		\
-		    patch(word, node);					\
+		    patch(word, node, arm_patch_jump);			\
 		}							\
 		break
 #if DEVEL_DISASSEMBLER
@@ -1635,7 +1636,7 @@ _emit_code(jit_state_t *_jit)
 			assert(temp->code == jit_code_label ||
 			       temp->code == jit_code_epilog);
 			word = movi_p(rn(node->u.w), temp->u.w);
-			patch(word, node);
+			patch(word, node, arm_patch_word);
 		    }
 		}
 		else
@@ -1886,10 +1887,11 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			word = jmpi_p(_jit->pc.w,
-				      _s24P(_jit->code.length -
-					    (_jit->pc.uc - _jit->code.ptr)));
-			patch(word, node);
+			value = _s24P(_jit->code.length -
+				      (_jit->pc.uc - _jit->code.ptr));
+			word = jmpi_p(_jit->pc.w, value);
+			patch(word, node, value ?
+			      arm_patch_jump : arm_patch_word);
 		    }
 		}
 		else {
@@ -1909,14 +1911,17 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			calli(temp->u.w);
+			calli(temp->u.w, 0);
 		    else {
-			word = calli_p(_jit->pc.w);
-			patch(word, node);
+			value = _s24P(_jit->code.length -
+				      (_jit->pc.uc - _jit->code.ptr));
+			word = calli_p(_jit->pc.w, value);
+			patch(word, node, value ?
+			      arm_patch_call : arm_patch_word);
 		    }
 		}
 		else
-		    calli(node->u.w);
+		    calli(node->u.w, jit_exchange_p());
 		break;
 	    case jit_code_prolog:
 		_jitc->function = _jitc->functions.ptr + node->w.w;
@@ -2131,7 +2136,10 @@ _emit_code(jit_state_t *_jit)
 	node = _jitc->patches.ptr[offset].node;
 	word = _jitc->patches.ptr[offset].inst;
 	if (!jit_thumb_p() &&
-	    (node->code == jit_code_movi || node->code == jit_code_calli)) {
+	    (node->code == jit_code_movi ||
+	     (node->code == jit_code_calli &&
+	      (_jitc->patches.ptr[offset].kind & ~arm_patch_node) ==
+	      arm_patch_word))) {
 	    /* calculate where to patch word */
 	    value = *(jit_int32_t *)word;
 	    assert((value & 0x0f700000) == ARM_LDRI);
@@ -2417,24 +2425,15 @@ _compute_framesize(jit_state_t *_jit)
 }
 
 static void
-_patch(jit_state_t *_jit, jit_word_t instr, jit_node_t *node)
+_patch(jit_state_t *_jit, jit_word_t instr, jit_node_t *node, jit_int32_t kind)
 {
     jit_int32_t		 flag;
-    jit_int32_t		 kind;
 
     assert(node->flag & jit_flag_node);
-    if (node->code == jit_code_movi) {
+    if (node->code == jit_code_movi)
 	flag = node->v.n->flag;
-	kind = arm_patch_word;
-    }
-    else {
+    else
 	flag = node->u.n->flag;
-	if (node->code == jit_code_calli ||
-	    (node->code == jit_code_jmpi && !(node->flag & jit_flag_node)))
-	    kind = arm_patch_word;
-	else
-	    kind = arm_patch_jump;
-    }
     assert(!(flag & jit_flag_patch));
     kind |= arm_patch_node;
     if (_jitc->patches.offset >= _jitc->patches.length) {
