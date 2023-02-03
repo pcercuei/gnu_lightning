@@ -3911,6 +3911,9 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     }
     if (_jitc->function->need_frame)
 	mask |= (1 << _FP_REGNO) | (1 << _LR_REGNO);
+    if (!jit_swf_p() && _jitc->function->save_reg_args &&
+	!(_jitc->function->self.call & jit_call_varargs))
+	mask |= 0xf;
 
     if (jit_thumb_p()) {
 	/*  switch to thumb mode (better approach would be to
@@ -3921,13 +3924,15 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	BX(_R12_REGNO);
 	if (!_jitc->thumb)
 	    _jitc->thumb = _jit->pc.w;
-	if (_jitc->function->save_reg_args)
+	if (jit_swf_p() || (_jitc->function->save_reg_args &&
+			    (_jitc->function->self.call & jit_call_varargs)))
 	    T2_PUSH(0xf);
 	if (mask)
 	    T2_PUSH(mask);
     }
     else {
-	if (_jitc->function->save_reg_args)
+	if (jit_swf_p() || (_jitc->function->save_reg_args &&
+			    (_jitc->function->self.call & jit_call_varargs)))
 	    PUSH(0xf);
 	if (mask)
 	    PUSH(mask);
@@ -3970,13 +3975,17 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	mask |= (1 << _FP_REGNO) | (1 << _LR_REGNO);
 	movr(_SP_REGNO, _FP_REGNO);
     }
+    if (!jit_swf_p() && _jitc->function->save_reg_args &&
+	!(_jitc->function->self.call & jit_call_varargs))
+	addi(_SP_REGNO, _SP_REGNO, 16);
     if (mask) {
 	if (jit_thumb_p())
 	    T2_POP(mask);
 	else
 	    POP(mask);
     }
-    if (_jitc->function->save_reg_args)
+    if (jit_swf_p() || (_jitc->function->save_reg_args &&
+			(_jitc->function->self.call & jit_call_varargs)))
 	addi(_SP_REGNO, _SP_REGNO, 16);
     if (jit_thumb_p())
 	T1_BX(_LR_REGNO);
