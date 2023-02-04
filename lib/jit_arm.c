@@ -1887,8 +1887,12 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			value = _s24P(_jit->code.length -
-				      (_jit->pc.uc - _jit->code.ptr));
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (jit_thumb_p())	word >>= 1;
+			else			word >>= 2;
+			word -= 2;
+			value = _s24P(word);
 			word = jmpi_p(_jit->pc.w, value);
 			patch(word, node, value ?
 			      arm_patch_jump : arm_patch_word);
@@ -1913,8 +1917,14 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			calli(temp->u.w, 0);
 		    else {
-			value = _s24P(_jit->code.length -
-				      (_jit->pc.uc - _jit->code.ptr));
+			word = _jit->code.length -
+			    (_jit->pc.uc - _jit->code.ptr);
+			if (jit_exchange_p())
+			    word -= 8;
+			if (jit_thumb_p())	word >>= 1;
+			else			word >>= 2;
+			word -= 2;
+			value = _s24P(word);
 			word = calli_p(_jit->pc.w, value);
 			patch(word, node, value ?
 			      arm_patch_call : arm_patch_word);
