@@ -44,7 +44,7 @@
  * arm mode, what may cause a crash upon return of that function
  * if generating jit for a relative jump.
  */
-#define jit_exchange_p()		1
+#define jit_exchange_p()		jit_cpu.exchange
 
 /* FIXME is it really required to not touch _R10? */
 
@@ -225,6 +225,14 @@ jit_get_cpu(void)
     /* armv6t2 todo (software float and thumb2) */
     if (!jit_cpu.vfp && jit_cpu.thumb)
 	jit_cpu.thumb = 0;
+    /* FIXME need test environments for the below. For the moment just
+     * be very conservative */
+    /* force generation of code assuming jit and function libraries called
+     * instruction set do not match */
+    jit_cpu.exchange = 1;
+    /* do not generate hardware integer division by default */
+    if (jit_cpu.version == 7)
+	jit_cpu.extend = 0;
 }
 
 void

@@ -37,7 +37,7 @@
 #  define jit_armv5e_p()		(jit_cpu.version > 5 || (jit_cpu.version == 5 && jit_cpu.extend))
 #  define jit_armv6_p()			(jit_cpu.version >= 6)
 #  define jit_armv7_p()			(jit_cpu.version >= 7)
-#  define jit_armv7r_p()		0
+#  define jit_armv7r_p()		(jit_cpu.version > 7 || (jit_cpu.version == 7 && jit_cpu.extend))
 extern int	__aeabi_idivmod(int, int);
 extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define _R0_REGNO			0x00
