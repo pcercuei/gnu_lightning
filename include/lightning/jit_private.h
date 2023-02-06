@@ -544,6 +544,7 @@ struct jit_function {
 
     jit_uint32_t	 need_frame : 1;	/* need frame pointer? */
     jit_uint32_t	 need_stack : 1;	/* need stack pointer? */
+    jit_uint32_t	 need_return : 1;	/* not a leaf function */
 
     /* alloca offset offset */
     jit_int32_t		 aoffoff;
