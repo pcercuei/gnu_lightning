@@ -140,6 +140,8 @@ extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define THUMB2_UMULL			0xfba00000
 #  define ARM_SMULL			0x00c00090
 #  define THUMB2_SMULL			0xfb800000
+#  define ARM_SDIV			0x07100010
+#  define ARM_UDIV			0x07300010
 #  define THUMB2_SDIV			0xfb90f0f0
 #  define THUMB2_UDIV			0xfbb0f0f0
 #  define ARM_AND			0x00000000
@@ -523,6 +525,10 @@ static void _tdmb(jit_state_t *_jit, int im);
 #  define CC_UMULL(cc,rl,rh,rn,rm)	corrrr(cc,ARM_UMULL,rh,rl,rm,rn)
 #  define UMULL(rl,rh,rn,rm)		CC_UMULL(ARM_CC_AL,rl,rh,rn,rm)
 #  define T2_UMULL(rl,rh,rn,rm)		torrrr(THUMB2_UMULL,rn,rl,rh,rm)
+#  define CC_SDIV(cc,rd,rn,rm)		corrrr(cc,ARM_SDIV,rd,15,rn,rm)
+#  define SDIV(rd,rn,rm)		CC_SDIV(ARM_CC_AL,rd,rm,rn)
+#  define CC_UDIV(cc,rd,rn,rm)		corrrr(cc,ARM_UDIV,rd,15,rn,rm)
+#  define UDIV(rd,rn,rm)		CC_UDIV(ARM_CC_AL,rd,rm,rn)
 #  define T2_SDIV(rd,rn,rm)		torrr(THUMB2_SDIV,rn,rd,rm)
 #  define T2_UDIV(rd,rn,rm)		torrr(THUMB2_UDIV,rn,rd,rm)
 #  define CC_AND(cc,rd,rn,rm)		corrr(cc,ARM_AND,rn,rd,rm)
@@ -2233,8 +2239,12 @@ _divrem(jit_state_t *_jit, int div, int sign,
 static void
 _divr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    if (jit_armv7r_p() && jit_thumb_p())
-	T2_SDIV(r0, r1, r2);
+    if (jit_armv7r_p()) {
+	if (jit_thumb_p())
+	    T2_SDIV(r0, r1, r2);
+	else
+	    SDIV(r0, r1, r2);
+    }
     else
 	divrem(1, 1, r0, r1, r2);
 }
@@ -2252,8 +2262,12 @@ _divi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _divr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    if (jit_armv7r_p() && jit_thumb_p())
-	T2_UDIV(r0, r1, r2);
+    if (jit_armv7r_p()) {
+	if (jit_thumb_p())
+	    T2_UDIV(r0, r1, r2);
+	else
+	    UDIV(r0, r1, r2);
+    }
     else
 	divrem(1, 0, r0, r1, r2);
 }
@@ -2313,7 +2327,23 @@ _iqdivi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 static void
 _remr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    divrem(0, 1, r0, r1, r2);
+    if (jit_armv7r_p()) {
+	jit_int32_t		reg;
+	if (r0 == r1 || r0 == r2) {
+	    reg = jit_get_reg(jit_class_gpr);
+	    divr(rn(reg), r1, r2);
+	    mulr(rn(reg), r2, rn(reg));
+	    subr(r0, r1, rn(reg));
+	    jit_unget_reg(reg);
+	}
+	else {
+	    divr(r0, r1, r2);
+	    mulr(r0, r2, r0);
+	    subr(r0, r1, r0);
+	}
+    }
+    else
+	divrem(0, 1, r0, r1, r2);
 }
 
 static void
@@ -2329,7 +2359,23 @@ _remi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _remr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    divrem(0, 0, r0, r1, r2);
+    if (jit_armv7r_p()) {
+	jit_int32_t		reg;
+	if (r0 == r1 || r0 == r2) {
+	    reg = jit_get_reg(jit_class_gpr);
+	    divr_u(rn(reg), r1, r2);
+	    mulr(rn(reg), r2, rn(reg));
+	    subr(r0, r1, rn(reg));
+	    jit_unget_reg(reg);
+	}
+	else {
+	    divr_u(r0, r1, r2);
+	    mulr(r0, r2, r0);
+	    subr(r0, r1, r0);
+	}
+    }
+    else
+	divrem(0, 0, r0, r1, r2);
 }
 
 static void
