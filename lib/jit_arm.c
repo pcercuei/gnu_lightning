@@ -63,6 +63,13 @@
 	}								\
     } while (0)
 
+#define CHECK_RETURN()							\
+    do {								\
+	if (!_jitc->function->need_frame &&				\
+	    !_jitc->function->need_return)				\
+	    _jitc->again = _jitc->function->need_return = 1;		\
+    } while (0)
+
 /*
  * Types
  */
@@ -278,7 +285,8 @@ _jit_prolog(jit_state_t *_jit)
     _jitc->function->self.size = stack_framesize;
     _jitc->function->self.argi = _jitc->function->self.argf =
 	_jitc->function->self.alen = _jitc->function->self.aoff = 0;
-    _jitc->function->swf_offset = _jitc->function->save_reg_args = 0;
+    _jitc->function->swf_offset = _jitc->function->save_reg_args =
+	_jitc->function->need_return = 0;
     _jitc->function->self.call = jit_call_default;
     jit_alloc((jit_pointer_t *)&_jitc->function->regoff,
 	      _jitc->reglen * sizeof(jit_int32_t));
@@ -1917,8 +1925,8 @@ _emit_code(jit_state_t *_jit)
 		callr(rn(node->u.w));
 		break;
 	    case jit_code_calli:
-		jit_check_frame();
 		if (node->flag & jit_flag_node) {
+		    CHECK_RETURN();
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
@@ -1938,8 +1946,10 @@ _emit_code(jit_state_t *_jit)
 			      arm_patch_call : arm_patch_word);
 		    }
 		}
-		else
+		else {
+		    jit_check_frame();
 		    calli(node->u.w, jit_exchange_p());
+		}
 		break;
 	    case jit_code_prolog:
 		_jitc->function = _jitc->functions.ptr + node->w.w;
@@ -1981,6 +1991,7 @@ _emit_code(jit_state_t *_jit)
 		    undo.func.self.aoff = _jitc->function->frame +
 			_jitc->function->self.aoff;
 		    undo.func.need_frame = _jitc->function->need_frame;
+		    undo.func.need_return = _jitc->function->need_return;
 		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;

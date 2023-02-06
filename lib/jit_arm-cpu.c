@@ -3920,6 +3920,18 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
     _jitc->function->stack = ((_jitc->function->self.alen -
 			      /* align stack at 8 bytes */
 			      _jitc->function->self.aoff) + 7) & -8;
+    /* If this jit_check_frame() succeeds, it actually is just a need_stack,
+     * usually for arguments, so, allocai was not called, but pusharg*
+     * was called increasing stack size, for negative access offsets.
+     * This can be optimized for one less prolog instruction, that is,
+     * do not create the frame pointer, and only add _jitc->function->stack
+     * to sp, and on epilog, instead of moving fp to sp, just add negative
+     * value of _jitc->function->stack. Since this condition requires a
+     * large function body for excess arguments to called function, keep
+     * things a bit simpler for now, as this is the only place need_stack
+     * would be useful. */
+    if (_jitc->function->stack)
+	jit_check_frame();
 
     for (reg = mask = count = 0; reg < jit_size(iregs); reg++) {
 	if (jit_regset_tstbit(&_jitc->function->regset, iregs[reg])) {
@@ -3936,7 +3948,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	    }
 	}
     }
-    if (_jitc->function->need_frame)
+    if (_jitc->function->need_frame || _jitc->function->need_return)
 	mask |= (1 << _FP_REGNO) | (1 << _LR_REGNO);
     if (!jit_swf_p() && _jitc->function->save_reg_args &&
 	!(_jitc->function->self.call & jit_call_varargs))
@@ -4000,10 +4012,10 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	    }
 	}
     }
-    if (_jitc->function->need_frame) {
+    if (_jitc->function->need_frame || _jitc->function->need_return)
 	mask |= (1 << _FP_REGNO) | (1 << _LR_REGNO);
+    if (_jitc->function->need_frame)
 	movr(_SP_REGNO, _FP_REGNO);
-    }
     if (!jit_swf_p() && _jitc->function->save_reg_args &&
 	!(_jitc->function->self.call & jit_call_varargs))
 	addi(_SP_REGNO, _SP_REGNO, 16);
