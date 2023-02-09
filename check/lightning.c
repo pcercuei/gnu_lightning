@@ -321,6 +321,8 @@ static void lshr(void);		static void lshi(void);
 static void rshr(void);		static void rshi(void);
 static void rshr_u(void);	static void rshi_u(void);
 static void negr(void);		static void comr(void);
+static void clor(void);		static void clzr(void);
+static void ctor(void);		static void ctzr(void);
 static void ltr(void);		static void lti(void);
 static void ltr_u(void);	static void lti_u(void);
 static void ler(void);		static void lei(void);
@@ -679,6 +681,8 @@ static instr_t		  instr_vector[] = {
     entry(rshr),	entry(rshi),
     entry(rshr_u),	entry(rshi_u),
     entry(negr),	entry(comr),
+    entry(clor),	entry(clzr),
+    entry(ctor),	entry(ctzr),
     entry(ltr),		entry(lti),
     entry(ltr_u),	entry(lti_u),
     entry(ler),		entry(lei),
@@ -1530,6 +1534,8 @@ entry_ir_ir_ir(lshr)		entry_ir_ir_im(lshi)
 entry_ir_ir_ir(rshr)		entry_ir_ir_im(rshi)
 entry_ir_ir_ir(rshr_u)		entry_ir_ir_im(rshi_u)
 entry_ir_ir(negr)		entry_ir_ir(comr)
+entry_ir_ir(clor)		entry_ir_ir(clzr)
+entry_ir_ir(ctor)		entry_ir_ir(ctzr)
 entry_ir_ir_ir(ltr)		entry_ir_ir_im(lti)
 entry_ir_ir_ir(ltr_u)		entry_ir_ir_im(lti_u)
 entry_ir_ir_ir(ler)		entry_ir_ir_im(lei)

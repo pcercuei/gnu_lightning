@@ -79,6 +79,7 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 #  include "jit_rewind.c"
 #  include "jit_mips-cpu.c"
 #  include "jit_mips-fpu.c"
+#  include "jit_fallback.c"
 #undef PROTO
 
 /*
@@ -1574,6 +1575,14 @@ _emit_code(jit_state_t *_jit)
 		break;
 		case_rr(neg,);
 		case_rr(com,);
+#define clor(r0, r1)	fallback_clo(r0, r1)
+#define clzr(r0, r1)	fallback_clz(r0, r1)
+#define ctor(r0, r1)	fallback_cto(r0, r1)
+#define ctzr(r0, r1)	fallback_ctz(r0, r1)
+		case_rr(clo,);
+		case_rr(clz,);
+		case_rr(cto,);
+		case_rr(ctz,);
 		case_rrr(lt,);
 		case_rrw(lt,);
 		case_rrr(lt, _u);
@@ -2064,6 +2073,7 @@ _emit_code(jit_state_t *_jit)
 #  include "jit_rewind.c"
 #  include "jit_mips-cpu.c"
 #  include "jit_mips-fpu.c"
+#  include "jit_fallback.c"
 #undef CODE
 
 void

@@ -40,6 +40,7 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 #define PROTO				1
 # include "jit_loongarch-cpu.c"
 # include "jit_loongarch-fpu.c"
+# include "jit_fallback.c"
 #undef PROTO
 
 /*
@@ -1112,6 +1113,14 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsh, _u);
 		case_rr(neg,);
 		case_rr(com,);
+#define clor(r0, r1)	fallback_clo(r0, r1)
+#define clzr(r0, r1)	fallback_clz(r0, r1)
+#define ctor(r0, r1)	fallback_cto(r0, r1)
+#define ctzr(r0, r1)	fallback_ctz(r0, r1)
+		case_rr(clo,);
+		case_rr(clz,);
+		case_rr(cto,);
+		case_rr(ctz,);
 		case_rrr(and,);
 		case_rrw(and,);
 		case_rrr(or,);
@@ -1664,6 +1673,7 @@ _emit_code(jit_state_t *_jit)
 #define CODE				1
 #  include "jit_loongarch-cpu.c"
 #  include "jit_loongarch-fpu.c"
+#  include "jit_fallback.c"
 #undef CODE
 
 void

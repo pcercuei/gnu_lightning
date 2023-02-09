@@ -84,6 +84,10 @@
 	rshi_u %r0 %r1 2
 	negr %r0 %r1
 	comr %r0 %r1
+	clor %r0 %r1
+	clzr %r0 %r1
+	ctor %r0 %r1
+	ctzr %r0 %r1
 	ltr %r0 %r1 %r2
 	lti %r0 %r1 2
 	ltr_u %r0 %r1 %r2

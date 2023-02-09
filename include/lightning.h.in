@@ -1048,6 +1048,14 @@ typedef enum {
 #define jit_movr_d_w(u, v)	jit_new_node_ww(jit_code_movr_d_w, u, v)
 #define jit_movi_d_w(u, v)	jit_new_node_wd(jit_code_movi_d_w, u, v)
 
+#define jit_clor(u,v)		jit_new_node_ww(jit_code_clor,u,v)
+#define jit_clzr(u,v)		jit_new_node_ww(jit_code_clzr,u,v)
+    jit_code_clor,		jit_code_clzr,
+
+#define jit_ctor(u,v)		jit_new_node_ww(jit_code_ctor,u,v)
+#define jit_ctzr(u,v)		jit_new_node_ww(jit_code_ctzr,u,v)
+    jit_code_ctor,		jit_code_ctzr,
+
     jit_code_last_code
 } jit_code_t;
 

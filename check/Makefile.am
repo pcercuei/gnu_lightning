@@ -115,6 +115,7 @@ EXTRA_DIST =				\
 	skip.tst	skip.ok		\
 	tramp.tst	tramp.ok	\
 	va_list.tst	va_list.ok	\
+	bit.tst		bit.ok		\
 	check.sh			\
 	check.x87.sh			\
 	check.arm.sh	check.swf.sh	\
@@ -145,7 +146,7 @@ base_TESTS =				\
 	float jmpr live put		\
 	qalu_mul qalu_div		\
 	range ranger ret skip tramp	\
-	va_list
+	va_list bit
 
 $(base_TESTS):	check.sh
 	$(LN_S) $(srcdir)/check.sh $@
@@ -326,7 +327,7 @@ nodata_TESTS =						\
 	clobber.nodata carry.nodata call.nodata		\
 	float.nodata jmpr.nodata tramp.nodata		\
 	range.nodata ranger.nodata put.nodata		\
-	va_list.nodata
+	va_list.nodata bit.nodata
 $(nodata_TESTS):	check.nodata.sh
 	$(LN_S) $(srcdir)/check.nodata.sh $@
 TESTS += $(nodata_TESTS)

@@ -1,3 +1,20 @@
+2023-02-09 Paulo Andrade <pcpa@gnu.org>
+
+	* check/Makefile.am: Update for new bit.tst test, to check the
+	new clor, clzr, ctor and ctzr instructions.
+	* check/all.tst: Update to verify encoding of new instructions.
+	* check/lightning.c: Update to have the lightning "assembler"
+	understanding the new instructions.
+	* include/lightning.h.in: Define new codes for new instructions.
+	* lib/jit_aarch64.c, lib/jit_alpha.c, lib/jit_arm.c, lib/jit_hppa.c,
+	lib/jit_ia64.c, lib/jit_loongarch.c, lib/jit_mips.c, lib/jit_ppc.c,
+	lib/jit_riscv.c, lib/jit_s390.c, lib/jit_sparc.c, lib/jit_x86.c:
+	Implement fallback version of new instructions.
+	* lib/jit_fallback.c: Actual implementation of the fallbacks of
+	the new instructions.
+	* lib/jit_names.c: Update to print debug information of new
+	instructions.
+
 2023-01-26 Paulo Andrade <pcpa@gnu.org>
 
 	* check/riprel.c, check/riprel.ok: New check files.
