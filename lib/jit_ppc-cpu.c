@@ -2783,7 +2783,7 @@ _ldxr_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
     jit_int32_t		reg;
     if (r1 == _R0_REGNO) {
 	if (r2 != _R0_REGNO)
-	    LWZX(r0, r2, r1);
+	    LWAX(r0, r2, r1);
 	else {
 	    reg = jit_get_reg(jit_class_gpr);
 	    movr(rn(reg), r1);
@@ -2792,7 +2792,7 @@ _ldxr_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	}
     }
     else
-	LWZX(r0, r1, r2);
+	LWAX(r0, r1, r2);
 }
 
 static void
