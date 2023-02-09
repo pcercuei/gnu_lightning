@@ -893,9 +893,6 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_retval_c:		case jit_code_retval_uc:
 	    case jit_code_retval_s:		case jit_code_retval_us:
 	    case jit_code_retval_i:
-#if 0
-	    case jit_code_retval_ui:		case jit_code_retval_l:
-#endif
 	    case jit_code_retval_f:		case jit_code_retval_d:
 	    case jit_code_prepare:
 	    case jit_code_finishr:		case jit_code_finishi:

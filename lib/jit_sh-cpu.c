@@ -532,6 +532,12 @@ static void _epilog(jit_state_t*,jit_node_t*);
 #    define sti(i0,r0)			sti_i(i0,r0)
 #    define stxr(r0,r1,r2)		stxr_i(r0,r1,r2)
 #    define stxi(i0,r0,r1)		stxi_i(i0,r0,r1)
+
+#  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
+#  define is_middle_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) <= 1) : 0)
+#  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
+#  define masked_bits_count(im)		__builtin_popcountl(im)
+#  define unmasked_bits_count(im)	(__WORDSIZE - masked_bits_count(im))
 #endif /* PROTO */
 
 #if CODE
@@ -614,8 +620,19 @@ _movi_loop(jit_state_t *_jit, jit_word_t i0)
 static void
 _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 {
+	jit_word_t w = _jit->pc.w & ~3;
+
 	if (i0 >= -128 && i0 < 128) {
 		MOVI(r0, i0);
+	} else if (i0 >= w && i0 <= w + 0x3ff && !((i0 - w) & 0x3)) {
+		MOVA((i0 - w) >> 2);
+		movr(r0, _R0);
+	} else if (is_low_mask(i0)) {
+		MOVI(r0, -1);
+		rshi_u(r0, r0, unmasked_bits_count(i0));
+	} else if (is_high_mask(i0)) {
+		MOVI(r0, -1);
+		lshi(r0, r0, unmasked_bits_count(i0));
 	} else {
 		_movi_loop(_jit, i0);
 		movr(r0, _R0);
@@ -625,19 +642,31 @@ _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 static void
 emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w, int t_set)
 {
+	jit_int32_t disp = (i0 - w >> 1) - 2;
+
+	if (disp >= -2048 && disp <= 2046) {
 #if defined(__SH3__) || defined(__SH4__)
-	if (t_set)
-		BT((i0 - w >> 1) - 2);
-	else
-		BF((i0 - w >> 1) - 2);
+		if (t_set)
+			BT((i0 - w >> 1) - 2);
+		else
+			BF((i0 - w >> 1) - 2);
 #else
-	/* BT/BF are buggy on SH2 - revert to using BTS/BFS */
-	if (t_set)
-		BTS((i0 - w >> 1) - 2);
-	else
-		BFS((i0 - w >> 1) - 2);
-	NOP();
+		/* BT/BF are buggy on SH2 - revert to using BTS/BFS */
+		if (t_set)
+			BTS((i0 - w >> 1) - 2);
+		else
+			BFS((i0 - w >> 1) - 2);
+		NOP();
 #endif
+	} else {
+		movi_p(_R0, i0);
+		if (t_set)
+			BF(1);
+		else
+			BT(1);
+		JMP(_R0);
+		NOP();
+	}
 }
 
 static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
@@ -680,6 +709,8 @@ _addxr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _addi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	if (i0 >= -128 && i0 < 127) {
 		movr(r0, r1);
 		ADDI(r0, i0);
@@ -699,6 +730,8 @@ _addci(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _addxi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	addxr(r0, r1, _R0);
 }
@@ -752,6 +785,8 @@ _subi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _subci(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	subcr(r0, r1, _R0);
 }
@@ -759,6 +794,8 @@ _subci(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _subxi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	subxr(r0, r1, _R0);
 }
@@ -770,9 +807,13 @@ _rsbi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 		negr(r0, r1);
 		ADDI(r0, i0);
 	} else if (r0 != r1) {
+		assert(r0 != _R0 && r1 != _R0);
+
 		movi(r0, i0);
 		subr(r0, r0, r1);
 	} else {
+		assert(r0 != _R0);
+
 		movi(_R0, i0);
 		subr(r0, _R0, r1);
 	}
@@ -806,6 +847,8 @@ _qmulr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 static void
 _muli(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	mulr(r0, r1, _R0);
 }
@@ -814,6 +857,8 @@ static void
 _qmuli(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
        jit_uint16_t r2, jit_word_t i0)
 {
+	assert(r2 != _R0);
+
 	movi(_R0, i0);
 	qmulr(r0, r1, r2, _R0);
 }
@@ -822,6 +867,8 @@ static void
 _qmuli_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 	 jit_uint16_t r2, jit_word_t i0)
 {
+	assert(r2 != _R0);
+
 	movi(_R0, i0);
 	qmulr_u(r0, r1, r2, _R0);
 }
@@ -831,6 +878,8 @@ _divr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	jit_uint32_t reg, reg2;
 	jit_uint16_t divisor;
+
+	assert(r1 != _R0 && r2 != _R0);
 
 	if (r1 == r2) {
 		MOVI(r0, 1);
@@ -878,6 +927,8 @@ _divr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 	jit_uint32_t reg, reg2;
 	jit_uint16_t divisor;
 
+	assert(r1 != _R0 && r2 != _R0);
+
 	if (r1 == r2) {
 		MOVI(r0, 1);
 	} else {
@@ -917,6 +968,8 @@ _qdivr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	jit_uint32_t reg;
 
+	assert(r2 != _R0 && r3 != _R0);
+
 	if (r0 != r2 && r0 != r3) {
 		divr(r0, r2, r3);
 		mulr(_R0, r0, r3);
@@ -939,6 +992,8 @@ _qdivr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	jit_uint32_t reg;
 
+	assert(r2 != _R0 && r3 != _R0);
+
 	if (r0 != r2 && r0 != r3) {
 		divr_u(r0, r2, r3);
 		mulr(_R0, r0, r3);
@@ -960,6 +1015,8 @@ _divi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
+	assert(r1 != _R0);
+
 	movi(rn(reg), i0);
 	divr(r0, r1, rn(reg));
 
@@ -970,6 +1027,8 @@ static void
 _divi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
+
+	assert(r1 != _R0);
 
 	movi(rn(reg), i0);
 	divr_u(r0, r1, rn(reg));
@@ -983,6 +1042,8 @@ _qdivi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
+	assert(r2 != _R0);
+
 	movi(rn(reg), i0);
 	qdivr(r0, r1, r2, rn(reg));
 
@@ -995,6 +1056,8 @@ _qdivi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
+	assert(r2 != _R0);
+
 	movi(rn(reg), i0);
 	qdivr_u(r0, r1, r2, rn(reg));
 
@@ -1006,6 +1069,8 @@ _remr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
+	assert(r1 != _R0 && r2 != _R0);
+
 	qdivr(rn(reg), r0, r1, r2);
 
 	jit_unget_reg(reg);
@@ -1015,6 +1080,8 @@ static void
 _remr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
+
+	assert(r1 != _R0 && r2 != _R0);
 
 	qdivr_u(rn(reg), r0, r1, r2);
 
@@ -1026,6 +1093,8 @@ _remi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
+	assert(r1 != _R0);
+
 	movi(rn(reg), i0);
 	remr(r0, r1, rn(reg));
 
@@ -1036,6 +1105,8 @@ static void
 _remi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
+
+	assert(r1 != _R0);
 
 	movi(rn(reg), i0);
 	remr_u(r0, r1, rn(reg));
@@ -1077,6 +1148,8 @@ _andi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	} else if (i0 == 0xffff) {
 		extr_us(r0, r1);
 	} else {
+		assert(r0 != _R0 && r1 != _R0);
+
 		movi(_R0, i0);
 		movr(r0, r1);
 		AND(r0, _R0);
@@ -1097,6 +1170,8 @@ _orr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ori(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	movr(r0, r1);
 	OR(r0, _R0);
@@ -1116,6 +1191,8 @@ _xorr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _xori(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	movr(r0, r1);
 	XOR(r0, _R0);
@@ -1159,6 +1236,8 @@ _eqr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ner(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0 && r2 != _R0);
+
 	MOVI(_R0, -1);
 	CMPEQ(r1, r2);
 	NEGC(r0, _R0);
@@ -1170,6 +1249,8 @@ _eqi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	if (i0 == 0) {
 		TST(r1, r1);
 	} else {
+		assert(r1 != _R0);
+
 		movi(_R0, i0);
 		CMPEQ(r1, _R0);
 	}
@@ -1179,6 +1260,8 @@ _eqi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _nei(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	if (i0 == 0) {
 		MOVI(_R0, -1);
 		TST(r1, r1);
@@ -1197,6 +1280,8 @@ _gti(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	if (i0 == 0) {
 		CMPPL(r1);
 	} else {
+		assert(r1 != _R0);
+
 		movi(_R0, i0);
 		CMPGT(r1, _R0);
 	}
@@ -1209,6 +1294,8 @@ _gei(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	if (i0 == 0) {
 		CMPPZ(r1);
 	} else {
+		assert(r1 != _R0);
+
 		movi(_R0, i0);
 		CMPGE(r1, _R0);
 	}
@@ -1218,6 +1305,8 @@ _gei(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _gti_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	CMPHI(r1, _R0);
 	MOVT(r0);
@@ -1226,6 +1315,8 @@ _gti_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _gei_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	CMPHS(r1, _R0);
 	MOVT(r0);
@@ -1234,6 +1325,8 @@ _gei_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _lti(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	CMPGT(_R0, r1);
 	MOVT(r0);
@@ -1242,6 +1335,8 @@ _lti(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _lei(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	CMPGE(_R0, r1);
 	MOVT(r0);
@@ -1250,6 +1345,8 @@ _lei(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _lti_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	CMPHI(_R0, r1);
 	MOVT(r0);
@@ -1258,6 +1355,8 @@ _lti_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _lei_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	movi(_R0, i0);
 	CMPHS(_R0, r1);
 	MOVT(r0);
@@ -1280,6 +1379,8 @@ static void
 _lshr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	if (r0 == r2) {
+		assert(r1 != _R0);
+
 		movr(_R0, r2);
 		movr(r0, r1);
 		emit_shllr(_jit, r0, _R0);
@@ -1292,6 +1393,8 @@ _lshr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _rshr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 #if defined(__SH3__) || defined(__SH4__)
 	negr(_R0, r2);
 	movr(r0, r1);
@@ -1308,6 +1411,8 @@ _rshr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _rshr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 #if defined(__SH3__) || defined(__SH4__)
 	negr(_R0, r2);
 	movr(r0, r1);
@@ -1324,6 +1429,8 @@ _rshr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _lshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	jit_uint32_t reg;
+
 	movr(r0, r1);
 
 	if (i0 == 16) {
@@ -1335,29 +1442,43 @@ _lshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	} else if (i0 == 1) {
 		SHLL(r0);
 	} else {
-		movi(_R0, i0);
-		emit_shllr(_jit, r0, _R0);
+		reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
+
+		movi(rn(reg), i0);
+		lshr(r0, r0, rn(reg));
+
+		if (r0 == _R0)
+			jit_unget_reg(reg);
 	}
 }
 
 static void
 _rshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	jit_uint32_t reg;
+
+	reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
+
 	movr(r0, r1);
 #if defined(__SH3__) || defined(__SH4__)
-	movi(_R0, -i0);
-	SHAD(r0, _R0);
+	movi(rn(reg), -i0);
+	SHAD(r0, rn(reg));
 #else
-	movi(_R0, i0);
-	DT(_R0);
+	movi(rn(reg), i0);
+	DT(rn(reg));
 	BFS(-3);
 	SHAR(r0);
 #endif
+
+	if (r0 == _R0)
+		jit_unget_reg(reg);
 }
 
 static void
 _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	jit_uint32_t reg;
+
 	movr(r0, r1);
 
 	if (i0 == 16) {
@@ -1369,15 +1490,20 @@ _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	} else if (i0 == 1) {
 		SHLR(r0);
 	} else {
+		reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
+
 #if defined(__SH3__) || defined(__SH4__)
-		movi(_R0, -i0);
-		SHLD(r0, _R0);
+		movi(rn(reg), -i0);
+		SHLD(r0, rn(reg));
 #else
-		movi(_R0, i0);
-		DT(_R0);
+		movi(rn(reg), i0);
+		DT(rn(reg));
 		BFS(-3);
 		SHLR(r0);
 #endif
+
+		if (r0 == _R0)
+			jit_unget_reg(reg);
 	}
 }
 
@@ -1440,6 +1566,8 @@ _ldxr_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxr_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0);
+
 	movr(_R0, r2);
 	LDRL(r0, r1);
 }
@@ -1447,6 +1575,8 @@ _ldxr_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxr_uc(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0);
+
 	ldxr_c(r0, r1, r2);
 	extr_uc(r0, r0);
 }
@@ -1454,6 +1584,8 @@ _ldxr_uc(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxr_us(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0);
+
 	ldxr_s(r0, r1, r2);
 	extr_us(r0, r0);
 }
@@ -1461,11 +1593,10 @@ _ldxr_us(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxi_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	if (i0 >= 0 && i0 <= 0xf) {
 		LDDB(r1, i0);
-		movr(r0, _R0);
-	} else if (r1 == _R15 && i0 >= 0 && i0 <= 0xff) {
-		GBRLDB(i0);
 		movr(r0, _R0);
 	} else {
 		movi(_R0, i0);
@@ -1476,11 +1607,10 @@ _ldxi_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _ldxi_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	if (i0 >= 0 && i0 <= 0x1f && !(i0 & 0x1)) {
 		LDDW(r1, i0 >> 1);
-		movr(r0, _R0);
-	} else if (r1 == _R15 && i0 >= 0 && i0 <= 0x1ff && !(i0 & 0x1)) {
-		GBRLDW(i0 >> 1);
 		movr(r0, _R0);
 	} else {
 		movi(_R0, i0);
@@ -1491,11 +1621,10 @@ _ldxi_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _ldxi_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
+	assert(r1 != _R0);
+
 	if (i0 >= 0 && i0 <= 0x3f && !(i0 & 3)) {
 		LDDL(r0, r1, i0 >> 2);
-	} else if (r1 == _R15 && i0 >= 0 && i0 < 0x3ff && !(i0 & 0x3)) {
-		GBRLDL(i0 >> 2);
-		movr(r0, _R0);
 	} else {
 		movi(_R0, i0);
 		ldxr_i(r0, r1, _R0);
@@ -1505,47 +1634,41 @@ _ldxi_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _ldxi_uc(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	if (i0 >= 0 && i0 <= 0xf) {
-		LDDB(r1, i0);
-		extr_uc(r0, _R0);
-	} else if (r1 == _R15 && i0 >= 0 && i0 <= 0xff) {
-		GBRLDB(i0);
-		extr_uc(r0, _R0);
-	} else {
-		movi(_R0, i0);
-		ldxr_uc(r0, r1, _R0);
-	}
+	assert(r1 != _R0);
+
+	ldxi_c(_R0, r1, i0);
+	extr_uc(r0, _R0);
 }
 
 static void
 _ldxi_us(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	if (i0 >= 0 && i0 <= 0x1f && !(i0 & 1)) {
-		LDDW(r1, i0 >> 1);
-		extr_us(r0, _R0);
-	} else if (r1 == _R15 && i0 >= 0 && i0 <= 0x1ff && !(i0 & 0x1)) {
-		GBRLDW(i0 >> 1);
-		extr_us(r0, _R0);
-	} else {
-		movi(_R0, i0);
-		ldxr_us(r0, r1, _R0);
-	}
+	assert(r1 != _R0);
+
+	ldxi_s(_R0, r1, i0);
+	extr_us(r0, _R0);
 }
 
 static void _sti_c(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
 {
+	assert(r0 != _R0);
+
 	movi(_R0, i0);
 	str_c(_R0, r0);
 }
 
 static void _sti_s(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
 {
+	assert(r0 != _R0);
+
 	movi(_R0, i0);
 	str_s(_R0, r0);
 }
 
 static void _sti_i(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
 {
+	assert(r0 != _R0);
+
 	movi(_R0, i0);
 	str_i(_R0, r0);
 }
@@ -1553,6 +1676,8 @@ static void _sti_i(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
 static void
 _stxr_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0 && r2 != _R0);
+
 	movr(_R0, r0);
 	STRB(r1, r2);
 }
@@ -1560,6 +1685,8 @@ _stxr_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _stxr_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0 && r2 != _R0);
+
 	movr(_R0, r0);
 	STRW(r1, r2);
 }
@@ -1567,6 +1694,8 @@ _stxr_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _stxr_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0 && r2 != _R0);
+
 	movr(_R0, r0);
 	STRL(r1, r2);
 }
@@ -1574,6 +1703,8 @@ _stxr_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _stxi_c(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	stxr_c(_R0, r0, r1);
 }
@@ -1581,6 +1712,8 @@ _stxi_c(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 static void
 _stxi_s(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 {
+	assert(r0 != _R0 && r1 != _R0);
+
 	movi(_R0, i0);
 	stxr_s(_R0, r0, r1);
 }
@@ -1591,6 +1724,8 @@ _stxi_i(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 	if (i0 >= 0 && i0 <= 0x3f && !(i0 & 3)) {
 		STDL(r0, r1, i0 >> 2);
 	} else {
+		assert(r0 != _R0 && r1 != _R0);
+
 		movi(_R0, i0);
 		stxr_i(_R0, r0, r1);
 	}
@@ -1652,9 +1787,7 @@ _beqr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 	jit_word_t w;
 
 	if (r0 == r1) {
-		w = _jit->pc.w;
-		BRA((i0 - w >> 1) - 2);
-		NOP();
+		w = jmpi(i0);
 	} else {
 		CMPEQ(r0, r1);
 		w = _jit->pc.w;
@@ -1709,6 +1842,8 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	if (i1 == 0) {
 		CMPPL(r0);
 	} else {
+		assert(r0 != _R0);
+
 		movi(_R0, i1);
 		CMPGT(r0, _R0);
 	}
@@ -1727,6 +1862,8 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	if (i1 == 0) {
 		CMPPZ(r0);
 	} else {
+		assert(r0 != _R0);
+
 		movi(_R0, i1);
 		CMPGE(r0, _R0);
 	}
@@ -1745,6 +1882,8 @@ _bgti_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	if (i1 == 0) {
 		TST(r0, r0);
 	} else {
+		assert(r0 != _R0);
+
 		movi(_R0, i1);
 		CMPHI(r0, _R0);
 	}
@@ -1759,6 +1898,8 @@ _bgei_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_word_t i1, jit_bool_t set)
 {
 	jit_word_t w;
+
+	assert(r0 != _R0);
 
 	movi(_R0, i1);
 	CMPHS(r0, _R0);
@@ -1776,6 +1917,8 @@ static jit_word_t _beqi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	if (i1 == 0) {
 		TST(r0, r0);
 	} else {
+		assert(r0 != _R0);
+
 		movi(_R0, i1);
 		CMPEQ(_R0, r0);
 	}
@@ -1789,6 +1932,8 @@ static jit_word_t _bmsi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			jit_word_t i1, jit_bool_t set)
 {
 	jit_word_t w;
+
+	assert(r0 != _R0);
 
 	movi(_R0, i1);
 	TST(_R0, r0);
@@ -1829,6 +1974,8 @@ static jit_word_t _boaddi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	assert(r0 != _R0);
+
 	movi(_R0, i1);
 	w = _boaddr(_jit, i0, r0, _R0, set);
 
@@ -1840,6 +1987,8 @@ static jit_word_t _boaddi_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	assert(r0 != _R0);
+
 	movi(_R0, i1);
 	w = _boaddr_u(_jit, i0, r0, _R0, set);
 
@@ -1850,6 +1999,8 @@ static jit_word_t _bosubr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			  jit_uint16_t r1, jit_bool_t set)
 {
 	jit_word_t w;
+
+	assert(r0 != _R0);
 
 	NEG(_R0, r1);
 	ADDV(r0, _R0);
@@ -1878,6 +2029,8 @@ static jit_word_t _bosubi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	assert(r0 != _R0);
+
 	movi(_R0, i1);
 	w = _bosubr(_jit, i0, r0, _R0, set);
 
@@ -1888,6 +2041,8 @@ static jit_word_t _bosubi_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			    jit_word_t i1, jit_bool_t set)
 {
 	jit_word_t w;
+
+	assert(r0 != _R0);
 
 	movi(_R0, i1);
 	w = _bosubr_u(_jit, i0, r0, _R0, set);
@@ -1906,9 +2061,20 @@ static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
 	jit_word_t w = _jit->pc.w;
+	jit_int32_t disp = (i0 - w >> 1) - 2;
 
-	movi(_R0, i0);
-	jmpr(_R0);
+	if (disp >= -2048 && disp <= 2046) {
+		BRA(disp);
+		NOP();
+	} else if (0) {
+		/* TODO: BRAF */
+		movi_p(_R0, disp - 7);
+		BRAF(_R0);
+		NOP();
+	} else {
+		movi(_R0, i0);
+		jmpr(_R0);
+	}
 
 	return (w);
 }
@@ -1936,9 +2102,9 @@ _movi_p(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 	SHLL8(_R0);
 	ORI((i0 >> 16) & 0xff);
 	SHLL8(_R0);
-	ORI((i0 >> 16) & 0xff);
+	ORI((i0 >> 8) & 0xff);
 	SHLL8(_R0);
-	ORI((i0 >> 16) & 0xff);
+	ORI(i0 & 0xff);
 	movr(r0, _R0);
 
 	return (w);
@@ -1947,9 +2113,9 @@ _movi_p(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 static jit_word_t
 _jmpi_p(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t w = _jit->pc.w;
+    jit_word_t w;
 
-    movi_p(_R0, i0);
+    w = movi_p(_R0, i0);
     jmpr(_R0);
 
     return (w);
@@ -1958,13 +2124,12 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
 static jit_word_t
 _calli_p(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		word;
+    jit_word_t		w;
 
-    word = _jit->pc.w;
-    movi_p(_R0, i0);
+    w = movi_p(_R0, i0);
     callr(_R0);
 
-    return (word);
+    return (w);
 }
 
 static void
