@@ -202,6 +202,17 @@ static void _FXS(jit_state_t*,int,int,int,int,int,int,int);
 #  define XCMPLI(cr,l,a,u)		FCI(10,cr,l,a,u)
 #  define CMPLDI(a,s)			XCMPLI(0,1,a,s)
 #  define CMPLWI(a,s)			XCMPLI(0,0,a,s)
+#  if __WORDSIZE == 32
+#  define CMPX(a,b)			CMPW(a,b)
+#  define CMPXI(a,s)			CMPWI(a,s)
+#  define CMPLX(a,b)			CMPLW(a,b)
+#  define CMPLXI(a,s)			CMPLWI(a,s)
+#  else
+#  define CMPX(a,b)			CMPD(a,b)
+#  define CMPXI(a,s)			CMPDI(a,s)
+#  define CMPLX(a,b)			CMPLD(a,b)
+#  define CMPLXI(a,s)			CMPLDI(a,s)
+#  endif
 #  define CNTLZW(a,s)			FX(31,s,a,0,26)
 #  define CNTLZW_(a,s)			FX_(31,s,a,0,26)
 #  define CRAND(d,a,b)			FX(19,d,a,b,257)
@@ -1125,7 +1136,7 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 static void
 _movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPWI(r2, 0);
+    CMPXI(r2, 0);
     BEQ(8);
     MR(r0, r1);
 }
@@ -1133,7 +1144,7 @@ _movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 static void
 _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPWI(r2, 0);
+    CMPXI(r2, 0);
     BNE(8);
     MR(r0, r1);
 }
@@ -1627,7 +1638,7 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ltr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_LT);
 }
@@ -1637,11 +1648,11 @@ _lti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     MFCR(r0);
@@ -1675,7 +1686,7 @@ _lti_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ler(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     CRNOT(CR_GT, CR_GT);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_GT);
@@ -1686,11 +1697,11 @@ _lei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     CRNOT(CR_GT, CR_GT);
@@ -1727,7 +1738,7 @@ _lei_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _eqr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_EQ);
 }
@@ -1737,13 +1748,13 @@ _eqi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else if (can_zero_extend_short_p(i0))
 	CMPLWI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     MFCR(r0);
@@ -1753,7 +1764,7 @@ _eqi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ger(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     CRNOT(CR_LT, CR_LT);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_LT);
@@ -1764,11 +1775,11 @@ _gei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     CRNOT(CR_LT, CR_LT);
@@ -1805,7 +1816,7 @@ _gei_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _gtr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_GT);
 }
@@ -1815,11 +1826,11 @@ _gti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     MFCR(r0);
@@ -1853,7 +1864,7 @@ _gti_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ner(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     CRNOT(CR_EQ, CR_EQ);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_EQ);
@@ -1864,13 +1875,13 @@ _nei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else if (can_zero_extend_short_p(i0))
 	CMPLWI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     CRNOT(CR_EQ, CR_EQ);
@@ -1882,7 +1893,7 @@ static jit_word_t
 _bltr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BLT(d);
@@ -1895,11 +1906,11 @@ _blti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -1942,7 +1953,7 @@ static jit_word_t
 _bler(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BLE(d);
@@ -1955,11 +1966,11 @@ _blei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -2002,7 +2013,7 @@ static jit_word_t
 _beqr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BEQ(d);
@@ -2015,13 +2026,13 @@ _beqi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else if (can_zero_extend_short_p(i1))
 	CMPLWI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -2034,7 +2045,7 @@ static jit_word_t
 _bger(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BGE(d);
@@ -2047,11 +2058,11 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -2094,7 +2105,7 @@ static jit_word_t
 _bgtr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BGT(d);
@@ -2107,11 +2118,11 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -2154,7 +2165,7 @@ static jit_word_t
 _bner(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BNE(d);
@@ -2167,13 +2178,13 @@ _bnei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else if (can_zero_extend_short_p(i1))
 	CMPLWI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
