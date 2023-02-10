@@ -349,6 +349,9 @@ typedef union {
 #  define A64_ORR			0x2a000000
 #  define A64_MOV			0x2a0003e0	/* AKA orr Rd,xzr,Rm */
 #  define A64_MVN			0x2a2003e0
+#  define A64_CLS			0x5ac01400
+#  define A64_CLZ			0x5ac01000
+#  define A64_RBIT			0x5ac00000
 #  define A64_UXTW			0x2a0003e0	/* AKA MOV */
 #  define A64_EOR			0x4a000000
 #  define A64_ANDS			0x6a000000
@@ -370,6 +373,9 @@ typedef union {
 #  define MOV(Rd,Rm)			ox_x(A64_MOV|XS,Rd,Rm)
 #  define MVN(Rd,Rm)			ox_x(A64_MVN|XS,Rd,Rm)
 #  define NEG(Rd,Rm)			ox_x(A64_NEG|XS,Rd,Rm)
+#  define CLS(Rd,Rm)			o_xx(A64_CLS|XS,Rd,Rm)
+#  define CLZ(Rd,Rm)			o_xx(A64_CLZ|XS,Rd,Rm)
+#  define RBIT(Rd,Rm)			o_xx(A64_RBIT|XS,Rd,Rm)
 #  define MOVN(Rd,Imm16)		ox_h(A64_MOVN|XS,Rd,Imm16)
 #  define MOVN_16(Rd,Imm16)		ox_h(A64_MOVN|XS|MOVI_LSL_16,Rd,Imm16)
 #  define MOVN_32(Rd,Imm16)		ox_h(A64_MOVN|XS|MOVI_LSL_32,Rd,Imm16)
@@ -584,6 +590,14 @@ static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define negr(r0,r1)			NEG(r0,r1)
 #  define comr(r0,r1)			MVN(r0,r1)
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clzr(r0, r1)			_clzr(_jit, r0, r1)
+static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define andr(r0,r1,r2)		AND(r0,r1,r2)
 #  define andi(r0,r1,i0)		_andi(_jit,r0,r1,i0)
 static void _andi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -830,6 +844,7 @@ logical_immediate(jit_word_t imm)
 	case 14:	return (0xfc2);
 	case 15:	return (0x003);
 	case 16:	return (0xf00);
+	case 63:	return (0x005);
 	default:	return (-1);
     }
 }
@@ -1396,6 +1411,39 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
 	CMPI(r2, 0);
 	CSEL(r0, r0, r1, CC_EQ);
+}
+
+static void
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_word_t		w, x;
+    w = bgei(_jit->pc.w, r1, 0);
+    CLS(r0, r1);
+    addi(r0, r0, 1);
+    x = jmpi(_jit->pc.w);
+    patch_at(w, _jit->pc.w);
+    movi(r0, 0);
+    patch_at(x, _jit->pc.w);
+}
+
+static void
+_clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    CLZ(r0, r1);
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    RBIT(r0, r1);
+    clor(r0, r0);
+}
+
+static void
+_ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    RBIT(r0, r1);
+    clzr(r0, r0);
 }
 
 static void
