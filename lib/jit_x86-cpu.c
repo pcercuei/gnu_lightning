@@ -2169,6 +2169,12 @@ _imovi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	ii(i0);
 #  if !__X64_32
     }
+    else if (can_sign_extend_int_p(i0)) {
+	rex(0, 1, _NOREG, _NOREG, r0);
+	ic(0xc7);
+	ic(0xc0 | r7(r0));
+	ii(i0);
+    }
     else {
 	rex(0, 1, _NOREG, _NOREG, r0);
 	ic(0xb8 | r7(r0));
