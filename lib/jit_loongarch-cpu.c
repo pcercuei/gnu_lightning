@@ -334,6 +334,10 @@ static void _oj26(jit_state_t*, jit_int32_t,jit_int32_t);
 # define nop(i0)			_nop(_jit, i0)
 # define comr(r0, r1)			NOR(r0, r1, r1)
 # define negr(r0, r1)			subr(r0, _ZERO_REGNO, r1)
+# define clor(r0, r1)			CLO_D(r0, r1)
+# define clzr(r0, r1)			CLZ_D(r0, r1)
+# define ctor(r0, r1)			CTO_D(r0, r1)
+# define ctzr(r0, r1)			CTZ_D(r0, r1)
 static void _nop(jit_state_t*,jit_int32_t);
 # define movr(r0, r1)			_movr(_jit, r0, r1)
 static void _movr(jit_state_t*, jit_int32_t, jit_int32_t);
