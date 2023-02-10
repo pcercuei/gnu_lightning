@@ -302,6 +302,14 @@ static void _incr(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define decr(r0, r1)		_decr(_jit, r0, r1)
 static void _decr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  endif
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clzr(r0, r1)			_clzr(_jit, r0, r1)
+static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define cr(code, r0, r1, r2)		_cr(_jit, code, r0, r1, r2)
 static void
 _cr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
@@ -1919,6 +1927,75 @@ _decr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #  endif
 }
 #endif
+
+static void
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    comr(r0, r1);
+    clzr(r0, r0);
+}
+
+static void
+_clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_word_t		w, x;
+    /* BSR */
+    rex(0, WIDE, r0, _NOREG, r1);
+    ic(0x0f);
+    ic(0xbd);
+    mrm(0x3, r7(r0), r7(r1));
+    /* jump if undefined: r1 == 0 */
+    w = jccs(X86_CC_E, _jit->pc.w);
+    /* count leading zeros */
+    rsbi(r0, r0, __WORDSIZE - 1);
+    /* done */
+    x = jmpsi(_jit->pc.w);
+    /* if r1 == 0 */
+    patch_at(w, _jit->pc.w);
+    movi(r0, __WORDSIZE);
+    /* not undefined */
+    patch_at(x, _jit->pc.w);
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    comr(r0, r1);
+    ctzr(r0, r0);
+}
+
+static void
+_ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_word_t		w;
+    jit_int32_t		t0;
+    /* If conditional move supported and has a free register */
+    if (jit_cmov_p())
+	t0 = jit_get_reg(jit_class_gpr|jit_class_nospill|jit_class_chk);
+    else
+	t0 = _NOREG;
+    if (t0 != _NOREG)
+	movi(rn(t0), __WORDSIZE);
+    /* BSF */
+    rex(0, WIDE, r0, _NOREG, r1);
+    ic(0x0f);
+    ic(0xbc);
+    mrm(0x3, r7(r0), r7(r1));
+    /* No conditional move or need spill/reload a temporary */
+    if (t0 == _NOREG) {
+	w = jccs(X86_CC_E, _jit->pc.w);
+	movi(r0, __WORDSIZE);
+	patch_at(w, _jit->pc.w);
+    }
+    else {
+	/* CMOVE */
+	rex(0, WIDE, r0, _NOREG, rn(t0));
+	ic(0x0f);
+	ic(0x44);
+	mrm(0x3, r7(r0), r7(rn(t0)));
+	jit_unget_reg(t0);
+    }
+}
 
 static void
 _cr(jit_state_t *_jit,
