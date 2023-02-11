@@ -592,7 +592,7 @@ static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define comr(r0,r1)			MVN(r0,r1)
 #  define clor(r0, r1)			_clor(_jit, r0, r1)
 static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
-#  define clzr(r0, r1)			_clzr(_jit, r0, r1)
+#  define clzr(r0, r1)			CLZ(r0,r1)
 static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctor(r0, r1)			_ctor(_jit, r0, r1)
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
@@ -1396,20 +1396,8 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    jit_word_t		w, x;
-    w = bgei(_jit->pc.w, r1, 0);
-    CLS(r0, r1);
-    addi(r0, r0, 1);
-    x = jmpi(_jit->pc.w);
-    patch_at(w, _jit->pc.w);
-    movi(r0, 0);
-    patch_at(x, _jit->pc.w);
-}
-
-static void
-_clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    CLZ(r0, r1);
+    comr(r0, r1);
+    clzr(r0, r0);
 }
 
 static void
