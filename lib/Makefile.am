@@ -41,6 +41,7 @@ EXTRA_DIST =			\
 	jit_names.c		\
 	jit_fallback.c		\
 	jit_rewind.c		\
+	aarch64-logical-immediates.c	\
 	jit_aarch64.c		\
 	jit_aarch64-cpu.c	\
 	jit_aarch64-fpu.c	\

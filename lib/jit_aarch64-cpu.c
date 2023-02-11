@@ -816,37 +816,17 @@ static void _patch_at(jit_state_t*,jit_word_t,jit_word_t);
 #endif
 
 #if CODE
+/* https://dougallj.wordpress.com/2021/10/30/bit-twiddling-optimising-aarch64-logical-immediate-encoding-and-decoding/ */
+#include "aarch64-logical-immediates.c"
 static jit_int32_t
 logical_immediate(jit_word_t imm)
 {
-    /* There are 5334 possible immediate values, but to avoid the
-     * need of either too complex code or large lookup tables,
-     * only check for (simply) encodable common/small values */
-    switch (imm) {
-	case -16:	return (0xf3b);
-	case -15:	return (0xf3c);
-	case -13:	return (0xf3d);
-	case -9:	return (0xf3e);
-	case -8:	return (0xf7c);
-	case -7:	return (0xf7d);
-	case -5:	return (0xf7e);
-	case -4:	return (0xfbd);
-	case -3:	return (0xfbe);
-	case -2:	return (0xffe);
-	case 1:		return (0x000);
-	case 2:		return (0xfc0);
-	case 3:		return (0x001);
-	case 4:		return (0xf80);
-	case 6:		return (0xfc1);
-	case 7:		return (0x002);
-	case 8:		return (0xf40);
-	case 12:	return (0xf81);
-	case 14:	return (0xfc2);
-	case 15:	return (0x003);
-	case 16:	return (0xf00);
-	case 63:	return (0x005);
-	default:	return (-1);
+    jit_int32_t		result = encodeLogicalImmediate64(imm);
+    if (result != ENCODE_FAILED) {
+	assert(isValidLogicalImmediate64(result));
+	return (result & 0xfff);
     }
+    return (-1);
 }
 
 static void
