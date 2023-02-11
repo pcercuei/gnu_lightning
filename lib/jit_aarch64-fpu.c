@@ -892,7 +892,7 @@ _vaarg_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_unget_reg(rg1);
 
     /* Jump over overflow code. */
-    lt_code = jmpi_p(_jit->pc.w);
+    lt_code = jmpi(_jit->pc.w);
 
     /* Where to land if argument is in overflow area. */
     patch_at(ge_code, _jit->pc.w);
