@@ -140,10 +140,12 @@ extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define THUMB2_UMULL			0xfba00000
 #  define ARM_SMULL			0x00c00090
 #  define THUMB2_SMULL			0xfb800000
+/* >> ARMv7r */
 #  define ARM_SDIV			0x07100010
 #  define ARM_UDIV			0x07300010
 #  define THUMB2_SDIV			0xfb90f0f0
 #  define THUMB2_UDIV			0xfbb0f0f0
+/* << ARMv7r */
 #  define ARM_AND			0x00000000
 #  define THUMB_AND			    0x4000
 #  define THUMB2_AND			0xea000000
@@ -186,6 +188,12 @@ extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define ARM_STREX			0x01800090
 #  define THUMB2_STREX			0xe8400000
 /* << ARMv6* */
+/* >> ARMv6t2 */
+#  define THUMB2_CLZ			0xfab0f080
+#  define THUMB2_RBIT			0xfa90f0a0
+#  define ARM_RBIT			0x06f00030
+/* << ARMv6t2 */
+#  define ARM_CLZ			0x01600010
 /* >> ARMv7 */
 #  define ARM_DMB			0xf57ff050
 #  define THUMB2_DMB			0xf3bf8f50
@@ -448,6 +456,12 @@ static void _tdmb(jit_state_t *_jit, int im);
 #  define NOT(rd,rm)			CC_NOT(ARM_CC_AL,rd,rm)
 #  define T1_NOT(rd,rm)			T1_MVN(rd,rm)
 #  define T2_NOT(rd,rm)			T2_MVN(rd,rm)
+#  define T2_CLZ(rd,rm)			torrr(THUMB2_CLZ,rm,rd,rm)
+#  define CC_CLZ(cc,rd,rm)		corrrr(cc,ARM_CLZ,_R15_REGNO,rd,_R15_REGNO,rm)
+#  define CLZ(rd,rm)			CC_CLZ(ARM_CC_AL,rd,rm)
+#  define T2_RBIT(rd,rm)		torrr(THUMB2_RBIT,rm,rd,rm)
+#  define CC_RBIT(cc,rd,rm)		corrrr(cc,ARM_RBIT,_R15_REGNO,rd,_R15_REGNO,rm)
+#  define RBIT(rd,rm)			CC_RBIT(ARM_CC_AL,rd,rm)
 #  define NOP()				MOV(_R0_REGNO, _R0_REGNO)
 #  define T1_NOP()			is(0xbf00)
 #  define CC_ADD(cc,rd,rn,rm)		corrr(cc,ARM_ADD,rn,rd,rm)
@@ -892,6 +906,14 @@ static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
 static void _comr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define negr(r0,r1)			_negr(_jit,r0,r1)
 static void _negr(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clzr(r0, r1)			_clzr(_jit, r0, r1)
+static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define addr(r0,r1,r2)		_addr(_jit,r0,r1,r2)
 static void _addr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -1742,6 +1764,53 @@ _negr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     }
     else
 	RSBI(r0, r1, 0);
+}
+
+static void
+_clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (!jit_thumb_p() && jit_armv5e_p())
+	CLZ(r0, r1);
+    else if (jit_thumb_p() && jit_armv7_p()) {	/* armv6t2 actually */
+	T2_CLZ(r0, r1);
+    }
+    else
+	fallback_clz(r0, r0);
+}
+
+static void
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    comr(r0, r1);
+    clzr(r0, r0);
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_armv7_p()) {	/* armv6t2 actually */
+	if (jit_thumb_p())
+	    T2_RBIT(r0, r1);
+	else
+	    RBIT(r0, r1);
+	clor(r0, r0);
+    }
+    else
+	fallback_cto(r0, r1);
+}
+
+static void
+_ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_armv7_p()) {	/* armv6t2 actually */
+	if (jit_thumb_p())
+	    T2_RBIT(r0, r1);
+	else
+	    RBIT(r0, r1);
+	clzr(r0, r0);
+    }
+    else
+	fallback_ctz(r0, r1);
 }
 
 static void
