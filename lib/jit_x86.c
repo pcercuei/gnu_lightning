@@ -276,6 +276,45 @@ void
 jit_get_cpu(void)
 {
     union {
+	/* eax=7 and ecx=0 */
+	struct {
+	    jit_uword_t	fsgsbase	: 1;
+	    jit_uword_t	IA32_TSC_ADJUST	: 1;
+	    jit_uword_t	sgx		: 1;
+	    jit_uword_t	bmi1		: 1;
+	    jit_uword_t	hle		: 1;
+	    jit_uword_t	avx2		: 1;
+	    jit_uword_t	FDP_EXCPTN_ONLY	: 1;
+	    jit_uword_t	smep		: 1;
+	    jit_uword_t	bmi2		: 1;
+	    jit_uword_t	erms		: 1;
+	    jit_uword_t	invpcid		: 1;
+	    jit_uword_t	rtm		: 1;
+	    jit_uword_t	rdt_m_pqm	: 1;
+	    jit_uword_t	dep_FPU_CS_DS	: 1;
+	    jit_uword_t	mpx		: 1;
+	    jit_uword_t	rdt_a_pqe	: 1;
+	    jit_uword_t	avx512_f	: 1;
+	    jit_uword_t	avx512_dq	: 1;
+	    jit_uword_t	rdseed		: 1;
+	    jit_uword_t	adx		: 1;
+	    jit_uword_t	smap		: 1;
+	    jit_uword_t	avx512_ifma	: 1;
+	    jit_uword_t	__reserved0	: 1;
+	    jit_uword_t	clflushopt	: 1;
+	    jit_uword_t	clwb		: 1;
+	    jit_uword_t	pt		: 1;
+	    jit_uword_t	avx512_pf	: 1;
+	    jit_uword_t	avx512_er	: 1;
+	    jit_uword_t	avx512_cd	: 1;
+	    jit_uword_t	sha		: 1;
+	    jit_uword_t	avx512_bw	: 1;
+	    jit_uword_t	avx512_vl	: 1;
+	} bits;
+	jit_uword_t	cpuid;
+    } ebx;
+    union {
+	/* eax=0 */
 	struct {
 	    jit_uint32_t sse3		: 1;
 	    jit_uint32_t pclmulqdq	: 1;
@@ -313,6 +352,7 @@ jit_get_cpu(void)
 	jit_uword_t	cpuid;
     } ecx;
     union {
+	/* eax=0 */
 	struct {
 	    jit_uint32_t fpu		: 1;
 	    jit_uint32_t vme		: 1;
@@ -352,7 +392,7 @@ jit_get_cpu(void)
 #if __X32
     int			ac, flags;
 #endif
-    jit_uword_t		eax, ebx;
+    jit_uword_t		eax;
 
 #if __X32
     /* adapted from glibc __sysconf */
@@ -381,7 +421,7 @@ jit_get_cpu(void)
 #else
     __asm__ volatile ("xchgq %%rbx, %1; cpuid; xchgq %%rbx, %1"
 #endif
-		      : "=a" (eax), "=r" (ebx),
+		      : "=a" (eax), "=r" (ebx.cpuid),
 		      "=c" (ecx.cpuid), "=d" (edx.cpuid)
 		      : "0" (1));
 
@@ -403,6 +443,15 @@ jit_get_cpu(void)
     jit_cpu.aes		= ecx.bits.aes;
     jit_cpu.avx		= ecx.bits.avx;
 
+    /* query %eax = 7 and ecx = 0 function */
+#if __X64
+    __asm__ volatile ("cpuid"
+		      : "=a" (eax), "=b" (ebx.cpuid), "=c" (ecx), "=d" (edx)
+		      : "a" (7), "c" (0));
+#endif
+    jit_cpu.adx = ebx.bits.adx;
+
+
     /* query %eax = 0x80000001 function */
 #if __X64
 #  if __X64_32
@@ -410,10 +459,11 @@ jit_get_cpu(void)
 #  else
     __asm__ volatile ("xchgq %%rbx, %1; cpuid; xchgq %%rbx, %1"
 #  endif
-		      : "=a" (eax), "=r" (ebx),
+		      : "=a" (eax), "=r" (ebx.cpuid),
 		      "=c" (ecx.cpuid), "=d" (edx.cpuid)
 		      : "0" (0x80000001));
-    jit_cpu.lahf	= ecx.cpuid & 1;
+    jit_cpu.lahf	= !!(ecx.cpuid & 1);
+    jit_cpu.abm		= !!(ecx.cpuid & 32);
 #endif
 }
 

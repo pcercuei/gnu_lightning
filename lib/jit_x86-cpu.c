@@ -1939,22 +1939,28 @@ static void
 _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		w, x;
-    /* BSR */
+    /* LZCNT */
+    if (jit_cpu.abm)
+	ic(0xf3);
+    /* else BSR */
     rex(0, WIDE, r0, _NOREG, r1);
     ic(0x0f);
     ic(0xbd);
     mrm(0x3, r7(r0), r7(r1));
-    /* jump if undefined: r1 == 0 */
-    w = jccs(X86_CC_E, _jit->pc.w);
-    /* count leading zeros */
-    rsbi(r0, r0, __WORDSIZE - 1);
-    /* done */
-    x = jmpsi(_jit->pc.w);
-    /* if r1 == 0 */
-    patch_at(w, _jit->pc.w);
-    movi(r0, __WORDSIZE);
-    /* not undefined */
-    patch_at(x, _jit->pc.w);
+    if (!jit_cpu.abm) {
+	/* jump if undefined: r1 == 0 */
+	w = jccs(X86_CC_E, _jit->pc.w);
+	/* count leading zeros */
+	rsbi(r0, r0, __WORDSIZE - 1);
+	/* done */
+	x = jmpsi(_jit->pc.w);
+	/* if r1 == 0 */
+	patch_at(w, _jit->pc.w);
+	movi(r0, __WORDSIZE);
+	/* not undefined */
+	patch_at(x, _jit->pc.w);
+    }
+    /* LZCNT has defined behavior for value zero and count leading zeros */
 }
 
 static void
@@ -1969,32 +1975,39 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		w;
     jit_int32_t		t0;
-    /* If conditional move supported and has a free register */
-    if (jit_cmov_p())
-	t0 = jit_get_reg(jit_class_gpr|jit_class_nospill|jit_class_chk);
-    else
-	t0 = _NOREG;
-    if (t0 != _NOREG)
-	movi(rn(t0), __WORDSIZE);
-    /* BSF */
+    if (!jit_cpu.abm) {
+	if (jit_cmov_p())
+	    t0 = jit_get_reg(jit_class_gpr|jit_class_nospill|jit_class_chk);
+	else
+	    t0 = _NOREG;
+	if (t0 != _NOREG)
+	    movi(rn(t0), __WORDSIZE);
+    }
+    /* TZCNT */
+    if (jit_cpu.abm)
+	ic(0xf3);
+    /* else BSF */
     rex(0, WIDE, r0, _NOREG, r1);
     ic(0x0f);
     ic(0xbc);
     mrm(0x3, r7(r0), r7(r1));
-    /* No conditional move or need spill/reload a temporary */
-    if (t0 == _NOREG) {
-	w = jccs(X86_CC_E, _jit->pc.w);
-	movi(r0, __WORDSIZE);
-	patch_at(w, _jit->pc.w);
+    if (!jit_cpu.abm) {
+	/* No conditional move or need spill/reload a temporary */
+	if (t0 == _NOREG) {
+	    w = jccs(X86_CC_E, _jit->pc.w);
+	    movi(r0, __WORDSIZE);
+	    patch_at(w, _jit->pc.w);
+	}
+	else {
+	    /* CMOVE */
+	    rex(0, WIDE, r0, _NOREG, rn(t0));
+	    ic(0x0f);
+	    ic(0x44);
+	    mrm(0x3, r7(r0), r7(rn(t0)));
+	    jit_unget_reg(t0);
+	}
     }
-    else {
-	/* CMOVE */
-	rex(0, WIDE, r0, _NOREG, rn(t0));
-	ic(0x0f);
-	ic(0x44);
-	mrm(0x3, r7(r0), r7(rn(t0)));
-	jit_unget_reg(t0);
-    }
+    /* TZCNT has defined behavior for value zero */
 }
 
 static void
