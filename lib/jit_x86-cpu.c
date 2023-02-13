@@ -180,7 +180,8 @@ static void _addi(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 static void _addcr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #define addci(r0, r1, i0)		_addci(_jit, r0, r1, i0)
 static void _addci(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
-#  define iaddxr(r0, r1)		alur(X86_ADC, r0, r1)
+#  define iaddxr(r0, r1)		_iaddxr(_jit, r0, r1)
+static void _iaddxr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define addxr(r0, r1, r2)		_addxr(_jit, r0, r1, r2)
 static void _addxr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define iaddxi(r0, i0)		alui(X86_ADC, r0, i0)
@@ -1052,6 +1053,49 @@ _addci(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_iaddxr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    /* FIXME: this is not doing what I did expect for the simple test case:
+     *		mov  $0xffffffffffffffff, %rax	-- rax = 0xffffffffffffffff (-1)
+     *		mov  $0xffffffffffffffff, %r10	-- r10 = 0xffffffffffffffff (-1)
+     *		mov  $0x1, %r11d		-- r11 = 1
+     *		xor  %rbx, %rbx			-- rbx = 0
+     * (gdb) p $eflags
+     * $1 = [ PF ZF IF ]
+     *		add  %r11, %rax			-- r11 = 0x10000000000000000 (0)
+     *				    does not fit in 64 bit ^
+     * (gdb) p $eflags
+     * $2 = [ CF PF AF ZF IF ]
+     *		adcx %r10, %rbx			-- r10 = 0xffffffffffffffff (-1)
+     * (gdb) p $eflags
+     * $3 = [ CF PF AF ZF IF ]
+     * (gdb) p/x $r10
+     * $4 = 0xffffffffffffffff
+     * but, r10 should be zero, as it is:
+     * -1 (%r10) + 0 (%rbx) + carry (!!eflags.CF)
+     * FIXME: maybe should only use ADCX in the third operation onward, that
+     * is, after the first ADC? In either case, the add -1+0+carry should
+     * have used and consumed the carry? At least this is what is expected
+     * in Lightning...
+     */
+#if 0
+    /* Significantly longer instruction, but avoid cpu stalls as only
+     * the carry flag is used in a sequence. */
+    if (jit_cpu.adx) {
+	/* ADCX */
+	ic(0x66);
+	rex(0, WIDE, r1, _NOREG, r0);
+	ic(0x0f);
+	ic(0x38);
+	ic(0xf6);
+	mrm(0x03, r7(r1), r7(r0));
+    }
+    else
+#endif
+	alur(X86_ADC, r0, r1);
+}
+
+static void
 _addxr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     if (r0 == r2)
@@ -1066,7 +1110,12 @@ static void
 _addxi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
-    if (can_sign_extend_int_p(i0)) {
+    if (
+#if 0
+	/* Do not mix ADC and ADCX */
+	!jit_cpu.adx &&
+#endif
+	can_sign_extend_int_p(i0)) {
 	movr(r0, r1);
 	iaddxi(r0, i0);
     }
