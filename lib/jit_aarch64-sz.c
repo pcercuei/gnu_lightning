@@ -447,9 +447,13 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    12, /* cto */
+    8,	/* ctz */
 
 #  else	/* PACKED_STACK */
-#define JIT_INSTR_MAX 96
+#define JIT_INSTR_MAX 120
     0,	/* data */
     0,	/* live */
     12,	/* align */
@@ -459,7 +463,7 @@
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
-    96,	/* prolog */
+    120,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
@@ -895,5 +899,9 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    12, /* cto */
+    8,	/* ctz */
 #  endif
 #endif /* __WORDSIZE */
