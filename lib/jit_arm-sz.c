@@ -447,12 +447,16 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    12,	/* cto */
+    8,	/* ctz */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 32
 #if !defined(__ARM_PCS_VFP)
-#define JIT_INSTR_MAX 160
+#define JIT_INSTR_MAX 50
     0,	/* data */
     0,	/* live */
     18,	/* align */
@@ -706,7 +710,7 @@
     0,	/* retval_i */
     0,	/* retval_ui */
     0,	/* retval_l */
-    160,	/* epilog */
+    30,	/* epilog */
     0,	/* arg_f */
     0,	/* getarg_f */
     0,	/* putargr_f */
@@ -898,5 +902,9 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    12,	/* cto */
+    8,	/* ctz */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */
