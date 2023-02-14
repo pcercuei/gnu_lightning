@@ -445,4 +445,8 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
+    4,	/* clo */
+    4,	/* clz */
+    4,	/* cto */
+    4,	/* ctz */
 #endif /* __WORDSIZE */
