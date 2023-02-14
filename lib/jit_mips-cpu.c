@@ -55,11 +55,8 @@ typedef union {
     jit_uint32_t			op_u32;
     int					op;
 } jit_instr_t;
-#if _MIPS_ARCH_MIPS3 || defined(_MIPS_ARCH_MIPS32R2) || defined(_MIPS_ARCH_MIPS64R2)
-#  define jit_mips2_p()			1
-#else
-#  define jit_mips2_p()			0
-#endif
+#define jit_mips2_p()			(jit_cpu.release >= 2)
+#define jit_mips6_p()			(jit_cpu.release >= 6)
 #  define _ZERO_REGNO			0
 #  define _T0_REGNO			0x08
 #  define _T1_REGNO			0x09
@@ -397,17 +394,37 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define BNE(rs,rt,im)			hrri(MIPS_BNE,rs,rt,im)
 #  define BGEZAL(rs,im)			hrri(MIPS_REGIMM,rs,MIPS_BGEZAL,im)
 #  define JALR(r0)			hrrrit(MIPS_SPECIAL,r0,0,_RA_REGNO,0,MIPS_JALR)
-#  if 1 /* supports MIPS32 R6 */
-#   define JR(r0)			hrrrit(MIPS_SPECIAL,r0,0,0,0,MIPS_JALR)
-#  else /* does not support MIPS32 R6 */
-#   define JR(r0)			hrrrit(MIPS_SPECIAL,r0,0,0,0,MIPS_JR)
+#  if 1		/* This should work for mips r6 or older */
+#    define JR(r0)			hrrrit(MIPS_SPECIAL,r0,0,0,0,MIPS_JALR)
+#  else		/* This should generate an illegal instruction in mips r6 */
+#    define JR(r0)			hrrrit(MIPS_SPECIAL,r0,0,0,0,MIPS_JR)
 #  endif
+#  define CLO_R6(rd,rs)			hrrrit(MIPS_SPECIAL,rs,0,rd,1,0x11)
+#  define DCLO_R6(rd,rs)		hrrrit(MIPS_SPECIAL,rs,0,rd,1,0x13)
+#  define CLZ_R6(rd,rs)			hrrrit(MIPS_SPECIAL,rs,0,rd,1,0x10)
+#  define DCLZ_R6(rd,rs)		hrrrit(MIPS_SPECIAL,rs,0,rd,1,0x12)
+#  define BITSWAP(rd,rt)		hrrrit(MIPS_SPECIAL3,0,rt,rd,0,0x20)
+#  define DBITSWAP(rd,rt)		hrrrit(MIPS_SPECIAL3,0,rt,rd,0,0x24)
+#  define CLO(rd,rs)			hrrrit(MIPS_SPECIAL2,rs,rd,rd,0,MIPS_CLO)
+#  define DCLO(rd,rs)			hrrrit(MIPS_SPECIAL2,rs,rd,rd,0,MIPS_DCLO)
+#  define CLZ(rd,rs)			hrrrit(MIPS_SPECIAL2,rs,rd,rd,0,MIPS_CLZ)
+#  define DCLZ(rd,rs)			hrrrit(MIPS_SPECIAL2,rs,rd,rd,0,MIPS_DCLZ)
 #  define J(i0)				hi(MIPS_J,i0)
 #  define JAL(i0)			hi(MIPS_JAL,i0)
 #  define MOVN(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVN)
 #  define MOVZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVZ)
 #  define comr(r0,r1)			xori(r0,r1,-1)
 #  define negr(r0,r1)			subr(r0,_ZERO_REGNO,r1)
+#  define bitswap(r0,r1)		_bitswap(_jit, r0, r1);
+static void _bitswap(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clzr(r0, r1)			_clzr(_jit, r0, r1)
+static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  if __WORDSIZE == 32
 #    define addr(rd,rs,rt)		ADDU(rd,rs,rt)
 #    define addiu(r0,r1,i0)		ADDIU(r0,r1,i0)
@@ -1026,6 +1043,125 @@ _insr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
         DINSM(r0, r1, pos, size);
     else
         DINS(r0, r1, pos, size);
+}
+
+/* http://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel */
+/*
+unsigned int s = sizeof(v) * CHAR_BIT; // bit size; must be power of 2 
+unsigned int mask = ~0;         
+while ((s >>= 1) > 0) 
+{
+  mask ^= (mask << s);
+  v = ((v >> s) & mask) | ((v << s) & ~mask);
+}
+*/
+static void
+_bitswap(jit_state_t *_jit, jit_int32_t v, jit_int32_t r1)
+{
+    jit_int32_t		s, mask;
+    jit_word_t		loop, done, t0, t1;
+    movr(v, r1);
+    s = jit_get_reg(jit_class_gpr);
+    movi(rn(s), __WORDSIZE);			/* s = sizeof(v) * CHAR_BIT; */
+    mask = jit_get_reg(jit_class_gpr);
+    movi(rn(mask), ~0L);			/* mask = ~0; */
+    loop = _jit->pc.w;				/* while ((s >>= 1) > 0) */
+    rshi(rn(s), rn(s), 1);			/*        (s >>= 1) */
+    done = blei(_jit->pc.w, rn(s), 0, NULL);	/* no loop if s <= 0 */
+    t0 = jit_get_reg(jit_class_gpr);
+    lshr(rn(t0), rn(mask), rn(s));		/* t0 = (mask << s) */
+    xorr(rn(mask), rn(mask), rn(t0));		/* mask ^= t0 */
+    rshr(rn(t0), v, rn(s));			/* t0 = v >> s */
+    andr(rn(t0), rn(t0), rn(mask));		/* t0 = t0 & mask */
+    t1 = jit_get_reg(jit_class_gpr);
+    lshr(rn(t1), v, rn(s));			/* t1 = v << s */
+    comr(v, rn(mask));				/* v = ~mask */
+    andr(rn(t1), v, rn(t1));			/* t1 = t1 & v */
+    orr(v, rn(t0), rn(t1));			/* v = t0 | t1 */
+    jmpi(loop, NULL, 0);
+    patch_at(done, _jit->pc.w);
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
+    jit_unget_reg(mask);
+    jit_unget_reg(s);
+}
+
+static void
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+#if __WORDSIZE == 32
+    /* must sign extend top 32 bits */
+    SLL(r0, r1, 0);
+    if (jit_mips6_p())
+	CLO_R6(r0, r0);
+    else
+	CLO(r0, r0);
+#else
+    if (jit_mips6_p())
+	DCLO_R6(r0, r1);
+    else
+	DCLO(r0, r1);
+#endif
+}
+
+static void
+_clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+#if __WORDSIZE == 32
+    /* must sign extend top 32 bits */
+    SLL(r0, r1, 0);
+    if (jit_mips6_p())
+	CLZ_R6(r0, r0);
+    else
+	CLZ(r0, r0);
+#else
+    if (jit_mips6_p())
+	DCLZ_R6(r0, r1);
+    else
+	DCLZ(r0, r1);
+#endif
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_mips6_p()) {
+#if __WORDSIZE == 32
+	BITSWAP(r0, r1);
+	/* must sign extend top 32 bits */
+	SLL(r0, r0, 0);
+	CLO_R6(r0, r0);
+#else
+	DBITSWAP(r0, r1);
+	DCLO_R6(r0, r0);
+#endif
+    }
+    else {
+	//fallback_cto(r0, r1);
+	bitswap(r0, r1);
+	clor(r0, r0);
+    }
+}
+
+static void
+_ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_mips6_p()) {
+#if __WORDSIZE == 32
+	BITSWAP(r0, r1);
+	/* must sign extend top 32 bits */
+	SLL(r0, r0, 0);
+	CLZ_R6(r0, r0);
+#else
+	DBITSWAP(r0, r1);
+	DCLZ_R6(r0, r0);
+#endif
+    }
+    else {
+	//fallback_ctz(r0, r1);
+	bitswap(r0, r1);
+	clzr(r0, r0);
+    }
 }
 
 static void

@@ -114,4 +114,13 @@ typedef enum {
     _NOREG,
 } jit_reg_t;
 
+typedef struct {
+    jit_uint32_t release	: 4;
+} jit_cpu_t;
+
+/*
+ * Initialization
+ */
+extern jit_cpu_t		jit_cpu;
+
 #endif /* _jit_mips_h */

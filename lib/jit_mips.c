@@ -85,6 +85,7 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 /*
  * Initialization
  */
+jit_cpu_t		jit_cpu;
 jit_register_t		_rvs[] = {
     { rc(gpr) | 0x01,			"at" },
     { rc(gpr) | 0x02,			"v0" },
@@ -175,6 +176,30 @@ static jit_int32_t fregs[] = {
 void
 jit_get_cpu(void)
 {
+#if defined(__linux__)
+    FILE	*fp;
+    char	*ptr;
+    char	 buf[128];
+
+    if ((fp = fopen("/proc/cpuinfo", "r")) != NULL) {
+	while (fgets(buf, sizeof(buf), fp)) {
+	    if (strncmp(buf, "isa			: ", 8) == 0) {
+		if ((ptr = strstr(buf + 9, "mips64r")))
+		    jit_cpu.release = strtoul(ptr + 7, NULL, 10);
+		break;
+	    }
+	}
+	fclose(fp);
+    }
+#endif
+    /* This is very fragile -- with clang, __mips is defined as 64 */
+#if defined _MIPS_ARCH		/* OpenBSD/clang */
+    if (!jit_cpu.release)
+	jit_cpu.release = strtoul(&_MIPS_ARCH[4], NULL, 10);
+#elif defined(__mips)		/* Linux/gcc */
+    if (!jit_cpu.release)
+	jit_cpu.release = __mips;
+#endif
 }
 
 void
@@ -1575,10 +1600,6 @@ _emit_code(jit_state_t *_jit)
 		break;
 		case_rr(neg,);
 		case_rr(com,);
-#define clor(r0, r1)	fallback_clo(r0, r1)
-#define clzr(r0, r1)	fallback_clz(r0, r1)
-#define ctor(r0, r1)	fallback_cto(r0, r1)
-#define ctzr(r0, r1)	fallback_ctz(r0, r1)
 		case_rr(clo,);
 		case_rr(clz,);
 		case_rr(cto,);
@@ -1849,7 +1870,7 @@ _emit_code(jit_state_t *_jit)
 		    else {
 			word = _jit->code.length -
 			    (_jit->pc.uc - _jit->code.ptr);
-			if (can_relative_jump_p(word))
+			if (jit_mips2_p() && can_relative_jump_p(word))
 			    word = calli(_jit->pc.w, prev, 1);
 			else
 			    word = calli_p(_jit->pc.w);
