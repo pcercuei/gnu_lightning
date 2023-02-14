@@ -395,7 +395,7 @@
     4,	/* extr_d */
     4,	/* extr_f_d */
     10,	/* movr_d */
-    30,	/* movi_d */
+    33,	/* movi_d */
     4,	/* ldr_d */
     8,	/* ldi_d */
     5,	/* ldxr_d */
@@ -446,6 +446,10 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    21,	/* clo */
+    17,	/* clz */
+    15,	/* cto */
+    11,	/* ctz */
 #endif /* __X32 */
 
 #if __X64
@@ -896,10 +900,14 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    27,	/* clo */
+    21,	/* clz */
+    20,	/* cto */
+    14,	/* ctz */
 #else
 
 #  if __X64_32
-#define JIT_INSTR_MAX 108
+#define JIT_INSTR_MAX 105
     0,	/* data */
     0,	/* live */
     7,	/* align */
@@ -909,7 +917,7 @@
     0,	/* #name */
     0,	/* #note */
     3,	/* label */
-    108,	/* prolog */
+    105,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
@@ -1345,9 +1353,13 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    11,	/* clo */
+    5,	/* clz */
+    11,	/* cto */
+    5,	/* ctz */
 #else
 
-#define JIT_INSTR_MAX 115
+#define JIT_INSTR_MAX 112
     0,	/* data */
     0,	/* live */
     27,	/* align */
@@ -1357,7 +1369,7 @@
     0,	/* #name */
     0,	/* #note */
     7,	/* label */
-    115,	/* prolog */
+    112,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
@@ -1663,31 +1675,31 @@
     10,	/* bltr_f */
     20,	/* blti_f */
     10,	/* bler_f */
-    25,	/* blei_f */
+    22,	/* blei_f */
     12,	/* beqr_f */
-    27,	/* beqi_f */
+    22,	/* beqi_f */
     10,	/* bger_f */
-    25,	/* bgei_f */
+    22,	/* bgei_f */
     10,	/* bgtr_f */
-    25,	/* bgti_f */
+    22,	/* bgti_f */
     13,	/* bner_f */
-    28,	/* bnei_f */
+    25,	/* bnei_f */
     10,	/* bunltr_f */
-    25,	/* bunlti_f */
+    23,	/* bunlti_f */
     10,	/* bunler_f */
-    25,	/* bunlei_f */
+    23,	/* bunlei_f */
     10,	/* buneqr_f */
-    25,	/* buneqi_f */
+    23,	/* buneqi_f */
     10,	/* bunger_f */
-    25,	/* bungei_f */
+    23,	/* bungei_f */
     10,	/* bungtr_f */
-    25,	/* bungti_f */
+    22,	/* bungti_f */
     10,	/* bltgtr_f */
-    25,	/* bltgti_f */
+    22,	/* bltgti_f */
     10,	/* bordr_f */
-    25,	/* bordi_f */
+    22,	/* bordi_f */
     10,	/* bunordr_f */
-    25,	/* bunordi_f */
+    22,	/* bunordi_f */
     0,	/* pushargr_f */
     0,	/* pushargi_f */
     0,	/* retr_f */
@@ -1793,6 +1805,10 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    11,	/* clo */
+    5,	/* clz */
+    11,	/* cto */
+    5,	/* ctz */
 #endif /* __CYGWIN__ || _WIN32 */
 #  endif /* __X64_32 */
 #endif /* __X64 */
