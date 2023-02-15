@@ -2307,7 +2307,11 @@ _bw(jit_state_t *_jit, jit_int32_t cc,
     if (s13_p(i1)) {
 	CMPI(r0, i1);
 	w = _jit->pc.w;
+#  if __WORDSIZE == 32
 	B(cc, (i0 - w) >> 2);
+#  else
+	BP(cc, (i0 - w) >> 2);
+#  endif
 	NOP();
     }
     else {
