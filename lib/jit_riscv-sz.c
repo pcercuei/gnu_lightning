@@ -1,5 +1,5 @@
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 116
+#define JIT_INSTR_MAX 168
     0,	/* data */
     0,	/* live */
     4,	/* align */
@@ -211,7 +211,7 @@
     16,	/* bxsubr_u */
     20,	/* bxsubi_u */
     4,	/* jmpr */
-    4,	/* jmpi */
+    16,	/* jmpi */
     4,	/* callr */
     16,	/* calli */
     0,	/* prepare */
@@ -439,10 +439,14 @@
     4,	/* movr_w_f */
     0,	/* movr_ww_d */
     4,	/* movr_w_d */
-    0,	/* movr_f_w */
+    4,	/* movr_f_w */
     4,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     12,	/* movi_d_w */
+    168,	/* clo */
+    148,	/* clz */
+    168,	/* cto */
+    148,	/* ctz */
 #endif /* __WORDSIZE */
