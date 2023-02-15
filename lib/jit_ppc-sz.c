@@ -448,6 +448,10 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    136,	/* cto */
+    132,	/* ctz */
 #endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -457,10 +461,10 @@
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
 #if _CALL_SYSV
-#define JIT_INSTR_MAX 124
+#define JIT_INSTR_MAX 136
     0,	/* data */
     0,	/* live */
-    0,	/* align */
+    28,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -903,6 +907,10 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    136,	/* cto */
+    132,	/* ctz */
 #endif /* _CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -911,10 +919,10 @@
 #if __WORDSIZE == 64
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
-#define JIT_INSTR_MAX 148
+#define JIT_INSTR_MAX 236
     0,	/* data */
     0,	/* live */
-    4,	/* align */
+    28,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -1357,6 +1365,10 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    236,	/* cto */
+    232,	/* ctz */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -1364,10 +1376,10 @@
 #if __WORDSIZE == 64
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-#define JIT_INSTR_MAX 124
+#define JIT_INSTR_MAX 236
     0,	/* data */
     0,	/* live */
-    28,	/* align */
+    20,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -1810,6 +1822,10 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    8,	/* clo */
+    4,	/* clz */
+    236,	/* cto */
+    232,	/* ctz */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
