@@ -16,6 +16,12 @@
  * Authors:
  *	Paulo Cesar Pereira de Andrade
  */
+#define CHECK_FLOGR	0
+
+#if CHECK_FLOGR
+#include <signal.h>
+#include <setjmp.h>
+#endif
 
 #include <lightning.h>
 #include <lightning/jit_private.h>
@@ -88,12 +94,15 @@ extern void __clear_cache(void *, void *);
 #define PROTO				1
 #  include "jit_s390-cpu.c"
 #  include "jit_s390-fpu.c"
-#  include "jit_fallback.c"
+#  if CHECK_FLOGR
+#    include "jit_fallback.c"
+#  endif
 #undef PROTO
 
 /*
  * Initialization
  */
+jit_cpu_t		jit_cpu;
 jit_register_t		_rvs[] = {
     { rc(gpr) | 0x0,			"%r0" },
     { rc(gpr) | 0x1,			"%r1" },
@@ -130,13 +139,48 @@ jit_register_t		_rvs[] = {
     { rc(fpr) | rc(arg) | 0x0,		"%f0" },
     { _NOREG,				"<none>" },
 };
+#if CHECK_FLOGR
+static sigjmp_buf	jit_env;
+#endif
 
 /*
  * Implementation
  */
+#if CHECK_FLOGR
+static void
+sigill_handler(int signum)
+{
+    jit_cpu.flogr = 0;
+    siglongjmp(jit_env, 1);
+}
+#endif
+
 void
 jit_get_cpu(void)
 {
+#if CHECK_FLOGR
+    int			r12, r13;
+    struct		sigaction new_action, old_action;
+    new_action.sa_handler = sigill_handler;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    sigaction(SIGILL, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN) {
+	sigaction(SIGILL, &new_action, NULL);
+	if (!sigsetjmp(jit_env, 1)) {
+	    jit_cpu.flogr = 1;
+	    /* flogr %r12, %r12 */
+	    __asm__ volatile("lgr %%r12, %0; lgr %%r13, %1;"
+			     "flogr %%r12, %%r12;"
+			     "lgr %1, %%r13; lgr %0, %%r12;"
+			     : "=r" (r12), "=r" (r13));
+	    sigaction(SIGILL, &old_action, NULL);
+	}
+    }
+#else
+    /* By default, assume it is available */
+    jit_cpu.flogr = 1;
+#endif
 }
 
 void
@@ -1091,10 +1135,6 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsh, _u);
 		case_rr(neg,);
 		case_rr(com,);
-#define clor(r0, r1)	fallback_clo(r0, r1)
-#define clzr(r0, r1)	fallback_clz(r0, r1)
-#define ctor(r0, r1)	fallback_cto(r0, r1)
-#define ctzr(r0, r1)	fallback_ctz(r0, r1)
 		case_rr(clo,);
 		case_rr(clz,);
 		case_rr(cto,);
@@ -1635,7 +1675,9 @@ _emit_code(jit_state_t *_jit)
 #define CODE				1
 #  include "jit_s390-cpu.c"
 #  include "jit_s390-fpu.c"
-#  include "jit_fallback.c"
+#  if CHECK_FLOGR
+#    include "jit_fallback.c"
+#  endif
 #undef CODE
 
 void

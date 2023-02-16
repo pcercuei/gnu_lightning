@@ -36,8 +36,15 @@ static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #  endif
 #  if defined(__mips__)
 #    define fallback_bnei(i0,r0,i1)	bnei(i0,r0,i1,NULL)
+#  elif defined(__s390__) || defined(__s390x__)
+#    define fallback_bnei(i0,r0,i1)	bnei_p(i0,r0,i1)
 #  else
 #    define fallback_bnei(i0,r0,i1)	bnei(i0,r0,i1)
+#  endif
+#  if defined(__s390__) || defined(__s390x__)
+#    define fallback_bmsr(i0,r0,r1)	bmsr_p(i0,r0,r1)
+#  else
+#    define fallback_bmsr(i0,r0,r1)	bmsr(i0,r0,r1)
 #  endif
 #endif
 
@@ -132,6 +139,8 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
     calli(i0, NULL, 0);
 #  elif defined(__powerpc__) && _CALL_SYSV
     calli(i0, 0);
+#  elif defined(__s390__) || defined(__s390x__)
+    calli(i0, 0);
 #  else
     calli(i0);
 #  endif
@@ -204,7 +213,7 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     movi(r0, 0);
 #  if __WORDSIZE == 64
     movi(r2, 0xffffffff00000000UL);
-    l32 = bmsr(_jit->pc.w, r1, r2);
+    l32 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 32);
     addi(r0, r0, 32);
     fallback_patch_at(l32, _jit->pc.w);
@@ -212,27 +221,27 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #  else
     movi(r2, 0xffff0000UL);
 #  endif
-    l16 = bmsr(_jit->pc.w, r1, r2);
+    l16 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 16);
     addi(r0, r0, 16);
     fallback_patch_at(l16, _jit->pc.w);
     lshi(r2, r2, 8);
-    l8 = bmsr(_jit->pc.w, r1, r2);
+    l8 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 8);
     addi(r0, r0, 8);
     fallback_patch_at(l8, _jit->pc.w);
     lshi(r2, r2, 4);
-    l4 = bmsr(_jit->pc.w, r1, r2);
+    l4 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 4);
     addi(r0, r0, 4);
     fallback_patch_at(l4, _jit->pc.w);
     lshi(r2, r2, 2);
-    l2 = bmsr(_jit->pc.w, r1, r2);
+    l2 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 2);
     addi(r0, r0, 2);
     fallback_patch_at(l2, _jit->pc.w);
     lshi(r2, r2, 1);
-    l1 = bmsr(_jit->pc.w, r1, r2);
+    l1 = fallback_bmsr(_jit->pc.w, r1, r2);
     addi(r0, r0, 1);
     fallback_patch_at(l1, _jit->pc.w);
     fallback_patch_at(clz, _jit->pc.w);
@@ -270,7 +279,7 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     movi(r0, 0);
 #  if __WORDSIZE == 64
     movi(r2, 0xffffffffUL);
-    l32 = bmsr(_jit->pc.w, r1, r2);
+    l32 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 32);
     addi(r0, r0, 32);
     fallback_patch_at(l32, _jit->pc.w);
@@ -278,27 +287,27 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #  else
     movi(r2, 0xffffUL);
 #  endif
-    l16 = bmsr(_jit->pc.w, r1, r2);
+    l16 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 16);
     addi(r0, r0, 16);
     fallback_patch_at(l16, _jit->pc.w);
     rshi(r2, r2, 8);
-    l8 = bmsr(_jit->pc.w, r1, r2);
+    l8 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 8);
     addi(r0, r0, 8);
     fallback_patch_at(l8, _jit->pc.w);
     rshi(r2, r2, 4);
-    l4 = bmsr(_jit->pc.w, r1, r2);
+    l4 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 4);
     addi(r0, r0, 4);
     fallback_patch_at(l4, _jit->pc.w);
     rshi(r2, r2, 2);
-    l2 = bmsr(_jit->pc.w, r1, r2);
+    l2 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 2);
     addi(r0, r0, 2);
     fallback_patch_at(l2, _jit->pc.w);
     rshi(r2, r2, 1);
-    l1 = bmsr(_jit->pc.w, r1, r2);
+    l1 = fallback_bmsr(_jit->pc.w, r1, r2);
     addi(r0, r0, 1);
     fallback_patch_at(l1, _jit->pc.w);
     fallback_patch_at(ctz, _jit->pc.w);

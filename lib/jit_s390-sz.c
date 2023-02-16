@@ -1,8 +1,8 @@
 #if __WORDSIZE == 32
-#define JIT_INSTR_MAX 82
+#define JIT_INSTR_MAX 164
     0,	/* data */
     0,	/* live */
-    8,	/* align */
+    4,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -445,10 +445,14 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    36,	/* clo */
+    28,	/* clz */
+    164,	/* cto */
+    158,	/* ctz */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 100
+#define JIT_INSTR_MAX 280
     0,	/* data */
     0,	/* live */
     20,	/* align */
@@ -578,7 +582,7 @@
     6,	/* ldr_c */
     18,	/* ldi_c */
     6,	/* ldr_uc */
-    18,	/* ldi_uc */
+    22,	/* ldi_uc */
     6,	/* ldr_s */
     18,	/* ldi_s */
     6,	/* ldr_us */
@@ -604,7 +608,7 @@
     14,	/* ldxr_l */
     26,	/* ldxi_l */
     4,	/* str_c */
-    16,	/* sti_c */
+    20,	/* sti_c */
     4,	/* str_s */
     16,	/* sti_s */
     4,	/* str_i */
@@ -894,4 +898,8 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    24,	/* clo */
+    12,	/* clz */
+    280,	/* cto */
+    272,	/* ctz */
 #endif /* __WORDSIZE */
