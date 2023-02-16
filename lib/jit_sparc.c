@@ -17,6 +17,16 @@
  *	Paulo Cesar Pereira de Andrade
  */
 
+/* Handling SIGILL should not be done by Lightning, but can either use
+ * sample, or use another approach to set jit_cpu.lzcnt
+ */
+#define CHECK_LZCNT	0
+
+#if CHECK_LZCNT
+#include <signal.h>
+#include <setjmp.h>
+#endif
+
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < 6)
 #if __WORDSIZE == 32
 #  define jit_arg_d_reg_p(i)		((i) >= 0 && (i) < 5)
@@ -46,6 +56,7 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 /*
  * Initialization
  */
+jit_cpu_t		jit_cpu;
 jit_register_t		_rvs[] = {
     { 0x00,				"%g0" },
     { 0x01,				"%g1" },
@@ -148,13 +159,45 @@ jit_register_t		_rvs[] = {
 #  endif
     { _NOREG,				"<none>" },
 };
+#if CHECK_LZCNT
+sigjmp_buf		jit_env;
+#endif
 
 /*
  * Implementation
  */
+#if CHECK_LZCNT
+static void
+sigill_handler(int signum)
+{
+    jit_cpu.lzcnt = 0;
+    siglongjmp(jit_env, 1);
+}
+#endif
+
 void
 jit_get_cpu(void)
 {
+#if CHECK_LZCNT
+    int			g2;
+    struct		sigaction new_action, old_action;
+    new_action.sa_handler = sigill_handler;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    sigaction(SIGILL, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN) {
+	sigaction(SIGILL, &new_action, NULL);
+	if (!sigsetjmp(jit_env, 1)) {
+	    jit_cpu.lzcnt = 1;
+	    /* lzcnt %g2, %g2 */
+	    __asm__ volatile("mov %%g2, %0; .long 0xa3b0021; mov %0, %%g2"
+			     : "=r" (g2));
+	    sigaction(SIGILL, &old_action, NULL);
+	}
+    }
+#else
+    jit_cpu.lzcnt = 0;
+#endif
 }
 
 void
@@ -1514,10 +1557,6 @@ _emit_code(jit_state_t *_jit)
 		break;
 		case_rr(neg,);
 		case_rr(com,);
-#define clor(r0, r1)	fallback_clo(r0, r1)
-#define clzr(r0, r1)	fallback_clz(r0, r1)
-#define ctor(r0, r1)	fallback_cto(r0, r1)
-#define ctzr(r0, r1)	fallback_ctz(r0, r1)
 		case_rr(clo,);
 		case_rr(clz,);
 		case_rr(cto,);
