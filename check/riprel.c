@@ -34,7 +34,13 @@ main(int argc, char *argv[])
 #endif
     void		(*function)(void);
     int			  mmap_prot, mmap_flags, result, pagesize;
+    int			  mult;
 
+#if defined(__ia64__)
+    mult = 8;
+#else
+    mult = 2;
+#endif
     pagesize = sysconf(_SC_PAGESIZE);
     if (pagesize < 4096)
 	pagesize = 4096;
@@ -54,7 +60,7 @@ main(int argc, char *argv[])
     mmap_flags = MAP_PRIVATE;
 #endif
     mmap_flags |= MAP_ANON;
-    ptr = mmap(NULL, pagesize * 2,  mmap_prot, mmap_flags, mmap_fd, 0);
+    ptr = mmap(NULL, pagesize * mult,  mmap_prot, mmap_flags, mmap_fd, 0);
     assert(ptr != MAP_FAILED);
 #if defined(__sgi)
     close(mmap_fd);
@@ -141,7 +147,7 @@ main(int argc, char *argv[])
 
     jit_realize();
 
-    jit_set_code(ptr + pagesize, pagesize);
+    jit_set_code(ptr + pagesize, pagesize * (mult - 1));
 
  #if __NetBSD__ || __OpenBSD__ || __APPLE__
     result = mprotect(ptr, pagesize, PROT_READ | PROT_WRITE);
@@ -161,7 +167,7 @@ main(int argc, char *argv[])
     jit_destroy_state();
     finish_jit();
 
-    munmap(ptr, pagesize * 2);
+    munmap(ptr, pagesize * mult);
 
     return (0);
 }

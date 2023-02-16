@@ -20,8 +20,23 @@ static void _fallback_clz(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _fallback_cto(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_ctz(r0,r1)		_fallback_ctz(_jit,r0,r1)
 static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
+#  if defined(__ia64__)
+#    define fallback_patch_jmpi(inst,lbl)				\
+    do {								\
+	sync();								\
+	patch_at(jit_code_jmpi, inst, lbl);				\
+    } while (0)
+#  else
+#    define fallback_patch_jmpi(inst,lbl) fallback_patch_at(inst,lbl)
+#  endif
 #  if defined(__arm__)
 #    define fallback_patch_at(inst,lbl)	patch_at(arm_patch_jump,inst,lbl)
+#  elif defined(__ia64__)
+#    define fallback_patch_at(inst,lbl)					\
+    do {								\
+	sync();								\
+	patch_at(jit_code_bnei, inst, lbl);				\
+    } while (0);
 #  else
 #    define fallback_patch_at(inst,lbl)	patch_at(inst,lbl)
 #  endif
@@ -193,7 +208,7 @@ _fallback_clo(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     done = fallback_jmpi(_jit->pc.w);
     fallback_patch_at(clz, _jit->pc.w);
     fallback_clz(r0, r0);
-    fallback_patch_at(done, _jit->pc.w);
+    fallback_patch_jmpi(done, _jit->pc.w);
 }
 
 static void
@@ -244,7 +259,7 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l1 = fallback_bmsr(_jit->pc.w, r1, r2);
     addi(r0, r0, 1);
     fallback_patch_at(l1, _jit->pc.w);
-    fallback_patch_at(clz, _jit->pc.w);
+    fallback_patch_jmpi(clz, _jit->pc.w);
     jit_unget_reg(r2_reg);
     jit_unget_reg(r1_reg);
 }
@@ -259,7 +274,7 @@ _fallback_cto(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     done = fallback_jmpi(_jit->pc.w);
     fallback_patch_at(ctz, _jit->pc.w);
     fallback_ctz(r0, r0);
-    fallback_patch_at(done, _jit->pc.w);
+    fallback_patch_jmpi(done, _jit->pc.w);
 }
 
 static void
@@ -310,7 +325,7 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l1 = fallback_bmsr(_jit->pc.w, r1, r2);
     addi(r0, r0, 1);
     fallback_patch_at(l1, _jit->pc.w);
-    fallback_patch_at(ctz, _jit->pc.w);
+    fallback_patch_jmpi(ctz, _jit->pc.w);
     jit_unget_reg(r2_reg);
     jit_unget_reg(r1_reg);
 }
