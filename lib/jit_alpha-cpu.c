@@ -320,6 +320,12 @@ static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
 #define casi(r0, i0, r1, r2)		casx(r0, _NOREG, r1, r2, i0)
 #  define negr(r0,r1)			NEGQ(r1,r0)
 #  define comr(r0,r1)			NOT(r1,r0)
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clzr(r0, r1)			CTLZ(r1, r0)
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			CTTZ(r1, r0)
 #  define addr(r0,r1,r2)		ADDQ(r1,r2,r0)
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -838,6 +844,20 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     patch_at(jump1, _jit->pc.w);
     if (iscasi)
         jit_unget_reg(r1_reg);
+}
+
+static void
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    comr(r0, r1);
+    clzr(r0, r0);
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    comr(r0, r1);
+    ctzr(r0, r0);
 }
 
 static void
