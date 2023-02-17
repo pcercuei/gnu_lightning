@@ -648,6 +648,10 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #define movi_p(r0,i0)		_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define bswapr_us(r0, r1)		_bswapr_us(_jit, r0, r1)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ui(r0, r1)		_bswapr_ui(_jit, r0, r1)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
 static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
@@ -663,8 +667,6 @@ static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
 #define extr_uc(r0,r1)		EXTRWR_U(r1,31,8,r0)
 #define extr_s(r0,r1)		EXTRWR(r1,31,16,r0)
 #define extr_us(r0,r1)		EXTRWR_U(r1,31,16,r0)
-#define bswapr_us(r0,r1)	generic_bswapr_us(_jit,r0,r1)
-#define bswapr_ui(r0,r1)	generic_bswapr_ui(_jit,r0,r1)
 #define addr(r0,r1,r2)		ADD(r1,r2,r0)
 #define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -1636,6 +1638,42 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     LDIL(i0 & ~0x7ff, r0);
     LDO(i0 & 0x7ff, r0, r0);
     return (w);
+}
+
+static void
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    if (r0 == r1) {
+	reg = jit_get_reg(jit_class_gpr);
+	movr(rn(reg), r1);
+	EXTRWR_U(rn(reg), 23, 8, r0);
+	DEPWR(rn(reg), 23, 8, r0);
+	jit_unget_reg(reg);
+    }
+    else {
+	EXTRWR_U(r1, 23, 8, r0);
+	DEPWR(r1, 23, 8, r0);
+    }
+}
+
+static void
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    if (r0 == r1) {
+	reg = jit_get_reg(jit_class_gpr);
+	movr(rn(reg), r1);
+	SHRPWI(rn(reg), rn(reg), 16, r0);
+	DEPWR(r0, 15, 8, r0);
+	SHRPWI(rn(reg), r0, 8, r0);
+	jit_unget_reg(reg);
+    }
+    else {
+	SHRPWI(r1, r1, 16, r0);
+	DEPWR(r0, 15, 8, r0);
+	SHRPWI(r1, r0, 8, r0);
+    }
 }
 
 static void

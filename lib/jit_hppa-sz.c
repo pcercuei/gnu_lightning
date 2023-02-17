@@ -121,8 +121,8 @@
     4,	/* extr_us */
     0,	/* extr_i */
     0,	/* extr_ui */
-    28,	/* bswapr_us */
-    68,	/* bswapr_ui */
+    12,	/* bswapr_us */
+    16,	/* bswapr_ui */
     0,	/* bswapr_ul */
     4,	/* htonr_us */
     4,	/* htonr_ui */
@@ -446,4 +446,8 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    160,	/* clo */
+    140,	/* clz */
+    164,	/* cto */
+    144,	/* ctz */
 #endif /* __WORDSIZE */
