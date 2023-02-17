@@ -58,6 +58,7 @@ extern void __clear_cache(void *, void *);
 /*
  * Initialization
  */
+jit_cpu_t		jit_cpu;
 jit_register_t		_rvs[] = {
     /* Always 0 */
     { 0,		 "r0"  },
@@ -239,6 +240,11 @@ jit_register_t		_rvs[] = {
 void
 jit_get_cpu(void)
 {
+    jit_word_t		clz = -1;
+    __asm__ volatile("tf.nz.unc p6,p7=32;(p6)mov %0=1;(p7)mov %0=0"
+		     : "=r" (clz));
+    assert(clz == 0 || clz == 1);
+    jit_cpu.clz = clz;
 }
 
 void

@@ -1,5 +1,5 @@
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 896
+#define JIT_INSTR_MAX 608
     0,	/* data */
     0,	/* live */
     48,	/* align */
@@ -448,5 +448,5 @@
     608,	/* clo */
     544,	/* clz */
     608,	/* cto */
-    896,	/* ctz */
+    544,	/* ctz */
 #endif /* __WORDSIZE */

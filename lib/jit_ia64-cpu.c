@@ -3524,41 +3524,43 @@ _bitswap(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-#if 0	/* FIXME Encoding is correct but gives SIGILL -
-	 * binutils also does not disassemble it */
-    CLZ(r0, r1);
-#else
-    fallback_clz(r0, r1);
-#endif
+    if (jit_cpu.clz)
+	CLZ(r0, r1);
+    else
+	fallback_clz(r0, r1);
 }
 
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-#if 0
-    comr(r0, r1);
-    clzr(r0, r0);
-#else
-    fallback_clo(r0, r1);
-#endif
+    if (jit_cpu.clz) {
+	comr(r0, r1);
+	clzr(r0, r0);
+    }
+    else
+	fallback_clo(r0, r1);
 }
 
 static void
 _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-#if 0
-    bitswap(r0, r1);
-    clor(r0, r0);
-#else
-    fallback_cto(r0, r1);
-#endif
+    if (jit_cpu.clz) {
+	bitswap(r0, r1);
+	clor(r0, r0);
+    }
+    else
+	fallback_cto(r0, r1);
 }
 
 static void
 _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    bitswap(r0, r1);
-    clzr(r0, r0);
+    if (jit_cpu.clz) {
+	bitswap(r0, r1);
+	clzr(r0, r0);
+    }
+    else
+	fallback_ctz(r0, r1);
 }
 
 static void
