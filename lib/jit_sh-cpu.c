@@ -598,22 +598,26 @@ _movr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 }
 
 static void
-_movi_loop(jit_state_t *_jit, jit_word_t i0)
+movi_loop(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 {
+	jit_word_t tmp;
+
 	if (i0 >= -128 && i0 < 128) {
-		MOVI(_R0, i0);
+		MOVI(r0, i0);
 	} else {
-		if ((i0 >> 8) & 0xff) {
-			_movi_loop(_jit, i0 >> 8);
-			if (i0 >> 8 != 0)
-				SHLL8(_R0);
+		tmp = (i0 >> 8) + !!(i0 & 0x80);
+		if (tmp & 0xff) {
+			movi_loop(_jit, r0, tmp);
+			if (tmp != 0)
+				SHLL8(r0);
 		} else {
-			_movi_loop(_jit, i0 >> 16);
-			if (i0 >> 16 != 0)
-				SHLL16(_R0);
+			tmp = (i0 >> 16) + !!(i0 & 0x80);
+			movi_loop(_jit, r0, tmp);
+			if (tmp != 0)
+				SHLL16(r0);
 		}
 		if (i0 & 0xff)
-			ORI(i0 & 0xff);
+			ADDI(r0, i0 & 0xff);
 	}
 }
 
@@ -634,8 +638,7 @@ _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 		MOVI(r0, -1);
 		lshi(r0, r0, unmasked_bits_count(i0));
 	} else {
-		_movi_loop(_jit, i0);
-		movr(r0, _R0);
+		movi_loop(_jit, r0, i0);
 	}
 }
 
