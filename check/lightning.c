@@ -4366,6 +4366,9 @@ main(int argc, char *argv[])
     opt_short += snprintf(cmdline + opt_short,
 			  sizeof(cmdline) - opt_short,
 			  " -D__mips__=1");
+    opt_short += snprintf(cmdline + opt_short,
+			  sizeof(cmdline) - opt_short,
+			  " -D__mips_isa_rev=%d", jit_cpu.release);
 #endif
 #if defined(__arm__)
     opt_short += snprintf(cmdline + opt_short,

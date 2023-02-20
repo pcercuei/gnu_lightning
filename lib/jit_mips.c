@@ -192,11 +192,13 @@ jit_get_cpu(void)
 	fclose(fp);
     }
 #endif
-    /* This is very fragile -- with clang, __mips is defined as 64 */
-#if defined _MIPS_ARCH		/* OpenBSD/clang */
+#if __mips_isa_rev
+    if (!jit_cpu.release)
+	jit_cpu.release = __mips_isa_rev;
+#elif defined _MIPS_ARCH
     if (!jit_cpu.release)
 	jit_cpu.release = strtoul(&_MIPS_ARCH[4], NULL, 10);
-#elif defined(__mips)		/* Linux/gcc */
+#elif defined(__mips) && __mips < 6
     if (!jit_cpu.release)
 	jit_cpu.release = __mips;
 #endif

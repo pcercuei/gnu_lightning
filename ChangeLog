@@ -1,3 +1,16 @@
+2023-02-20 Paulo Andrade <pcpa@gnu.org>
+
+	* check/float.tst: Add conditionals for mips release for expected
+	NaN truncated to an integer.
+	* check/lightning.c: Add extra preprocessor for mips release.
+	* include/lightning/jit_mips.h: Make the NEW_ABI preprocessor
+	defined to zero if using the n32 or n64 abis. This makes it
+	easier to create runtime checks with an always true or false
+	condition.
+	* lib/jit_mips-cpu.c, lib/jit_mips-fpu.c: Implement mips release
+	6 support.
+	* lib/jit_mips.c: Add more reliable mips release detection code.
+
 2023-02-09 Paulo Andrade <pcpa@gnu.org>
 
 	* check/Makefile.am: Update for new bit.tst test, to check the

@@ -27,11 +27,13 @@ typedef union {
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } ft;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } rd;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } fs;
+    struct {	jit_uint32_t _: 7;	jit_uint32_t b :  9; } i9;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } ic;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } fd;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b : 10; } tr;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b : 20; } br;
     struct {				jit_uint32_t b :  6; } tc;
+    struct {				jit_uint32_t b :  5; } cn;
     struct {				jit_uint32_t b : 11; } cc;
     struct {				jit_uint32_t b : 16; } is;
     struct {				jit_uint32_t b : 26; } ii;
@@ -43,11 +45,13 @@ typedef union {
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } ft;
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } rd;
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } fs;
+    struct {	jit_uint32_t _:16;	jit_uint32_t b :  9; } i9;
     struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } ic;
     struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } fd;
     struct {	jit_uint32_t _:21;	jit_uint32_t b : 10; } tr;
     struct {	jit_uint32_t _:21;	jit_uint32_t b : 20; } br;
     struct {	jit_uint32_t _:26;	jit_uint32_t b :  6; } tc;
+    struct {	jit_uint32_t _:27;	jit_uint32_t b :  5; } cn;
     struct {	jit_uint32_t _:21;	jit_uint32_t b : 11; } cc;
     struct {	jit_uint32_t _:16;	jit_uint32_t b : 16; } is;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b : 26; } ii;
@@ -189,6 +193,8 @@ typedef union {
 #  define MIPS_CT			0x06
 #  define MIPS_MTH			0x07
 #  define MIPS_BC			0x08
+#  define MIPS_BC1EQZ			0x09	/* release 6 */
+#  define MIPS_BC1NEZ			0x0d	/* release 6 */
 #  define MIPS_WRPGPR			0x0e
 #  define MIPS_BGZAL			0x11
 #  define MIPS_MFMC0			0x11
@@ -305,6 +311,9 @@ _hrrrit(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,
 #  define rrr_t(rs,rt,rd,tc)		hrrr_t(0,rs,rt,rd,tc)
 #  define hrri(hc,rs,rt,im)		_hrri(_jit,hc,rs,rt,im)
 static void _hrri(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define hrri9(hc,rs,rt,i9,tc)		_hrri9(_jit,hc,rs,rt,i9,tc)
+static void _hrri9(jit_state_t*,jit_int32_t,jit_int32_t,
+		   jit_int32_t,jit_int32_t,jit_int32_t);
 #  define hi(hc,im)			_hi(_jit,hc,im)
 static void _hi(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define NOP(i0)			ii(0)
@@ -321,13 +330,29 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define DSUBU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_DSUBU)
 #  define MUL(rd,rs,rt)			hrrr_t(MIPS_SPECIAL2,rs,rt,rd,MIPS_MUL)
 #  define MULT(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_MULT)
+#  define MUL_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 24)
+#  define MUH_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 24)
 #  define MULTU(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_MULTU)
+#  define MULU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 25)
+#  define MUHU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 25)
 #  define DMULT(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DMULT)
+#  define DMUL_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 28)
+#  define DMUH_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 28)
 #  define DMULTU(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DMULTU)
+#  define DMULU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 29)
+#  define DMUHU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 29)
 #  define DIV(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DIV)
+#  define DIV_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 26)
+#  define MOD_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 26)
 #  define DIVU(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DIVU)
+#  define DIVU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 27)
+#  define MODU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 27)
 #  define DDIV(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DDIV)
+#  define DDIV_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 30)
+#  define DMOD_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 30)
 #  define DDIVU(rs,rt)			rrr_t(rs,rt,_ZERO_REGNO,MIPS_DDIVU)
+#  define DDIVU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 2, 31)
+#  define DMODU_R6(rd,rs,rt)		hrrrit(MIPS_SPECIAL, rs, rt, rd, 3, 31)
 #  define SLLV(rd,rt,rs)		rrr_t(rs,rt,rd,MIPS_SLLV)
 #  define SLL(rd,rt,sa)			rrit(rt,rd,sa,MIPS_SLL)
 #  define DSLLV(rd,rt,rs)		rrr_t(rs,rt,rd,MIPS_DSLLV)
@@ -362,6 +387,7 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define ANDI(rt,rs,im)		hrri(MIPS_ANDI,rs,rt,im)
 #  define OR(rd,rs,rt)			rrr_t(rs,rt,rd,MIPS_OR)
 #  define ORI(rt,rs,im)			hrri(MIPS_ORI,rs,rt,im)
+#  define NOR(rd,rs,rt)			rrr_t(rs,rt,rd,MIPS_NOR)
 #  define XOR(rd,rs,rt)			rrr_t(rs,rt,rd,MIPS_XOR)
 #  define XORI(rt,rs,im)		hrri(MIPS_XORI,rs,rt,im)
 #  define LB(rt,of,rb)			hrri(MIPS_LB,rb,rt,of)
@@ -372,13 +398,17 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define LWU(rt,of,rb)			hrri(MIPS_LWU,rb,rt,of)
 #  define LD(rt,of,rb)			hrri(MIPS_LD,rb,rt,of)
 #  define LL(rt,of,rb)			hrri(MIPS_LL,rb,rt,of)
+#  define LL_R6(rt,of,rb)		hrri9(MIPS_SPECIAL3,rb,rt,of,54)
 #  define LLD(rt,of,rb)			hrri(MIPS_LLD,rb,rt,of)
+#  define LLD_R6(rt,of,rb)		hrri9(MIPS_SPECIAL3,rb,rt,of,55)
 #  define SB(rt,of,rb)			hrri(MIPS_SB,rb,rt,of)
 #  define SH(rt,of,rb)			hrri(MIPS_SH,rb,rt,of)
 #  define SW(rt,of,rb)			hrri(MIPS_SW,rb,rt,of)
 #  define SD(rt,of,rb)			hrri(MIPS_SD,rb,rt,of)
 #  define SC(rt,of,rb)			hrri(MIPS_SC,rb,rt,of)
+#  define SC_R6(rt,of,rb)		hrri9(MIPS_SPECIAL3,rb,rt,of,38)
 #  define SCD(rt,of,rb)			hrri(MIPS_SCD,rb,rt,of)
+#  define SCD_R6(rt,of,rb)		hrri9(MIPS_SPECIAL3,rb,rt,of,39)
 #  define WSBH(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_WSBH,MIPS_BSHFL)
 #  define SEB(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_SEB,MIPS_BSHFL)
 #  define SEH(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_SEH,MIPS_BSHFL)
@@ -413,6 +443,8 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define JAL(i0)			hi(MIPS_JAL,i0)
 #  define MOVN(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVN)
 #  define MOVZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVZ)
+#  define SELEQZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,53)
+#  define SELNEZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,55)
 #  define comr(r0,r1)			xori(r0,r1,-1)
 #  define negr(r0,r1)			subr(r0,_ZERO_REGNO,r1)
 #  define bitswap(r0,r1)		_bitswap(_jit, r0, r1);
@@ -430,17 +462,33 @@ static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define addiu(r0,r1,i0)		ADDIU(r0,r1,i0)
 #    define subr(rd,rs,rt)		SUBU(rd,rs,rt)
 #    define mult(rs,rt)			MULT(rs,rt)
+#    define mul_r6(rd,rs,rt)		MUL_R6(rd,rs,rt)
+#    define muh_r6(rd,rs,rt)		MUH_R6(rd,rs,rt)
 #    define multu(rs,rt)		MULTU(rs,rt)
+#    define mulu_r6(rd,rs,rt)		MULU_R6(rd,rs,rt)
+#    define muhu_r6(rd,rs,rt)		MUHU_R6(rd,rs,rt)
 #    define div(rs,rt)			DIV(rs,rt)
 #    define divu(rs,rt)			DIVU(rs,rt)
+#    define div_r6(rd,rs,rt)		DIV_R6(rd,rs,rt)
+#    define divu_r6(rd,rs,rt)		DIVU_R6(rd,rs,rt)
+#    define mod_r6(rd,rs,rt)		MOD_R6(rd,rs,rt)
+#    define modu_r6(rd,rs,rt)		MODU_R6(rd,rs,rt)
 #  else
 #    define addr(rd,rs,rt)		DADDU(rd,rs,rt)
 #    define addiu(r0,r1,i0)		DADDIU(r0,r1,i0)
 #    define subr(rd,rs,rt)		DSUBU(rd,rs,rt)
 #    define mult(rs,rt)			DMULT(rs,rt)
+#    define mul_r6(rd,rs,rt)		DMUL_R6(rd,rs,rt)
+#    define muu_r6(rd,rs,rt)		DMUU_R6(rd,rs,rt)
 #    define multu(rs,rt)		DMULTU(rs,rt)
+#    define mulu_r6(rd,rs,rt)		DMULU_R6(rd,rs,rt)
+#    define muhu_r6(rd,rs,rt)		DMUHU_R6(rd,rs,rt)
 #    define div(rs,rt)			DDIV(rs,rt)
 #    define divu(rs,rt)			DDIVU(rs,rt)
+#    define div_r6(rd,rs,rt)		DDIV_R6(rd,rs,rt)
+#    define divu_r6(rd,rs,rt)		DDIVU_R6(rd,rs,rt)
+#    define mod_r6(rd,rs,rt)		DMOD_R6(rd,rs,rt)
+#    define modu_r6(rd,rs,rt)		DMODU_R6(rd,rs,rt)
 #  endif
 #  define extr(rd,rt,lsb,nb)	_extr(_jit,rd,rt,lsb,nb)
 static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
@@ -541,8 +589,10 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #  define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
-#  define movnr(r0,r1,r2)		MOVN(r0, r1, r2)
-#  define movzr(r0,r1,r2)		MOVZ(r0, r1, r2)
+#  define movnr(r0, r1, r2)		_movnr(_jit, r0, r1, r2)
+static void _movnr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
+#  define movzr(r0, r1, r2)		_movzr(_jit, r0, r1, r2)
+static void _movzr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define casx(r0, r1, r2, r3, i0)	_casx(_jit, r0, r1, r2, r3, i0)
 static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
 		  jit_int32_t,jit_int32_t,jit_word_t);
@@ -997,6 +1047,20 @@ _hrri(jit_state_t *_jit, jit_int32_t hc,
 }
 
 static void
+_hrri9(jit_state_t *_jit, jit_int32_t hc,
+      jit_int32_t rs, jit_int32_t rt, jit_int32_t i9, jit_int32_t tc)
+{
+    jit_instr_t		i;
+    i.op = 0;
+    i.tc.b = tc;
+    i.i9.b = i9;
+    i.rt.b = rt;
+    i.rs.b = rs;
+    i.hc.b = hc;
+    ii(i.op);
+}
+
+static void
 _hi(jit_state_t *_jit, jit_int32_t hc, jit_int32_t im)
 {
     jit_instr_t		i;
@@ -1090,12 +1154,10 @@ static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
 #if __WORDSIZE == 32
-    /* must sign extend top 32 bits */
-    SLL(r0, r1, 0);
     if (jit_mips6_p())
-	CLO_R6(r0, r0);
+	CLO_R6(r0, r1);
     else
-	CLO(r0, r0);
+	CLO(r0, r1);
 #else
     if (jit_mips6_p())
 	DCLO_R6(r0, r1);
@@ -1108,12 +1170,10 @@ static void
 _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
 #if __WORDSIZE == 32
-    /* must sign extend top 32 bits */
-    SLL(r0, r1, 0);
     if (jit_mips6_p())
-	CLZ_R6(r0, r0);
+	CLZ_R6(r0, r1);
     else
-	CLZ(r0, r0);
+	CLZ(r0, r1);
 #else
     if (jit_mips6_p())
 	DCLZ_R6(r0, r1);
@@ -1128,16 +1188,15 @@ _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     if (jit_mips6_p()) {
 #if __WORDSIZE == 32
 	BITSWAP(r0, r1);
-	/* must sign extend top 32 bits */
-	SLL(r0, r0, 0);
+	bswapr_ui(r0, r0);
 	CLO_R6(r0, r0);
 #else
 	DBITSWAP(r0, r1);
+	bswapr_ul(r0, r0);
 	DCLO_R6(r0, r0);
 #endif
     }
     else {
-	//fallback_cto(r0, r1);
 	bitswap(r0, r1);
 	clor(r0, r0);
     }
@@ -1149,16 +1208,15 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     if (jit_mips6_p()) {
 #if __WORDSIZE == 32
 	BITSWAP(r0, r1);
-	/* must sign extend top 32 bits */
-	SLL(r0, r0, 0);
+	bswapr_ui(r0, r0);
 	CLZ_R6(r0, r0);
 #else
 	DBITSWAP(r0, r1);
+	bswapr_ul(r0, r0);
 	DCLZ_R6(r0, r0);
 #endif
     }
     else {
-	//fallback_ctz(r0, r1);
 	bitswap(r0, r1);
 	clzr(r0, r0);
     }
@@ -1358,11 +1416,15 @@ _rsbi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _mulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    if (jit_mips2_p() && __WORDSIZE == 32)
-	MUL(r0, r1, r2);
+    if (jit_mips6_p())
+	mul_r6(r0, r1, r2);
     else {
-        multu(r1, r2);
-        MFLO(r0);
+	if (jit_mips2_p() && __WORDSIZE == 32)
+	    MUL(r0, r1, r2);
+	else {
+	    multu(r1, r2);
+	    MFLO(r0);
+	}
     }
 }
 
@@ -1381,12 +1443,38 @@ static void
 _iqmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	jit_int32_t r2, jit_int32_t r3, jit_bool_t sign)
 {
-    if (sign)
-	mult(r2, r3);
-    else
-	multu(r2, r3);
-    MFLO(r0);
-    MFHI(r1);
+    jit_int32_t		t0;
+    if (jit_mips6_p()) {
+	if (r0 == r2 || r0 == r3) {
+	    t0 = jit_get_reg(jit_class_gpr);
+	    if (sign)
+		mul_r6(rn(t0), r2, r3);
+	    else
+		mulu_r6(rn(t0), r2, r3);
+	}
+	else {
+	    if (sign)
+		mul_r6(r0, r2, r3);
+	    else
+		mulu_r6(r0, r2, r3);
+	}
+	if (sign)
+	    muh_r6(r1, r2, r3);
+	else
+	    muhu_r6(r1, r2, r3);
+	if (r0 == r2 || r0 == r3) {
+	    movr(r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
+    else {
+	if (sign)
+	    mult(r2, r3);
+	else
+	    multu(r2, r3);
+	MFLO(r0);
+	MFHI(r1);
+    }
 }
 
 static void
@@ -1403,8 +1491,12 @@ _iqmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 static void
 _divr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    div(r1, r2);
-    MFLO(r0);
+    if (jit_mips6_p())
+	div_r6(r0, r1, r2);
+    else {
+	div(r1, r2);
+	MFLO(r0);
+    }
 }
 
 static void
@@ -1420,8 +1512,12 @@ _divi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _divr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    divu(r1, r2);
-    MFLO(r0);
+    if (jit_mips6_p())
+	divu_r6(r0, r1, r2);
+    else {
+	divu(r1, r2);
+	MFLO(r0);
+    }
 }
 
 static void
@@ -1438,12 +1534,39 @@ static void
 _iqdivr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
        jit_int32_t r2, jit_int32_t r3, jit_bool_t sign)
 {
-    if (sign)
-	div(r2, r3);
-    else
-	divu(r2, r3);
-    MFLO(r0);
-    MFHI(r1);
+    jit_int32_t		t0;
+    if (jit_mips6_p()) {
+	if (r0 == r2 || r0 == r3)
+	    t0 = jit_get_reg(jit_class_gpr);
+	else
+	    t0 = _NOREG;
+	if (sign) {
+	    if (t0 == _NOREG)
+		div_r6(r0, r2, r3);
+	    else
+		div_r6(rn(t0), r2, r3);
+	    mod_r6(r1, r2, r3);
+	}
+	else {
+	    if (t0 == _NOREG)
+		divu_r6(r0, r2, r3);
+	    else
+		divu_r6(rn(t0), r2, r3);
+	    modu_r6(r1, r2, r3);
+	}
+	if (t0 != _NOREG) {
+	    movr(r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
+    else {
+	if (sign)
+	    div(r2, r3);
+	else
+	    divu(r2, r3);
+	MFLO(r0);
+	MFHI(r1);
+    }
 }
 
 static void
@@ -1460,8 +1583,12 @@ _iqdivi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 static void
 _remr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    div(r1, r2);
-    MFHI(r0);
+    if (jit_mips6_p())
+	mod_r6(r0, r1, r2);
+    else {
+	div(r1, r2);
+	MFHI(r0);
+    }
 }
 
 static void
@@ -1477,8 +1604,12 @@ _remi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _remr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    divu(r1, r2);
-    MFHI(r0);
+    if (jit_mips6_p())
+	modu_r6(r0, r1, r2);
+    else {
+	divu(r1, r2);
+	MFHI(r0);
+    }
 }
 
 static void
@@ -1650,6 +1781,36 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (jit_mips6_p()) {
+	reg = jit_get_reg(jit_class_gpr);
+	SELNEZ(rn(reg), r1, r2);
+	SELEQZ(r0, r0, r2);
+	OR(r0, r0, rn(reg));
+	jit_unget_reg(reg);
+    }
+    else
+	MOVN(r0, r1, r2);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (jit_mips6_p()) {
+	reg = jit_get_reg(jit_class_gpr);
+	SELEQZ(rn(reg), r1, r2);
+	SELNEZ(r0, r0, r2);
+	OR(r0, r0, rn(reg));
+	jit_unget_reg(reg);
+    }
+    else
+	MOVZ(r0, r1, r2);
+}
+
+static void
 _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
       jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
 {
@@ -1664,9 +1825,11 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     /* retry: */
     retry = _jit->pc.w;
 #  if __WORDSIZE == 32
-    LL(r0, 0, r1);
+    if (jit_mips6_p())	LL_R6(r0, 0, r1);
+    else		LL(r0, 0, r1);
 #  else
-    LLD(r0, 0, r1);
+    if (jit_mips6_p())	LLD_R6(r0, 0, r1);
+    else		LLD(r0, 0, r1);
 #  endif
     jump0 = _jit->pc.w;
     BNE(r0, r2, 1);				/* bne done r0 r2 */
@@ -1674,9 +1837,11 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     movr(r0, r3);				/* after jump and delay slot */
     /* store new value */
 #  if __WORDSIZE == 32
-    SC(r0, 0, r1);
+    if (jit_mips6_p())	SC_R6(r0, 0, r1);
+    else		SC(r0, 0, r1);
 #  else
-    SCD(r0, 0, r1);
+    if (jit_mips6_p())	SCD_R6(r0, 0, r1);
+    else		SCD(r0, 0, r1);
 #  endif
     jump1 = _jit->pc.w;
     BEQ(r0, _ZERO_REGNO, 0);			/* beqi retry r0 0 */
@@ -2329,7 +2494,7 @@ static jit_bool_t _can_swap_ds(jit_state_t *_jit, jit_node_t *prev,
 {
     jit_int32_t		offset;
 
-    if (!prev)
+    if (jit_mips6_p() || !prev)
 	    return 0;
 
     switch (prev->code) {
@@ -2855,7 +3020,7 @@ _boaddr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     addr(rn(t1), r0, r1);		/* t1 = r0 + r1 */
     SLT(rn(t2), rn(t1), r0);		/* t2 = t1 < r0 */
     SLT(rn(t1), r0, rn(t1));		/* t1 = r0 < t1 */
-    MOVZ(rn(t1), rn(t2), rn(t0));	/* if (r0 == 0) t1 = t2 */
+    movzr(rn(t1), rn(t2), rn(t0));	/* if (r0 == 0) t1 = t2 */
     w = _jit->pc.w;
     BNE(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
     /* delay slot */
@@ -2883,7 +3048,7 @@ _boaddi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 	addiu(rn(t1), r0, i1);
 	SLT(rn(t2), r0, rn(t1));
 	SLT(rn(t1), rn(t1), r0);
-	MOVZ(rn(t1), rn(t2), rn(t0));
+	movzr(rn(t1), rn(t2), rn(t0));
 	w = _jit->pc.w;
 	BNE(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
 	/* delay slot */
@@ -2965,7 +3130,7 @@ _bxaddr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     addr(rn(t1), r0, r1);		/* t1 = r0 + r1 */
     SLT(rn(t2), rn(t1), r0);		/* t2 = t1 < r0 */
     SLT(rn(t1), r0, rn(t1));		/* t1 = r0 < t1 */
-    MOVZ(rn(t1), rn(t2), rn(t0));	/* if (r0 == 0) t1 = t2 */
+    movzr(rn(t1), rn(t2), rn(t0));	/* if (r0 == 0) t1 = t2 */
     w = _jit->pc.w;
     BEQ(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
     /* delay slot */
@@ -2993,7 +3158,7 @@ _bxaddi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 	addiu(rn(t1), r0, i1);
 	SLT(rn(t2), r0, rn(t1));
 	SLT(rn(t1), rn(t1), r0);
-	MOVZ(rn(t1), rn(t2), rn(t0));
+	movzr(rn(t1), rn(t2), rn(t0));
 	w = _jit->pc.w;
 	BEQ(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
 	/* delay slot */
@@ -3075,7 +3240,7 @@ _bosubr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     subr(rn(t1), r0, r1);		/* t1 = r0 - r1 */
     SLT(rn(t2), rn(t1), r0);		/* t2 = t1 < r0 */
     SLT(rn(t1), r0, rn(t1));		/* t1 = r0 < t1 */
-    MOVZ(rn(t1), rn(t2), rn(t0));	/* if (r0 == 0) t1 = t2 */
+    movzr(rn(t1), rn(t2), rn(t0));	/* if (r0 == 0) t1 = t2 */
     w = _jit->pc.w;
     BNE(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
     /* delay slot */
@@ -3103,7 +3268,7 @@ _bosubi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 	addiu(rn(t1), r0, -i1);
 	SLT(rn(t2), rn(t1), r0);
 	SLT(rn(t1), r0, rn(t1));
-	MOVZ(rn(t1), rn(t2), rn(t0));
+	movzr(rn(t1), rn(t2), rn(t0));
 	w = _jit->pc.w;
 	BNE(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
 	/* delay slot */
@@ -3185,7 +3350,7 @@ _bxsubr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     subr(rn(t1), r0, r1);		/* t1 = r0 - r1 */
     SLT(rn(t2), rn(t1), r0);		/* t2 = t1 < r0 */
     SLT(rn(t1), r0, rn(t1));		/* t1 = r0 < t1 */
-    MOVZ(rn(t1), rn(t2), rn(t0));	/* if (t0 == 0) t1 = t2 */
+    movzr(rn(t1), rn(t2), rn(t0));	/* if (t0 == 0) t1 = t2 */
     w = _jit->pc.w;
     BEQ(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
     /* delay slot */
@@ -3213,7 +3378,7 @@ _bxsubi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
 	addiu(rn(t1), r0, -i1);
 	SLT(rn(t2), rn(t1), r0);
 	SLT(rn(t1), r0, rn(t1));
-	MOVZ(rn(t1), rn(t2), rn(t0));
+	movzr(rn(t1), rn(t2), rn(t0));
 	w = _jit->pc.w;
 	BEQ(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
 	/* delay slot */
@@ -3375,12 +3540,12 @@ _calli(jit_state_t *_jit, jit_word_t i0, jit_node_t *prev, jit_bool_t patch)
 	if (patch && swap_ds) {
 	    op = *--_jit->pc.ui;
 	    w -= sizeof(jit_int32_t);
-	    BGEZAL(_ZERO_REGNO, disp);
+	    BGEZAL(_ZERO_REGNO, disp);	/* Renamed to BAL in mips release 6 */
 	    ii(op);
 	    goto done;
 	}
 	if (patch || can_sign_extend_short_p(disp)) {
-	    BGEZAL(_ZERO_REGNO, disp);
+	    BGEZAL(_ZERO_REGNO, disp);	/* Renamed to BAL in mips release 6 */
 	    NOP(1);
 	    goto done;
 	}
@@ -3656,16 +3821,31 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    break;
 
 	case MIPS_COP1:			case MIPS_COP2:
-	    assert(i.rs.b == MIPS_BC);
-	    switch (i.rt.b) {
-		case MIPS_BCF:		case MIPS_BCFL:
-		case MIPS_BCT:		case MIPS_BCTL:
-		    i.is.b = ((label - instr) >> 2) - 1;
-		    u.i[0] = i.op;
-		    break;
-		default:
-		    assert(!"unhandled branch opcode");
-		    break;
+	    if (jit_mips6_p()) {
+		switch (i.rs.b) {
+		    case MIPS_BC1EQZ:	case MIPS_BC1NEZ:
+			assert(jit_mips6_p());
+			i.is.b = ((label - instr) >> 2) - 1;
+			u.i[0] = i.op;
+			break;
+		    default:
+			assert(!"unhandled branch opcode");
+			break;
+		}
+	    }
+	    else {
+		assert(i.rs.b == MIPS_BC);
+		switch (i.rt.b) {
+		    case MIPS_BCF:		case MIPS_BCFL:
+		    case MIPS_BCT:		case MIPS_BCTL:
+			assert(!jit_mips6_p());
+			i.is.b = ((label - instr) >> 2) - 1;
+			u.i[0] = i.op;
+			break;
+		    default:
+			assert(!"unhandled branch opcode");
+			break;
+		}
 	    }
 	    break;
 

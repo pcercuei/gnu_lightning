@@ -25,6 +25,8 @@
 
 #if _MIPS_SIM != _ABIO32
 #    define NEW_ABI		1
+#else
+#    define NEW_ABI		0
 #endif
 
 /*
