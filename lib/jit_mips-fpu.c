@@ -1383,6 +1383,7 @@ _unler_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
     }
     else {
 	C_ULE_S(r1, r2);
+	w = _jit->pc.w;
 	BC1T(0);
 	/* delay slot */
 	movi(r0, 1);

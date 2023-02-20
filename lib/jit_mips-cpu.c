@@ -479,7 +479,7 @@ static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define subr(rd,rs,rt)		DSUBU(rd,rs,rt)
 #    define mult(rs,rt)			DMULT(rs,rt)
 #    define mul_r6(rd,rs,rt)		DMUL_R6(rd,rs,rt)
-#    define muu_r6(rd,rs,rt)		DMUU_R6(rd,rs,rt)
+#    define muh_r6(rd,rs,rt)		DMUH_R6(rd,rs,rt)
 #    define multu(rs,rt)		DMULTU(rs,rt)
 #    define mulu_r6(rd,rs,rt)		DMULU_R6(rd,rs,rt)
 #    define muhu_r6(rd,rs,rt)		DMUHU_R6(rd,rs,rt)
