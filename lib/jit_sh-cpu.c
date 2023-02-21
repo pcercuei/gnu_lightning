@@ -171,6 +171,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 
 #    define LDDB(rm, imm)		_cnmd(_jit, 0x8, 0x4, rm, imm)
 #    define LDDW(rm, imm)		_cnmd(_jit, 0x8, 0x5, rm, imm)
+#    define CMPEQI(imm)			_cni(_jit, 0x8, 0x8, imm)
 #    define BT(imm)			_cni(_jit, 0x8, 0x9, imm)
 #    define BF(imm)			_cni(_jit, 0x8, 0xb, imm)
 #    define BTS(imm)			_cni(_jit, 0x8, 0xd, imm)
@@ -1256,6 +1257,11 @@ _eqi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	if (i0 == 0) {
 		TST(r1, r1);
+	} else if (i0 >= -128 && i0 < 128) {
+		assert(r1 != _R0);
+
+		movr(_R0, r1);
+		CMPEQI(i0);
 	} else {
 		assert(r1 != _R0);
 
@@ -1271,15 +1277,17 @@ _nei(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	assert(r0 != _R0 && r1 != _R0);
 
 	if (i0 == 0) {
-		MOVI(_R0, -1);
 		TST(r1, r1);
-		NEGC(r0, _R0);
+	} else if (i0 >= -128 && i0 < 128) {
+		movr(_R0, r1);
+		CMPEQI(i0);
 	} else {
 		movi(_R0, i0);
 		CMPEQ(r1, _R0);
-		MOVI(_R0, -1);
-		NEGC(r0, _R0);
 	}
+
+	MOVI(_R0, -1);
+	NEGC(r0, _R0);
 }
 
 static void
@@ -1924,6 +1932,9 @@ static jit_word_t _beqi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	if (i1 == 0) {
 		TST(r0, r0);
+	} else if (i1 >= -128 && i1 < 128) {
+		movr(_R0, r0);
+		CMPEQI(i1);
 	} else {
 		assert(r0 != _R0);
 
