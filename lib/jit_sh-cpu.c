@@ -88,6 +88,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define LDRW(rn, rm)		_cnmd(_jit, 0x0, rn, rm, 0xd)
 #    define LDRL(rn, rm)		_cnmd(_jit, 0x0, rn, rm, 0xe)
 #    define BSRF(rn)			_cni(_jit, 0x0, rn, 0x03)
+#    define STCGBR(rn)			_cni(_jit, 0x0, rn, 0x12)
 #    define STSH(rn)			_cni(_jit, 0x0, rn, 0x0a)
 #    define STSL(rn)			_cni(_jit, 0x0, rn, 0x1a)
 #    define BRAF(rn)			_cni(_jit, 0x0, rn, 0x23)
@@ -135,6 +136,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define CMPPL(rn)			_cni(_jit, 0x4, rn, 0x15)
 #    define SHLL8(rn)			_cni(_jit, 0x4, rn, 0x18)
 #    define SHLR8(rn)			_cni(_jit, 0x4, rn, 0x19)
+#    define LDCGBR(rm)			_cni(_jit, 0x4, rm, 0x1e)
 #    define SHAL(rn)			_cni(_jit, 0x4, rn, 0x20)
 #    define SHAR(rn)			_cni(_jit, 0x4, rn, 0x21)
 #    define ROTCL(rn)			_cni(_jit, 0x4, rn, 0x24)
@@ -183,6 +185,9 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 
 #    define BSR(imm)			_cd(_jit, 0xb, imm)
 
+#    define GBRSTB(imm)			_cni(_jit, 0xc, 0x0, imm)
+#    define GBRSTW(imm)			_cni(_jit, 0xc, 0x1, imm)
+#    define GBRSTL(imm)			_cni(_jit, 0xc, 0x2, imm)
 #    define GBRLDB(imm)			_cni(_jit, 0xc, 0x4, imm)
 #    define GBRLDW(imm)			_cni(_jit, 0xc, 0x5, imm)
 #    define GBRLDL(imm)			_cni(_jit, 0xc, 0x6, imm)
@@ -594,8 +599,14 @@ _nop(jit_state_t *_jit, jit_word_t i0)
 static void
 _movr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
-	if (r0 != r1)
-		MOV(r0, r1);
+	if (r0 != r1) {
+		if (r1 == _GBR)
+			STCGBR(r0);
+		else if (r0 == _GBR)
+			LDCGBR(r1);
+		else
+			MOV(r0, r1);
+	}
 }
 
 static void
@@ -1597,7 +1608,15 @@ _ldxi_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	assert(r1 != _R0);
 
-	if (i0 >= 0 && i0 <= 0xf) {
+	if (r1 == _GBR) {
+		if (i0 >= 0 && i0 <= 0xff) {
+			GBRLDB(i0);
+			movr(r0, _R0);
+		} else {
+			movr(r0, r1);
+			ldxi_c(r0, r0, i0);
+		}
+	} else if (i0 >= 0 && i0 <= 0xf) {
 		LDDB(r1, i0);
 		movr(r0, _R0);
 	} else {
@@ -1611,7 +1630,15 @@ _ldxi_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	assert(r1 != _R0);
 
-	if (i0 >= 0 && i0 <= 0x1f && !(i0 & 0x1)) {
+	if (r1 == _GBR) {
+		if (i0 >= 0 && i0 <= 0x1ff && !(i0 & 0x1)) {
+			GBRLDW(i0 >> 1);
+			movr(r0, _R0);
+		} else {
+			movr(r0, r1);
+			ldxi_s(r0, r0, i0);
+		}
+	} else if (i0 >= 0 && i0 <= 0x1f && !(i0 & 0x1)) {
 		LDDW(r1, i0 >> 1);
 		movr(r0, _R0);
 	} else {
@@ -1625,7 +1652,15 @@ _ldxi_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	assert(r1 != _R0);
 
-	if (i0 >= 0 && i0 <= 0x3f && !(i0 & 3)) {
+	if (r1 == _GBR) {
+		if (i0 >= 0 && i0 <= 0x3ff && !(i0 & 0x3)) {
+			GBRLDL(i0 >> 2);
+			movr(r0, _R0);
+		} else {
+			movr(r0, r1);
+			ldxi_s(r0, r0, i0);
+		}
+	} else if (i0 >= 0 && i0 <= 0x3f && !(i0 & 0x3)) {
 		LDDL(r0, r1, i0 >> 2);
 	} else {
 		movi(_R0, i0);
@@ -1705,25 +1740,65 @@ _stxr_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _stxi_c(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 {
-	assert(r0 != _R0 && r1 != _R0);
+	jit_uint32_t reg;
 
-	movi(_R0, i0);
-	stxr_c(_R0, r0, r1);
+	if (r0 == _GBR) {
+		if (i0 >= 0 && i0 <= 0xff) {
+			movr(_R0, r1);
+			GBRSTB(i0);
+		} else {
+			reg = jit_get_reg(jit_class_gpr);
+			movr(rn(reg), r0);
+			stxi_c(i0, rn(reg), r1);
+			jit_unget_reg(reg);
+		}
+	} else {
+		assert(r0 != _R0 && r1 != _R0);
+
+		movi(_R0, i0);
+		stxr_c(_R0, r0, r1);
+	}
 }
 
 static void
 _stxi_s(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 {
-	assert(r0 != _R0 && r1 != _R0);
+	jit_uint32_t reg;
 
-	movi(_R0, i0);
-	stxr_s(_R0, r0, r1);
+	if (r0 == _GBR) {
+		if (i0 >= 0 && i0 <= 0x1ff && !(i0 & 0x1)) {
+			movr(_R0, r1);
+			GBRSTW(i0 >> 1);
+		} else {
+			reg = jit_get_reg(jit_class_gpr);
+			movr(rn(reg), r0);
+			stxi_s(i0, rn(reg), r1);
+			jit_unget_reg(reg);
+		}
+	} else {
+		assert(r0 != _R0 && r1 != _R0);
+
+		movi(_R0, i0);
+		stxr_s(_R0, r0, r1);
+	}
 }
 
 static void
 _stxi_i(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
 {
-	if (i0 >= 0 && i0 <= 0x3f && !(i0 & 3)) {
+	jit_uint32_t reg;
+
+	if (r0 == _GBR) {
+		if (i0 >= 0 && i0 <= 0x3ff && !(i0 & 0x3)) {
+			movr(_R0, r1);
+			GBRSTL(i0 >> 2);
+		} else {
+			reg = jit_get_reg(jit_class_gpr);
+			movr(rn(reg), r0);
+			stxi_i(i0, rn(reg), r1);
+			jit_unget_reg(reg);
+		}
+	} else if (i0 >= 0 && i0 <= 0x3f && !(i0 & 3)) {
 		STDL(r0, r1, i0 >> 2);
 	} else {
 		assert(r0 != _R0 && r1 != _R0);
