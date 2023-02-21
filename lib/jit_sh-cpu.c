@@ -713,8 +713,6 @@ _addxr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _addi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	assert(r0 != _R0 && r1 != _R0);
-
 	if (i0 >= -128 && i0 < 127) {
 		movr(r0, r1);
 		ADDI(r0, i0);
@@ -1024,8 +1022,6 @@ _divi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
-	assert(r1 != _R0);
-
 	movi(rn(reg), i0);
 	divr(r0, r1, rn(reg));
 
@@ -1036,8 +1032,6 @@ static void
 _divi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
-
-	assert(r1 != _R0);
 
 	movi(rn(reg), i0);
 	divr_u(r0, r1, rn(reg));
@@ -1051,8 +1045,6 @@ _qdivi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
-	assert(r2 != _R0);
-
 	movi(rn(reg), i0);
 	qdivr(r0, r1, r2, rn(reg));
 
@@ -1064,8 +1056,6 @@ _qdivi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 	 jit_uint16_t r2, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
-
-	assert(r2 != _R0);
 
 	movi(rn(reg), i0);
 	qdivr_u(r0, r1, r2, rn(reg));
@@ -1102,8 +1092,6 @@ _remi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
-	assert(r1 != _R0);
-
 	movi(rn(reg), i0);
 	remr(r0, r1, rn(reg));
 
@@ -1114,8 +1102,6 @@ static void
 _remi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
-
-	assert(r1 != _R0);
 
 	movi(rn(reg), i0);
 	remr_u(r0, r1, rn(reg));
@@ -1568,6 +1554,8 @@ static void _ldi_us(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 static void
 _ldxr_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0);
+
 	movr(_R0, r2);
 	LDRB(r0, r1);
 }
@@ -1575,6 +1563,8 @@ _ldxr_c(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxr_s(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
+	assert(r1 != _R0);
+
 	movr(_R0, r2);
 	LDRW(r0, r1);
 }
@@ -1591,8 +1581,6 @@ _ldxr_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxr_uc(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
-	assert(r1 != _R0);
-
 	ldxr_c(r0, r1, r2);
 	extr_uc(r0, r0);
 }
@@ -1600,8 +1588,6 @@ _ldxr_uc(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ldxr_us(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
-	assert(r1 != _R0);
-
 	ldxr_s(r0, r1, r2);
 	extr_us(r0, r0);
 }
