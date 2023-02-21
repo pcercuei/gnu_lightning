@@ -717,7 +717,12 @@ _addi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	if (i0 >= -128 && i0 < 127) {
 		movr(r0, r1);
 		ADDI(r0, i0);
+	} else if (r0 != r1) {
+		movi(r0, i0);
+		addr(r0, r1, r0);
 	} else {
+		assert(r1 != _R0);
+
 		movi(_R0, i0);
 		addr(r0, r1, _R0);
 	}
@@ -2202,21 +2207,18 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 			stxi((i + 2) * 4, JIT_SP, JIT_V(i));
 
 	STSPR(_R0);
-	stxi(0, JIT_SP, _R0);
+	str(JIT_SP, _R0);
 
 	movr(JIT_FP, JIT_SP);
 
 	if (_jitc->function->stack)
 		subi(JIT_SP, JIT_SP, _jitc->function->stack);
 
-	/* Configure FPSCR */
-	STSFP(JIT_R0);
-	movi(_R0, 0x3 << 19);
-	orr(JIT_R0, JIT_R0, _R0);
-	xorr(JIT_R0, JIT_R0, _R0);
-	LDSFP(JIT_R0);
-
+#ifdef __SH_FPU_DOUBLE__
+	_jitc->mode_d = 1;
+#else
 	_jitc->mode_d = 0;
+#endif
 }
 
 static void
@@ -2227,19 +2229,16 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->assume_frame)
 		return;
 
-	movr(JIT_R0, _R0);
-	movr(JIT_SP, JIT_FP);
-	ldxi(_R0, JIT_SP, 0);
-	LDSPR(_R0);
-	ldxi(JIT_FP, JIT_SP, 4);
+	ldr(JIT_SP, JIT_FP);
+	LDSPR(JIT_SP);
 
 	for (i = 0; i < JIT_V_NUM; i++)
 		if (jit_regset_tstbit(&_jitc->function->regset, JIT_V(i)))
-			ldxi(JIT_V(i), JIT_SP, (i + 2) * 4);
+			ldxi(JIT_V(i), JIT_FP, (i + 2) * 4);
 
-	movi(_R0, stack_framesize);
-	ADD(JIT_SP, _R0);
+	addi(JIT_SP, JIT_FP, stack_framesize);
+
 	RTS();
-	movr(_R0, JIT_R0);
+	ldxi(JIT_FP, JIT_FP, 4);
 }
 #endif /* CODE */
