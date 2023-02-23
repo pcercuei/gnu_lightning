@@ -1283,7 +1283,7 @@ _jit_retval_d(jit_state_t *_jit, jit_int32_t r0)
 jit_pointer_t
 _emit_code(jit_state_t *_jit)
 {
-    jit_node_t		*node, *prev = NULL;
+    jit_node_t		*node;
     jit_node_t		*temp;
     jit_word_t		 word;
     jit_int32_t		 value;
@@ -1364,21 +1364,6 @@ _emit_code(jit_state_t *_jit)
 		    patch(word, node);					\
 		}							\
 		break
-#define case_brrn(name, type, prev)					\
-	    case jit_code_##name##r##type:				\
-		temp = node->u.n;					\
-		assert(temp->code == jit_code_label ||			\
-		       temp->code == jit_code_epilog);			\
-		if (temp->flag & jit_flag_patch)			\
-		    name##r##type(temp->u.w, rn(node->v.w),		\
-				  rn(node->w.w), prev);			\
-		else {							\
-		    word = name##r##type(_jit->pc.w,			\
-					 rn(node->v.w), rn(node->w.w),	\
-					 prev);				\
-		    patch(word, node);					\
-		}							\
-		break
 #define case_brw(name, type)						\
 	    case jit_code_##name##i##type:				\
 		temp = node->u.n;					\
@@ -1390,21 +1375,6 @@ _emit_code(jit_state_t *_jit)
 		else {							\
 		    word = name##i##type(_jit->pc.w,			\
 					 rn(node->v.w), node->w.w);	\
-		    patch(word, node);					\
-		}							\
-		break
-#define case_brwn(name, type, prev)					\
-	    case jit_code_##name##i##type:				\
-		temp = node->u.n;					\
-		assert(temp->code == jit_code_label ||			\
-		       temp->code == jit_code_epilog);			\
-		if (temp->flag & jit_flag_patch)			\
-		    name##i##type(temp->u.w,				\
-				  rn(node->v.w), node->w.w, prev);	\
-		else {							\
-		    word = name##i##type(_jit->pc.w,			\
-					 rn(node->v.w), node->w.w,	\
-					 prev);				\
 		    patch(word, node);					\
 		}							\
 		break
@@ -1434,21 +1404,30 @@ _emit_code(jit_state_t *_jit)
 	prevw = _jit->pc.w;
 #endif
 	value = jit_classify(node->code);
+#if GET_JIT_SIZE
+	flush();
+#endif
 	jit_regarg_set(node, value);
 	switch (node->code) {
 	    case jit_code_align:
 		/* Must align to a power of two */
 		assert(!(node->u.w & (node->u.w - 1)));
+		flush();
 		if ((word = _jit->pc.w & (node->u.w - 1)))
 		    nop(node->u.w - word);
+		flush();
 		break;
 	    case jit_code_skip:
-	        nop((node->u.w + 3) & ~3);
+		flush();
+		nop((node->u.w + 3) & ~3);
+		flush();
 		break;
 	    case jit_code_note:		case jit_code_name:
+		flush();
 		node->u.w = _jit->pc.w;
 		break;
 	    case jit_code_label:
+		flush();
 		/* remember label is defined */
 		node->flag |= jit_flag_patch;
 		node->u.w = _jit->pc.w;
@@ -1626,26 +1605,26 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(gt, _u);
 		case_rrr(ne,);
 		case_rrw(ne,);
-		case_brrn(blt,, prev);
-		case_brwn(blt,, prev);
-		case_brrn(blt, _u, prev);
-		case_brwn(blt, _u, prev);
-		case_brrn(ble,, prev);
-		case_brwn(ble,, prev);
-		case_brrn(ble, _u, prev);
-		case_brwn(ble, _u, prev);
-		case_brrn(beq,, prev);
-		case_brwn(beq,, prev);
-		case_brrn(bge,, prev);
-		case_brwn(bge,, prev);
-		case_brrn(bge, _u, prev);
-		case_brwn(bge, _u, prev);
-		case_brrn(bgt,, prev);
-		case_brwn(bgt,, prev);
-		case_brrn(bgt, _u, prev);
-		case_brwn(bgt, _u, prev);
-		case_brrn(bne,, prev);
-		case_brwn(bne,, prev);
+		case_brr(blt,);
+		case_brw(blt,);
+		case_brr(blt, _u);
+		case_brw(blt, _u);
+		case_brr(ble,);
+		case_brw(ble,);
+		case_brr(ble, _u);
+		case_brw(ble, _u);
+		case_brr(beq,);
+		case_brw(beq,);
+		case_brr(bge,);
+		case_brw(bge,);
+		case_brr(bge, _u);
+		case_brw(bge, _u);
+		case_brr(bgt,);
+		case_brw(bgt,);
+		case_brr(bgt, _u);
+		case_brw(bgt, _u);
+		case_brr(bne,);
+		case_brw(bne,);
 		case_brr(boadd,);
 		case_brw(boadd,);
 		case_brr(boadd, _u);
@@ -1834,7 +1813,7 @@ _emit_code(jit_state_t *_jit)
 		case_brf(bunord, _d, 64);
 	    case jit_code_jmpr:
 		jit_check_frame();
-		jmpr(rn(node->u.w), prev);
+		jmpr(rn(node->u.w));
 		break;
 	    case jit_code_jmpi:
 		if (node->flag & jit_flag_node) {
@@ -1842,25 +1821,25 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			jmpi(temp->u.w, prev, 0);
+			jmpi(temp->u.w, 0);
 		    else {
 			word = _jit->code.length -
 			    (_jit->pc.uc - _jit->code.ptr);
-			if (can_relative_jump_p(word))
-			    word = jmpi(_jit->pc.w, prev, 1);
+			if (jit_mips2_p() && can_relative_jump_p(word))
+			    word = jmpi(_jit->pc.w, 1);
 			else
-			    word = jmpi_p(_jit->pc.w, prev);
+			    word = jmpi_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
 		else {
 		    jit_check_frame();
-		    jmpi(node->u.w, prev, 0);
+		    jmpi(node->u.w, 0);
 		}
 		break;
 	    case jit_code_callr:
 		jit_check_frame();
-		callr(rn(node->u.w), prev);
+		callr(rn(node->u.w));
 		break;
 	    case jit_code_calli:
 		if (node->flag & jit_flag_node) {
@@ -1868,12 +1847,12 @@ _emit_code(jit_state_t *_jit)
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
 		    if (temp->flag & jit_flag_patch)
-			calli(temp->u.w, NULL, 0);
+			calli(temp->u.w, 0);
 		    else {
 			word = _jit->code.length -
 			    (_jit->pc.uc - _jit->code.ptr);
 			if (jit_mips2_p() && can_relative_jump_p(word))
-			    word = calli(_jit->pc.w, prev, 1);
+			    word = calli(_jit->pc.w, 1);
 			else
 			    word = calli_p(_jit->pc.w);
 			patch(word, node);
@@ -1881,10 +1860,11 @@ _emit_code(jit_state_t *_jit)
 		}
 		else {
 		    jit_check_frame();
-		    calli(node->u.w, NULL, 0);
+		    calli(node->u.w, 0);
 		}
 		break;
 	    case jit_code_prolog:
+		flush();
 		_jitc->function = _jitc->functions.ptr + node->w.w;
 		undo.node = node;
 		undo.word = _jit->pc.w;
@@ -1933,6 +1913,7 @@ _emit_code(jit_state_t *_jit)
 		    goto restart_function;
 		}
 		/* remember label is defined */
+		flush();
 		node->flag |= jit_flag_patch;
 		node->u.w = _jit->pc.w;
 		epilog(node);
@@ -2058,18 +2039,17 @@ _emit_code(jit_state_t *_jit)
 		    break;
 	    }
 	}
+#if GET_JIT_SIZE
+	flush();
+#endif
 	jit_regarg_clr(node, value);
 	assert(_jitc->regarg == 0 ||
 	       (jit_carry != _NOREG && _jitc->regarg == (1 << jit_carry)));
 	assert(_jitc->synth == 0);
 	/* update register live state */
 	jit_reglive(node);
-
-	if (node->code != jit_code_note
-	    && node->code != jit_code_name
-	    && node->code != jit_code_live)
-		prev = node;
     }
+    flush();
 #undef case_brf
 #undef case_brw
 #undef case_brr

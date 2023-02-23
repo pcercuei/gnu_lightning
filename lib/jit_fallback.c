@@ -41,7 +41,7 @@ static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define fallback_patch_at(inst,lbl)	patch_at(inst,lbl)
 #  endif
 #  if defined(__mips__)
-#    define fallback_jmpi(i0)		jmpi(i0,NULL,1)
+#    define fallback_jmpi(i0)		jmpi(i0,1)
 #  elif defined(__arm__)
 #    define fallback_jmpi(i0)		jmpi_p(i0,1)
 #  elif defined(__s390__) || defined(__s390x__)
@@ -50,7 +50,7 @@ static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define fallback_jmpi(i0)		jmpi(i0)
 #  endif
 #  if defined(__mips__)
-#    define fallback_bnei(i0,r0,i1)	bnei(i0,r0,i1,NULL)
+#    define fallback_bnei(i0,r0,i1)	bnei(i0,r0,i1)
 #  elif defined(__s390__) || defined(__s390x__)
 #    define fallback_bnei(i0,r0,i1)	bnei_p(i0,r0,i1)
 #  else
@@ -151,7 +151,7 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 #  if defined(__arm__)
     calli(i0, jit_exchange_p());
 #  elif defined(__mips__)
-    calli(i0, NULL, 0);
+    calli(i0, 0);
 #  elif defined(__powerpc__) && _CALL_SYSV
     calli(i0, 0);
 #  elif defined(__s390__) || defined(__s390x__)

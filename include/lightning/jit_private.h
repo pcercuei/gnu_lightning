@@ -580,6 +580,13 @@ struct jit_compiler {
     jit_int32_t		  rout;		/* first output register */
     jit_int32_t		  breg;		/* base register for prolog/epilog */
 #endif
+#if __mips__
+    struct {
+	jit_int32_t	  op;		/* pending instruction, candidate
+					 * to be inserted in a delay slot */
+	jit_bool_t	  pend;		/* non zero if need to emit op */
+    } inst;
+#endif
 #if __mips__ || __ia64__ || __alpha__ || \
 	(__sparc__ && __WORDSIZE == 64) || __riscv || __loongarch__
     jit_int32_t		  carry;

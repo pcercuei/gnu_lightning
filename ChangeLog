@@ -1,3 +1,16 @@
+2023-02-23 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning/jit_private.h: Add new 'inst' field to
+	jit_compiler_t, if __mips__ is defined. This field is a simple
+	helper for a pending instruction to be emitted, and that can
+	be emitted out of order.
+	* lib/jit_fallback.c: Update for changes in internal mips patching
+	and jumping macros and function calls.
+	* lib/jit_mips-cpu.c: Core of changes to attempt to fill delay
+	slots with instructions that can be emitted out of order.
+	* lib/jit_mips-fpu.c: Update to use delay slot in branches.
+	* lib/jit_mips.c: Update for new delay slot use logic.
+
 2023-02-20 Paulo Andrade <pcpa@gnu.org>
 
 	* check/float.tst: Add conditionals for mips release for expected
