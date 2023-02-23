@@ -632,6 +632,7 @@ _cmp_cond_fmt(jit_state_t *_jit, jit_int32_t fm, jit_int32_t fd,
 	      jit_int32_t ft, jit_int32_t fs, jit_int32_t cn)
 {
     jit_instr_t		i;
+    i.op = 0;		/* must have bit 6 zero ed */
     i.cn.b = cn;
     i.ft.b = ft;
     i.fs.b = fs;
@@ -1831,8 +1832,8 @@ _bunger_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r1, jit_int32_t r2)
 	reg = jit_get_reg_for_delay_slot(jit_class_fpr, r1, r2);
 	op = pending();
 	CMP_LT_S(rn(reg), r1, r2);
-	w = _jit->pc.w;
 	flush();
+	w = _jit->pc.w;
 	BC1EQZ(rn(reg), ((i0 - w) >> 2) - 1);
     }
     else {

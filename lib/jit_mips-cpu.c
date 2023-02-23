@@ -935,11 +935,21 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		case MIPS_DMULTU:	/* 1d */
 		case MIPS_DDIV: 	/* 1e */
 		case MIPS_DDIVU:	/* 1f */
-		    assert(!jit_mips6_p() && i.rd.b == 0);
-		    if (mask & jit_class_gpr) {
-			regs[0] = i.rs.b;
-			regs[1] = i.rt.b;
-			regs[2] = 0;
+		    if (jit_mips6_p()) {
+			assert(i.ic.b == 2 || i.ic.b == 3);
+			if (mask & jit_class_gpr) {
+			    regs[0] = i.rs.b;
+			    regs[1] = i.rt.b;
+			    regs[2] = i.rd.b;
+			}
+		    }
+		    else {
+			assert(i.rd.b == 0);
+			if (mask & jit_class_gpr) {
+			    regs[0] = i.rs.b;
+			    regs[1] = i.rt.b;
+			    regs[2] = 0;
+			}
 		    }
 		    break;
 		    /* CLZ */
@@ -1048,30 +1058,6 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 	    break;
 	case MIPS_SPECIAL2:		/* 1c */
 	    switch (i.tc.b) {
-		/* MUL MUH */
-		case 24:		/* 10 */
-		/* MULU MUHU */
-		case 25:		/* 19 */
-		/* DIV MOD */
-		case 26:		/* 20 */
-		/* DIVU MODU */
-		case 27:		/* 2a */
-		/* DMUL DMUH */
-		case 28:		/* 2b */
-		/* DMULU DMUHU */
-		case 29:		/* 2c */
-		/* DDIV DMOD */
-		case 30:		/* 2e */
-		/* DDIVU DMODU */
-		case 31:		/* 2f */
-		    /* check for proper/known encondig */
-		    assert(jit_mips6_p() && (i.ic.b == 2 || i.ic.b == 3));
-		    if (mask & jit_class_gpr) {
-			regs[0] = i.rs.b;
-			regs[1] = i.rt.b;
-			regs[2] = i.rd.b;
-		    }
-		    break;
 		case MIPS_CLZ:		/* 20 */
 		case MIPS_CLO:		/* 21 */
 		case MIPS_DCLZ:		/* 24 */
