@@ -17,10 +17,11 @@
  *	Paulo Cesar Pereira de Andrade
  */
 
+#if PROTO
 /* FIXME Should need qemu 7.2 -- apparently broken with qemu 7.0 */
 #define PCREL_BROKEN		1
+#define BALC_BROKEN		1
 
-#if PROTO
 typedef union {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
     struct {	jit_uint32_t _:26;	jit_uint32_t b :  6; } hc;
@@ -112,10 +113,13 @@ typedef union {
 #  endif
 /* can_relative_jump_p(im) => can_sign_extend_short_p(im << 2) */
 #  define can_relative_jump_p(im)	((im) >= -130712 && (im) <= 131068)
+/* can_compact_jump_p(im) => can_sign_extend_i26_p(im << 2) */
+#  define can_compact_jump_p(im)	((im) >= -268435456 && (im) <= 268435452)
 #  define can_sign_extend_short_p(im)	((im) >= -32678 && (im) <= 32767)
 #  define can_zero_extend_short_p(im)	((im) >= 0 && (im) <= 65535)
-#  define can_sign_extend_i18_p(im)	((im) >= -262144 && im <= 262143)
-#  define can_sign_extend_i19_p(im)	((im) >= -524288 && im <= 524287)
+#  define can_sign_extend_i18_p(im)	((im) >= -262144 && (im) <= 262143)
+#  define can_sign_extend_i19_p(im)	((im) >= -524288 && (im) <= 524287)
+#  define can_sign_extend_i26_p(im)	((im) >= -67108864 && (im) <= 67108863)
 #  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
 #  define is_middle_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) <= 1) : 0)
 #  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
@@ -186,6 +190,8 @@ typedef union {
 #  define MIPS_LDC2			0x36
 #  define MIPS_LD 			0x37
 #  define MIPS_SC 			0x38
+#  define MIPS_BC_R6			0x32
+#  define MIPS_BALC			0x3a
 #  define MIPS_PCREL			0x3b
 #  define MIPS_SCD			0x3c
 #  define MIPS_SDC1			0x3d
@@ -472,6 +478,8 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define DCLZ(rd,rs)			hrrrit(MIPS_SPECIAL2,rs,rd,rd,0,MIPS_DCLZ)
 #  define J(i0)				hi(MIPS_J,i0)
 #  define JAL(i0)			hi(MIPS_JAL,i0)
+#  define BC_R6(i0)			hi(MIPS_BC_R6,i0)
+#  define BALC(i0)			hi(MIPS_BALC,i0)
 #  define MOVN(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVN)
 #  define MOVZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,MIPS_MOVZ)
 #  define SELEQZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,53)
@@ -1076,6 +1084,9 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		regs[1] = regs[2] = 0;
 	    }
 	    break;
+	case MIPS_BC_R6:		/* 32 */
+	case MIPS_BALC:			/* 3a */
+	    assert(jit_mips6_p());
 	case MIPS_J:			/* 02 */
 	case MIPS_JAL:			/* 03 */
 	    if (mask & jit_class_gpr)
@@ -3266,6 +3277,18 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t patch)
 {
     jit_int32_t		op, t0;
     jit_word_t		w, disp;
+#if !BALC_BROKEN
+    if (jit_mips6_p() && !(i0 & 3)) {
+	disp = ((i0 - (_jit->pc.w + (_jitc->inst.pend ? 4 : 0))) >> 2) - 1;
+	if (patch || can_sign_extend_i26_p(disp)) {
+	    flush();
+	    w = _jit->pc.w;
+	    /* Compact branch instructions do not have a delay slot */
+	    BC_R6(disp);
+	    goto done_without_delay;
+	}
+    }
+#endif
     /* try to get a pending instruction before the jump */
     t0 = jit_get_reg_for_delay_slot(jit_class_gpr, _ZERO_REGNO, _ZERO_REGNO);
     op = pending();
@@ -3290,6 +3313,9 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t patch)
 done:
     delay(op);
     jit_unget_reg(t0);
+#if !BALC_BROKEN
+done_without_delay:
+#endif
     return (w);
 }
 
@@ -3890,8 +3916,20 @@ _calli(jit_state_t *_jit, jit_word_t i0, jit_bool_t patch)
     jit_int32_t		op, t0;
     jit_word_t		w, disp;
     w = _jit->pc.w;
+#if !BALC_BROKEN
+    if (jit_mips6_p() && !(i0 & 3)) {
+	disp = ((i0 - (w + (_jitc->inst.pend ? 4 : 0))) >> 2) - 1;
+	if (patch || can_sign_extend_i26_p(disp)) {
+	    flush();
+	    w = _jit->pc.w;
+	    /* Compact branch instructions do not have a delay slot */
+	    BALC(disp);
+	    goto done;
+	}
+    }
+#endif
     if (jit_mips2_p()) {
-	disp = ((i0 - w) >> 2) - 1;
+	disp = ((i0 - (w + _jitc->inst.pend ? 4 : 0)) >> 2) - 1;
 	if (patch || can_sign_extend_short_p(disp)) {
 	    op = pending();
 	    BGEZAL(_ZERO_REGNO, disp);	/* Renamed to BAL in mips release 6 */
@@ -4235,6 +4273,12 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    assert(((instr + sizeof(jit_int32_t)) & 0xf0000000) ==
 		   (label & 0xf0000000));
 	    i.ii.b = (label & ~0xf0000000) >> 2;
+	    u.i[0] = i.op;
+	    break;
+
+	case MIPS_BALC:			case MIPS_BC_R6:
+	    assert(jit_mips6_p());
+	    i.ii.b = ((label - instr) >> 2) - 1;
 	    u.i[0] = i.op;
 	    break;
 

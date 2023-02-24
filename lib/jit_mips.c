@@ -1825,7 +1825,12 @@ _emit_code(jit_state_t *_jit)
 		    else {
 			word = _jit->code.length -
 			    (_jit->pc.uc - _jit->code.ptr);
-			if (jit_mips2_p() && can_relative_jump_p(word))
+			if ((jit_mips2_p() && can_relative_jump_p(word))
+#if !BALC_BROKEN
+			    ||
+			    (jit_mips6_p() && can_compact_jump_p(word))
+#endif
+			    )
 			    word = jmpi(_jit->pc.w, 1);
 			else
 			    word = jmpi_p(_jit->pc.w);
@@ -1851,7 +1856,12 @@ _emit_code(jit_state_t *_jit)
 		    else {
 			word = _jit->code.length -
 			    (_jit->pc.uc - _jit->code.ptr);
-			if (jit_mips2_p() && can_relative_jump_p(word))
+			if ((jit_mips2_p() && can_relative_jump_p(word))
+#if !BALC_BROKEN
+			    ||
+			    (jit_mips6_p() && can_compact_jump_p(word))
+#endif
+			    )
 			    word = calli(_jit->pc.w, 1);
 			else
 			    word = calli_p(_jit->pc.w);
