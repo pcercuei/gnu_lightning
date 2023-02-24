@@ -17,12 +17,17 @@
  *	Paulo Cesar Pereira de Andrade
  */
 
+/* FIXME Should need qemu 7.2 -- apparently broken with qemu 7.0 */
+#define PCREL_BROKEN		1
+
 #if PROTO
 typedef union {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
     struct {	jit_uint32_t _:26;	jit_uint32_t b :  6; } hc;
     struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } rs;
     struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } fm;
+    struct {	jit_uint32_t _:18;	jit_uint32_t b :  3; } pD;
+    struct {	jit_uint32_t _:19;	jit_uint32_t b :  2; } pW;
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } rt;
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } ft;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } rd;
@@ -34,11 +39,15 @@ typedef union {
     struct {				jit_uint32_t b :  5; } cn;
     struct {				jit_uint32_t b : 11; } cc;
     struct {				jit_uint32_t b : 16; } is;
+    struct {				jit_uint32_t b : 18; } iD;
+    struct {				jit_uint32_t b : 19; } iW;
     struct {				jit_uint32_t b : 26; } ii;
 #else
     struct {				jit_uint32_t b :  6; } hc;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } rs;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } fm;
+    struct {	jit_uint32_t _:11;	jit_uint32_t b :  3; } pD;
+    struct {	jit_uint32_t _:11;	jit_uint32_t b :  2; } pW;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } rt;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } ft;
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } rd;
@@ -50,6 +59,8 @@ typedef union {
     struct {	jit_uint32_t _:27;	jit_uint32_t b :  5; } cn;
     struct {	jit_uint32_t _:21;	jit_uint32_t b : 11; } cc;
     struct {	jit_uint32_t _:16;	jit_uint32_t b : 16; } is;
+    struct {	jit_uint32_t _:14;	jit_uint32_t b : 18; } iD;
+    struct {	jit_uint32_t _:13;	jit_uint32_t b : 19; } iW;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b : 26; } ii;
 #endif
     int					op;
@@ -103,6 +114,8 @@ typedef union {
 #  define can_relative_jump_p(im)	((im) >= -130712 && (im) <= 131068)
 #  define can_sign_extend_short_p(im)	((im) >= -32678 && (im) <= 32767)
 #  define can_zero_extend_short_p(im)	((im) >= 0 && (im) <= 65535)
+#  define can_sign_extend_i18_p(im)	((im) >= -262144 && im <= 262143)
+#  define can_sign_extend_i19_p(im)	((im) >= -524288 && im <= 524287)
 #  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
 #  define is_middle_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) <= 1) : 0)
 #  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
@@ -173,6 +186,7 @@ typedef union {
 #  define MIPS_LDC2			0x36
 #  define MIPS_LD 			0x37
 #  define MIPS_SC 			0x38
+#  define MIPS_PCREL			0x3b
 #  define MIPS_SCD			0x3c
 #  define MIPS_SDC1			0x3d
 #  define MIPS_SDC2			0x3e
@@ -321,6 +335,10 @@ static void _hrri(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define hrri9(hc,rs,rt,i9,tc)		_hrri9(_jit,hc,rs,rt,i9,tc)
 static void _hrri9(jit_state_t*,jit_int32_t,jit_int32_t,
 		   jit_int32_t,jit_int32_t,jit_int32_t);
+#  define hriD(hc,rs,pD,iD)		_hriD(_jit,hc,rs,pD,iD)
+static void _hriD(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define hriW(hc,rs,pW,iW)		_hriW(_jit,hc,rs,pW,iW)
+static void _hriW(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define hi(hc,im)			_hi(_jit,hc,im)
 static void _hi(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define NOP(i0)			instr(0)
@@ -328,6 +346,9 @@ static void _hi(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _nop(jit_state_t*,jit_int32_t);
 #  define h_ri(hc,rt,im)		_hrri(_jit,hc,0,rt,im)
 #  define rrit(rt,rd,im,tc)		_hrrrit(_jit,0,0,rt,rd,im,tc)
+#  define AUIPC(rs,im)			hrri(MIPS_PCREL,rs,30,im)
+#  define ALUIPC(rs,im)			hrri(MIPS_PCREL,rs,31,im)
+#  define ADDIUPC(rs,im)		hriW(MIPS_PCREL,rs,0,im)
 #  define LUI(rt,im)			h_ri(MIPS_LUI,rt,im)
 #  define ADDU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_ADDU)
 #  define DADDU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_DADDU)
@@ -402,8 +423,11 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define LH(rt,of,rb)			hrri(MIPS_LH,rb,rt,of)
 #  define LHU(rt,of,rb)			hrri(MIPS_LHU,rb,rt,of)
 #  define LW(rt,of,rb)			hrri(MIPS_LW,rb,rt,of)
+#  define LWPC(rs,im)			hriW(MIPS_PCREL,rs,1,im)
 #  define LWU(rt,of,rb)			hrri(MIPS_LWU,rb,rt,of)
+#  define LWUPC(rs,im)			hriW(MIPS_PCREL,rs,2,im)
 #  define LD(rt,of,rb)			hrri(MIPS_LD,rb,rt,of)
+#  define LDPC(rs,im)			hriD(MIPS_PCREL,rs,6,im)
 #  define LL(rt,of,rb)			hrri(MIPS_LL,rb,rt,of)
 #  define LL_R6(rt,of,rb)		hrri9(MIPS_SPECIAL3,rb,rt,of,54)
 #  define LLD(rt,of,rb)			hrri(MIPS_LLD,rb,rt,of)
@@ -1371,6 +1395,24 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 	    else
 		regs[0] = i.rt.b;
 	    break;
+	case MIPS_PCREL:		/* 0x3b */
+	    assert(jit_mips6_p());
+	    switch (i.rt.b) {
+		case 0x1e:		/* AUIPC */
+		case 0x1f:		/* ALUIPC */
+		    break;
+		default:
+		    assert(i.pD.b == 1 ||/* LDPC */
+			   i.pW.b == 0 ||/* ADDIUPC */
+			   i.pW.b == 1 ||/* LWPC */
+			   i.pW.b == 2); /* LWUPC */
+		    break;
+	    }
+	    if (mask & jit_class_gpr) {
+		regs[0] = i.rs.b;
+		regs[1] = regs[2] = 0;
+	    }
+	    break;
 	default:
 	    abort();
     }
@@ -1455,6 +1497,30 @@ _hrri9(jit_state_t *_jit, jit_int32_t hc,
     i.tc.b = tc;
     i.i9.b = i9;
     i.rt.b = rt;
+    i.rs.b = rs;
+    i.hc.b = hc;
+    instr(i.op);
+}
+
+static void
+_hriD(jit_state_t *_jit, jit_int32_t hc,
+       jit_int32_t rs, jit_int32_t pD, jit_int32_t iD)
+{
+    jit_instr_t		i;
+    i.iD.b = iD;
+    i.pD.b = pD;
+    i.rs.b = rs;
+    i.hc.b = hc;
+    instr(i.op);
+}
+
+static void
+_hriW(jit_state_t *_jit, jit_int32_t hc,
+       jit_int32_t rs, jit_int32_t pW, jit_int32_t iW)
+{
+    jit_instr_t		i;
+    i.iW.b = iW;
+    i.pD.b = pW;
     i.rs.b = rs;
     i.hc.b = hc;
     instr(i.op);
@@ -2136,6 +2202,28 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     else if (can_zero_extend_short_p(i0))
 	ORI(r0, _ZERO_REGNO, i0);
     else {
+	/* Check if loading some constant reachable address */
+	if (jit_mips6_p()) {
+	    jit_word_t		w, d;
+	    w = i0 - (_jit->pc.w + (_jitc->inst.pend ? 4 : 0));
+#if !PCREL_BROKEN
+	    if (!(i0 & 3)) {
+		d = w >> 2;
+		if (can_sign_extend_i19_p(d)) {
+		    ADDIUPC(r0, d);
+		    goto done;
+		}
+	    }
+#endif
+	    if (can_sign_extend_int_p(w)) {
+		jit_int32_t	lo = (jit_int32_t)w << 16 >> 16;
+		jit_int32_t	hi = w - lo;
+		AUIPC(r0, hi >> 16);
+		if (lo)
+		    addiu(r0, r0, lo);
+		goto done;
+	    }
+	}
 	if (can_sign_extend_int_p(i0))
 	    LUI(r0, i0 >> 16);
 	else if (can_zero_extend_int_p(i0)) {
@@ -2159,6 +2247,7 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	if (i0 & 0xffff)
 	    ORI(r0, r0, i0);
     }
+done:;
 }
 
 static jit_word_t
@@ -2323,6 +2412,17 @@ static void
 _ldi_i(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
+#if !PCREL_BROKEN
+    if (jit_mips6_p()) {
+	jit_word_t	w;
+	assert(!(i0 & 3));
+	w = (i0 - (_jit->pc.w + (_jitc->inst.pend ? 4 : 0))) >> 2;
+	if (can_sign_extend_i19_p(w)) {
+	    LWPC(r0, w);
+	    goto done;
+	}
+    }
+#endif
     if (can_sign_extend_short_p(i0))
 	LW(r0, i0, _ZERO_REGNO);
     else {
@@ -2331,6 +2431,9 @@ _ldi_i(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	ldr_i(r0, rn(reg));
 	jit_unget_reg(reg);
     }
+#if !PCREL_BROKEN
+done:;
+#endif
 }
 
 #if __WORDSIZE == 64
@@ -2338,6 +2441,17 @@ static void
 _ldi_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
+#if !PCREL_BROKEN
+    if (jit_mips6_p()) {
+	jit_word_t	w;
+	assert(!(i0 & 3));
+	w = (i0 - (_jit->pc.w + (_jitc->inst.pend ? 4 : 0))) >> 2;
+	if (can_sign_extend_i19_p(w)) {
+	    LWUPC(r0, w);
+	    goto done;
+	}
+    }
+#endif
     if (can_sign_extend_short_p(i0))
 	LWU(r0, i0, _ZERO_REGNO);
     else {
@@ -2346,12 +2460,24 @@ _ldi_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	ldr_ui(r0, rn(reg));
 	jit_unget_reg(reg);
     }
+#if !PCREL_BROKEN
+done:;
+#endif
 }
 
 static void
 _ldi_l(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
+    jit_word_t		w;
     jit_int32_t		reg;
+    if (jit_mips6_p()) {
+	assert(!(i0 & 7));
+	w = (i0 - (_jit->pc.w + (_jitc->inst.pend ? 4 : 0))) >> 3;
+	if (can_sign_extend_i18_p(w)) {
+	    LDPC(r0, w);
+	    goto done;
+	}
+    }
     if (can_sign_extend_short_p(i0))
 	LD(r0, i0, _ZERO_REGNO);
     else {
@@ -2360,6 +2486,7 @@ _ldi_l(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 	ldr_l(r0, rn(reg));
 	jit_unget_reg(reg);
     }
+done:;
 }
 #endif
 
