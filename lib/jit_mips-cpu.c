@@ -3171,9 +3171,9 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
     jit_int32_t		op, t0;
-    /* make sure delay slot does not use _T9_REGNO */
-    t0 = jit_get_reg_for_delay_slot(jit_class_gpr|jit_class_chk,
-				    _T9_REGNO, _ZERO_REGNO);
+    /* Get a register without side effects in delay slot */
+    t0 = jit_get_reg_for_delay_slot(jit_class_gpr, _ZERO_REGNO, _ZERO_REGNO);
+    /* Check for a instruction that can be executed in the delay slot */
     op = pending();
     /* implicit flush() */
     w = _jit->pc.w;
@@ -3181,8 +3181,7 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
     flush();			/* movi_p will be patched */
     JR(rn(t0));
     delay(op);
-    if (t0 != JIT_NOREG)
-	jit_unget_reg(t0);
+    jit_unget_reg(t0);
     return (w);
 }
 
