@@ -927,13 +927,21 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 			regs[2] = i.rd.b;
 		    }
 		    break;
+		    /* MUL MUH */
 		case MIPS_MULT: 	/* 18 */
+		    /* MULU MUHU */
 		case MIPS_MULTU:	/* 19 */
+		    /* DIV MOD */
 		case MIPS_DIV:		/* 1a */
+		    /* DIVU MODU */
 		case MIPS_DIVU:		/* 1b */
+		    /* DMUL DMUH */
 		case MIPS_DMULT:	/* 1c */
+		    /* DMULU DMUHU */
 		case MIPS_DMULTU:	/* 1d */
+		    /* DDIV DMOD */
 		case MIPS_DDIV: 	/* 1e */
+		    /* DDIVU DMODU */
 		case MIPS_DDIVU:	/* 1f */
 		    if (jit_mips6_p()) {
 			assert(i.ic.b == 2 || i.ic.b == 3);
@@ -2953,7 +2961,7 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1,
     jit_word_t		w;
     jit_word_t		d;
     jit_bool_t		zero_p;
-    jit_int32_t		op, t0, t1, mask;
+    jit_int32_t		op, t0, mask;
     zero_p = !sltiu && i1 == 0;
     /* Even if zero_p allocate one as a mean to avoid incorrect delay slot */
     mask = jit_class_gpr;
@@ -2985,20 +2993,18 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1,
 	}
     }
     else {
-	t1 = jit_get_reg_for_delay_slot(jit_class_gpr, r0, _ZERO_REGNO);
 	op = pending();
 	movi(rn(t0), i1);
 	if (sltiu)
-	    SLTU(rn(t1), r0, rn(t0));
+	    SLTU(rn(t0), r0, rn(t0));
         else
-	    SLT(rn(t1), r0, rn(t0));
+	    SLT(rn(t0), r0, rn(t0));
 	flush();
 	w = _jit->pc.w;
 	if (bne)
-	    BNE(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
+	    BNE(rn(t0), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
 	else
-	    BEQ(rn(t1), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
-	jit_unget_reg(t1);
+	    BEQ(rn(t0), _ZERO_REGNO, ((i0 - w) >> 2) - 1);
     }
     delay(op);
     if (t0 != JIT_NOREG)
@@ -3034,11 +3040,13 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1,
       jit_bool_t sltiu, jit_bool_t inv)
 {
     jit_word_t		w;
-    jit_int32_t		op, t0;
+    jit_int32_t		op, t0, mask;
+    mask = jit_class_gpr;
+    if (i0 == 0)
+	mask |= jit_class_chk;
+    /* Allocate even if i0 == 0 as a way to avoid incorrect delay slot */
+    t0 = jit_get_reg_for_delay_slot(mask, r0, _ZERO_REGNO);
     if (i1 == 0) {
-	/* Allocate even if i0 == 0 as a way to avoid incorrect delay slot */
-	t0 = jit_get_reg_for_delay_slot(jit_class_gpr|jit_class_chk,
-					r0, _ZERO_REGNO);
 	op = pending();
 	/* implicit flush() */
 	w = _jit->pc.w;
@@ -3056,7 +3064,6 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1,
 	}
     }
     else {
-	t0 = jit_get_reg_for_delay_slot(jit_class_gpr, r0, _ZERO_REGNO);
 	op = pending();
 	movi(rn(t0), i1);
 	if (sltiu)
@@ -3132,37 +3139,30 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t patch)
 {
     jit_int32_t		op, t0;
     jit_word_t		w, disp;
+    /* try to get a pending instruction before the jump */
+    t0 = jit_get_reg_for_delay_slot(jit_class_gpr, _ZERO_REGNO, _ZERO_REGNO);
     op = pending();
     /* implicit flush() */
+    w = _jit->pc.w;
     if (jit_mips2_p()) {
-	w = _jit->pc.w;
 	disp = ((i0 - w) >> 2) - 1;
 	if (patch || can_sign_extend_short_p(disp)) {
 	    BEQ(_ZERO_REGNO, _ZERO_REGNO, disp);
-	    delay(op);
 	    goto done;
 	}
     }
-    w = _jit->pc.w;
-    if (((w + sizeof(jit_int32_t)) & 0xf0000000) == (i0 & 0xf0000000)) {
-	op = pending();
+    if (((w + sizeof(jit_int32_t)) & 0xf0000000) == (i0 & 0xf0000000))
 	J((i0 & ~0xf0000000) >> 2);
-	delay(op);
-    }
-    else if (!patch) {
-	t0 = jit_get_reg_for_delay_slot(jit_class_gpr,
-					_ZERO_REGNO, _ZERO_REGNO);
-	/* try to get an instruction before the call */
-	op = pending();
-	/* implicit flush() */
-	movi(rn(t0), i0);
+    else {
+	if (patch)
+	    w = movi_p(rn(t0), i0);
+	else
+	    movi(rn(t0), i0);
 	JR(rn(t0));
-	delay(op);
-	jit_unget_reg(t0);
     }
-    else
-	w = jmpi_p(i0);
 done:
+    delay(op);
+    jit_unget_reg(t0);
     return (w);
 }
 
