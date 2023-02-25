@@ -21,6 +21,18 @@
 #  include <sys/cachectl.h>
 #endif
 
+#if __mips_hard_float
+#  define __mips_soft_float		0
+#elif __mips_soft_float
+#  define __mips_hard_float		0
+#else
+/* Must have a floating point unit and cannot figure
+ * if can attempt to work with software floats
+ */
+#  define __mips_soft_float		0
+#  define __mips_hard_float		1
+#endif
+
 #if NEW_ABI
 /*   callee save				    + variadic arguments
  *   align16(ra+fp+s[0-7]++f20+f22+f24+f26+f28+f30) + align16(a[0-7]) */
@@ -332,10 +344,16 @@ void
 _jit_retr_f(jit_state_t *_jit, jit_int32_t u)
 {
     jit_inc_synth_w(retr_f, u);
+#if __mips_soft_float
+#  warning *** GNU Lightning will use hard float registers! ***
+#  warning *** Are you sure about -msoft-float usage?       ***
+    jit_movr_f_w(JIT_RET, u);
+#else
     if (JIT_FRET != u)
 	jit_movr_f(JIT_FRET, u);
     else
 	jit_live(JIT_FRET);
+#endif
     jit_ret();
     jit_dec_synth();
 }
@@ -344,7 +362,11 @@ void
 _jit_reti_f(jit_state_t *_jit, jit_float32_t u)
 {
     jit_inc_synth_f(reti_f, u);
+#if __mips_soft_float
+    jit_movi_f_w(JIT_RET, u);
+#else
     jit_movi_f(JIT_FRET, u);
+#endif
     jit_ret();
     jit_dec_synth();
 }
@@ -353,10 +375,14 @@ void
 _jit_retr_d(jit_state_t *_jit, jit_int32_t u)
 {
     jit_inc_synth_w(retr_d, u);
+#if __mips_soft_float
+    jit_movr_d_w(JIT_RET, u);
+#else
     if (JIT_FRET != u)
 	jit_movr_d(JIT_FRET, u);
     else
 	jit_live(JIT_FRET);
+#endif
     jit_ret();
     jit_dec_synth();
 }
@@ -365,7 +391,11 @@ void
 _jit_reti_d(jit_state_t *_jit, jit_float64_t u)
 {
     jit_inc_synth_d(reti_d, u);
+#if __mips_soft_float
+    jit_movi_d_w(JIT_RET, u);
+#else
     jit_movi_d(JIT_FRET, u);
+#endif
     jit_ret();
     jit_dec_synth();
 }
@@ -427,7 +457,8 @@ _jit_make_arg_f(jit_state_t *_jit, jit_node_t *node)
 #if NEW_ABI
     if (jit_arg_reg_p(_jitc->function->self.argi)) {
 	offset = _jitc->function->self.argi++;
-	if (_jitc->function->self.call & jit_call_varargs)
+	if (__mips_soft_float ||
+	    (_jitc->function->self.call & jit_call_varargs))
 	    offset += 8;
     }
     else {
@@ -470,7 +501,8 @@ _jit_make_arg_d(jit_state_t *_jit, jit_node_t *node)
 #if NEW_ABI
     if (jit_arg_reg_p(_jitc->function->self.argi)) {
 	offset = _jitc->function->self.argi++;
-	if (_jitc->function->self.call & jit_call_varargs)
+	if (__mips_soft_float ||
+	    (_jitc->function->self.call & jit_call_varargs))
 	    offset += 8;
     }
     else {
@@ -809,7 +841,7 @@ _jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     if (jit_arg_reg_p(v->u.w))
 	jit_movr_d(u, _F12 - v->u.w);
     else if (jit_arg_reg_p(v->u.w - 8))
-	jit_movr_d_w(_A0 - (v->u.w - 8), u);
+	jit_movr_w_d(u, _A0 - (v->u.w - 8));
 #else
     if (v->u.w < 4)
 	jit_movr_ww_d(u, _A0 - v->u.w, _A0 - (v->u.w + 1));
@@ -964,7 +996,8 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
 #if NEW_ABI
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	if (!(_jitc->function->call.call & jit_call_varargs))
+	if (__mips_hard_float &&
+	    !(_jitc->function->call.call & jit_call_varargs))
 	    jit_movr_f(_F12 - _jitc->function->call.argi, u);
 	else
 	    jit_movr_f_w(_A0 - _jitc->function->call.argi, u);
@@ -1007,7 +1040,8 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
     jit_link_prepare();
 #if NEW_ABI
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	if (!(_jitc->function->call.call & jit_call_varargs))
+	if (__mips_hard_float &&
+	    !(_jitc->function->call.call & jit_call_varargs))
 	    jit_movi_f(_F12 - _jitc->function->call.argi, u);
 	else
 	    jit_movi_f_w(_A0 - _jitc->function->call.argi, u);
@@ -1056,7 +1090,8 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
     jit_link_prepare();
 #if NEW_ABI
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	if (!(_jitc->function->call.call & jit_call_varargs))
+	if (__mips_hard_float &&
+	    !(_jitc->function->call.call & jit_call_varargs))
 	    jit_movr_d(_F12 - _jitc->function->call.argi, u);
 	else
 	    jit_movr_d_w(_A0 - _jitc->function->call.argi, u);
@@ -1106,7 +1141,8 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
     jit_link_prepare();
 #if NEW_ABI
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
-	if (!(_jitc->function->call.call & jit_call_varargs))
+	if (__mips_hard_float &&
+	    !(_jitc->function->call.call & jit_call_varargs))
 	    jit_movi_d(_F12 - _jitc->function->call.argi, u);
 	else
 	    jit_movi_d_w(_A0 - _jitc->function->call.argi, u);
@@ -1269,15 +1305,23 @@ _jit_retval_l(jit_state_t *_jit, jit_int32_t r0)
 void
 _jit_retval_f(jit_state_t *_jit, jit_int32_t r0)
 {
+#if __mips_soft_float
+    jit_movr_w_f(r0, JIT_RET);
+#else
     if (r0 != JIT_FRET)
 	jit_movr_f(r0, JIT_FRET);
+#endif
 }
 
 void
 _jit_retval_d(jit_state_t *_jit, jit_int32_t r0)
 {
+#if __mips_soft_float
+    jit_movr_w_d(r0, JIT_RET);
+#else
     if (r0 != JIT_FRET)
 	jit_movr_d(r0, JIT_FRET);
+#endif
 }
 
 jit_pointer_t
@@ -1949,6 +1993,14 @@ _emit_code(jit_state_t *_jit)
 		assert(node->flag & jit_flag_data);
 		movi_d_w(rn(node->u.w), (jit_float64_t *)node->v.n->u.w);
 		break;
+#  if __mips_soft_float
+	    case jit_code_movr_w_f:
+		movr_w_f(rn(node->u.w), rn(node->v.w));
+		break;
+	    case jit_code_movr_w_d:
+		movr_w_d(rn(node->u.w), rn(node->v.w));
+		break;
+#  endif
 #else
 	    case jit_code_movr_ww_d:
 		movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
