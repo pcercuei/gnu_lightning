@@ -897,6 +897,14 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_prepare:
 	    case jit_code_finishr:		case jit_code_finishi:
 		break;
+	    case jit_code_casr:
+		casr(rn(node->u.w), rn(node->v.w),
+		     rn(node->w.q.l), rn(node->w.q.h));
+		break;
+	    case jit_code_casi:
+		casi(rn(node->u.w), node->v.w,
+		     rn(node->w.q.l), rn(node->w.q.h));
+		break;
 	    default:
 		printf("ABORT MISSION (%i)\n", node->code);
 		abort();

@@ -111,8 +111,8 @@
     16,	/* movi */
     16,	/* movnr */
     16,	/* movzr */
-    36,	/* casr */
-    44,	/* casi */
+    34,	/* casr */
+    50,	/* casi */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */

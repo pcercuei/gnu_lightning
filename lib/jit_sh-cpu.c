@@ -136,6 +136,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define CMPPL(rn)			_cni(_jit, 0x4, rn, 0x15)
 #    define SHLL8(rn)			_cni(_jit, 0x4, rn, 0x18)
 #    define SHLR8(rn)			_cni(_jit, 0x4, rn, 0x19)
+#    define TAS(rn)			_cni(_jit, 0x4, rn, 0x1b)
 #    define LDCGBR(rm)			_cni(_jit, 0x4, rm, 0x1e)
 #    define SHAL(rn)			_cni(_jit, 0x4, rn, 0x20)
 #    define SHAR(rn)			_cni(_jit, 0x4, rn, 0x21)
@@ -246,6 +247,11 @@ static void _movi(jit_state_t*,jit_uint16_t,jit_word_t);
 static void _movnr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t,jit_bool_t);
 #    define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2,1)
 #    define movzr(r0,r1,r2)		_movnr(_jit,r0,r1,r2,0)
+#    define casx(r0,r1,r2,r3,i0)	_casx(_jit,r0,r1,r2,r3,i0)
+static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
+		  jit_int32_t,jit_int32_t,jit_word_t);
+#    define casr(r0,r1,r2,r3)		casx(r0,r1,r2,r3,0)
+#    define casi(r0,i0,r1,r2)		casx(r0,_NOREG,r1,r2,i0)
 static void _addr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
 #    define addr(r0,r1,r2)		_addr(_jit,r0,r1,r2)
 static void _addcr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
@@ -695,6 +701,41 @@ static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 	emit_branch_opcode(_jit, 6, 0, set);
 #endif
 	movr(r0, r1);
+}
+
+static char atomic_byte;
+
+static void
+_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+      jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
+{
+    jit_int32_t		r1_reg, iscasi, addr_reg;
+
+    if ((iscasi = (r1 == _NOREG))) {
+	r1_reg = jit_get_reg(jit_class_gpr);
+	r1 = rn(r1_reg);
+	movi(r1, i0);
+    }
+
+    addr_reg = jit_get_reg(jit_class_gpr);
+    movi(rn(addr_reg), (uintptr_t)&atomic_byte);
+
+    TAS(rn(addr_reg));
+    BF(-3);
+
+    LDL(r0, r1);
+    CMPEQ(r0, r2);
+    MOVT(r0);
+
+    BF(0);
+    STL(r1, r3);
+
+    MOVI(_R0, 0);
+    STB(rn(addr_reg), _R0);
+
+    jit_unget_reg(addr_reg);
+    if (iscasi)
+	jit_unget_reg(r1_reg);
 }
 
 static void
