@@ -444,7 +444,7 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     16,	/* movi_d_w */
-    8,	/* clo */
-    8,	/* clz */
-    76,	/* cto */
-    76,	/* ctz */
+    10,	/* clor */
+    12,	/* clzr */
+    10,	/* ctor */
+    12,	/* ctzr */

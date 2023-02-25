@@ -472,6 +472,10 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsh, _u);
 		case_rr(neg,);
 		case_rr(com,);
+		case_rr(clo,);
+		case_rr(clz,);
+		case_rr(cto,);
+		case_rr(ctz,);
 		case_rrr(and,);
 		case_rrw(and,);
 		case_rrr(or,);

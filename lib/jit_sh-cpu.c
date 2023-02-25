@@ -230,6 +230,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define CLRT()			ii(0x8)
 #    define NOP()			ii(0x9)
 #    define RTS()			ii(0xb)
+#    define SETT()			ii(0x18)
 #    define DIV0U()			ii(0x19)
 #    define FSCHG()			ii(0xf3fd)
 #    define FRCHG()			ii(0xfbfd)
@@ -344,6 +345,14 @@ static void _xori(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define xori(r0,r1,i0)		_xori(_jit,r0,r1,i0)
 #    define comr(r0,r1)			NOT(r0,r1)
 #    define negr(r0,r1)			NEG(r0,r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#    define clor(r0,r1)			_clor(_jit,r0,r1)
+static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#    define clzr(r0,r1)			_clzr(_jit,r0,r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#    define ctor(r0,r1)			_ctor(_jit,r0,r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#    define ctzr(r0,r1)			_ctzr(_jit,r0,r1)
 static void _gtr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
 #    define gtr(r0,r1,r2)		_gtr(_jit,r0,r1,r2)
 static void _ger(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
@@ -1248,6 +1257,48 @@ _xori(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	movi(_R0, i0);
 	movr(r0, r1);
 	XOR(r0, _R0);
+}
+
+static void _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+	movr(_R0, r1);
+	movi(r0, -1);
+
+	SHLL(_R0);
+	BTS(-3);
+	ADDI(r0, 1);
+}
+
+static void _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+	movr(_R0, r1);
+	movi(r0, -1);
+
+	SETT();
+	ROTCL(_R0);
+	BFS(-3);
+	ADDI(r0, 1);
+}
+
+static void _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+	movr(_R0, r1);
+	movi(r0, -1);
+
+	SHLR(_R0);
+	BTS(-3);
+	ADDI(r0, 1);
+}
+
+static void _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+	movr(_R0, r1);
+	movi(r0, -1);
+
+	SETT();
+	ROTCR(_R0);
+	BFS(-3);
+	ADDI(r0, 1);
 }
 
 static void
