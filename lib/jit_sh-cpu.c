@@ -676,9 +676,9 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w, int t_set)
 	} else {
 		movi_p(_R0, i0);
 		if (t_set)
-			BF(1);
+			BF(0);
 		else
-			BT(1);
+			BT(0);
 		JMP(_R0);
 		NOP();
 	}
@@ -688,7 +688,12 @@ static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 		   jit_uint16_t r2, jit_bool_t set)
 {
 	TST(r2, r2);
+
+#if defined(__SH3__) || defined(__SH4__)
 	emit_branch_opcode(_jit, 4, 0, set);
+#else
+	emit_branch_opcode(_jit, 6, 0, set);
+#endif
 	movr(r0, r1);
 }
 
