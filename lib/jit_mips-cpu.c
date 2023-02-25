@@ -166,6 +166,7 @@ typedef union {
 #  define MIPS_LDR			0x1b
 #  define MIPS_SPECIAL2			0x1c
 #  define MIPS_JALX			0x1d
+#  define MIPS_DAUI			0x1d
 #  define MIPS_SPECIAL3			0x1f
 #  define MIPS_LB 			0x20
 #  define MIPS_LH 			0x21
@@ -356,6 +357,7 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define ALUIPC(rs,im)			hrri(MIPS_PCREL,rs,31,im)
 #  define ADDIUPC(rs,im)		hriW(MIPS_PCREL,rs,0,im)
 #  define LUI(rt,im)			h_ri(MIPS_LUI,rt,im)
+#  define AUI(rs,rt)			hrri(MIPS_LUI,rs,rt,im)	/* mips r6 */
 #  define ADDU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_ADDU)
 #  define DADDU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_DADDU)
 #  define ADDIU(rt,rs,im)		hrri(MIPS_ADDIU,rs,rt,im)
@@ -453,6 +455,9 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define SLTU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_SLTU)
 #  define SLTI(rt,rs,im)		hrri(MIPS_SLTI,rs,rt,im)
 #  define SLTIU(rt,rs,im)		hrri(MIPS_SLTIU,rs,rt,im)
+#  define DAUI(rt,rs,im)		hrri(MIPS_DAUI,rs,rt,im)
+#  define DAHI(rs,im)			hrri(MIPS_REGIMM,rs,6,im)
+#  define DATI(rs,im)			hrri(MIPS_REGIMM,rs,30,im)
 #  define BLTZ(rs,im)			hrri(MIPS_REGIMM,rs,MIPS_BLTZ,im)
 #  define BLEZ(rs,im)			hrri(MIPS_BLEZ,rs,_ZERO_REGNO,im)
 #  define BEQ(rs,rt,im)			hrri(MIPS_BEQ,rs,rt,im)
@@ -1072,6 +1077,11 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 	    break;
 	case MIPS_REGIMM:		/* 01 */
 	    switch (i.rt.b) {
+		/* DAHI */
+		case 6:			/* 06 */
+		/* DATI */
+		case 15:		/* 1e */
+		    assert(jit_mips6_p());
 		case MIPS_BLTZ:		/* 00 */
 		case MIPS_BGEZ:		/* 01 */
 		case MIPS_BGEZAL: 	/* 11 */
@@ -1093,10 +1103,11 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		regs[0] = regs[1] = regs[2] = 0;
 	    break;
 	case MIPS_LUI:			/* 0f */
-	    assert(i.rs.b == 0);
+	    assert(jit_mips6_p() || i.rs.b == 0);
 	    if (mask & jit_class_gpr) {
 		regs[0] = i.rt.b;
-		regs[1] = regs[1] = 0;
+		regs[1] = i.rs.b;	/* AUI if non zero */
+		regs[1] = 0;
 	    }
 	    break;
 	case MIPS_SPECIAL2:		/* 1c */
@@ -1348,6 +1359,9 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		    break;
 	    }
 	    break;
+	case MIPS_DAUI:	/* JALX */	/* 1d */
+	    /* Do not generate JALX. No microMIPS64 or MIPS16e support */
+	    assert(jit_mips6_p() && i.rs.b != 0);
 	case MIPS_ADDIU:		/* 09 */
 	case MIPS_SLTI: 		/* 0a */
 	case MIPS_SLTIU:		/* 0b */
@@ -1710,11 +1724,50 @@ _addi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     else if (can_sign_extend_short_p(i0))
 	addiu(r0, r1, i0);
     else {
+	if (jit_mips6_p()) {
+	    union {
+		struct {
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+		    jit_word_t	_ :	16;
+		    jit_word_t	aui :	16;
+#   if __WORDSIZE == 64
+		    jit_word_t	ahi :	16;
+		    jit_word_t	ati :	16;
+#   endif
+#  else
+#   if __WORDSIZE == 64
+		    jit_word_t	ati :	16;
+		    jit_word_t	ahi :	16;
+#   endif
+		    jit_word_t	aui :	16;
+		    jit_word_t	_ :	16;
+#  endif
+		} b;
+		jit_word_t		w;
+	    } bits;
+	    bits.w = i0;
+	    if (r0 == r1 && ((jit_word_t)bits.b.aui << 16) == i0)
+		/* FIXME It should not be required r0 == r1 per
+		 * documentation, but this is now it works in qemu
+		 * for DAUI. Assume AUI has the same restriction. */
+		DAUI(r1, r0, bits.b.aui & 0xffff);
+#if __WORDSIZE == 64
+	    else if (r0 == r1 && ((jit_word_t)bits.b.ahi << 32) == i0)
+		DAHI(r0, bits.b.ahi & 0xffff);
+	    else if (r0 == r1 && ((jit_word_t)bits.b.ati << 48) == i0)
+		DATI(r0, bits.b.ati & 0xffff);
+#endif
+	    else
+		goto fallback;
+	    goto done;
+	}
+    fallback:
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
 	addr(r0, r1, rn(reg));
 	jit_unget_reg(reg);
     }
+done:;
 }
 
 static void
