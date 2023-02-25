@@ -1822,30 +1822,6 @@ _bger(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 }
 
 static jit_word_t
-_bler(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
-{
-	jit_word_t w;
-
-	CMPGT(r0, r1);
-	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, 0);
-
-	return (w);
-}
-
-static jit_word_t
-_bgtr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0, jit_uint16_t r1)
-{
-	jit_word_t w;
-
-	CMPGT(r0, r1);
-	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, 1);
-
-	return (w);
-}
-
-static jit_word_t
 _bger_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_uint16_t r1, jit_bool_t t)
 {
