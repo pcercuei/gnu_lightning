@@ -1446,6 +1446,10 @@ _emit_code(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
 	node->offset = (jit_uword_t)_jit->pc.w - (jit_uword_t)prevw;
 	prevw = _jit->pc.w;
+	if (_jitc->inst.pend) {
+	    node->offset += 4;
+	    prevw += 4;
+	}
 #endif
 	value = jit_classify(node->code);
 #if GET_JIT_SIZE
