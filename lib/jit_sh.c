@@ -34,8 +34,8 @@
 #  define I_DISP			STACK_SLOT - sizeof(jit_int32_t)
 #endif
 
-#define jit_make_arg(node)		_jit_make_arg(_jit,node)
-static jit_node_t *_jit_make_arg(jit_state_t*,jit_node_t*);
+#define jit_make_arg(node,code)		_jit_make_arg(_jit,node,code)
+static jit_node_t *_jit_make_arg(jit_state_t*,jit_node_t*,jit_code_t);
 #define jit_make_arg_f(node)		_jit_make_arg_f(_jit,node)
 static jit_node_t *_jit_make_arg_f(jit_state_t*,jit_node_t*);
 #define jit_make_arg_d(node)		_jit_make_arg_d(_jit,node)
@@ -199,9 +199,9 @@ _jit_ret(jit_state_t *_jit)
 }
 
 void
-_jit_retr(jit_state_t *_jit, jit_int32_t u)
+_jit_retr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
-    jit_inc_synth_w(retr, u);
+    jit_code_inc_synth_w(code, u);
     jit_movr(JIT_RET, u);
     jit_live(JIT_RET);
     jit_ret();
@@ -209,9 +209,9 @@ _jit_retr(jit_state_t *_jit, jit_int32_t u)
 }
 
 void
-_jit_reti(jit_state_t *_jit, jit_word_t u)
+_jit_reti(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
-    jit_inc_synth_w(reti, u);
+    jit_code_inc_synth_w(code, u);
     jit_movi(JIT_RET, u);
     jit_ret();
     jit_dec_synth();
@@ -227,10 +227,10 @@ _jit_epilog(jit_state_t *_jit)
 }
 
 void
-_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
+_jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v, jit_code_t code)
 {
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargr, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movr(JIT_RA0 + v->u.w, u);
     else
@@ -239,11 +239,11 @@ _jit_putargr(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 }
 
 void
-_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v)
+_jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
 {
     jit_int32_t		regno;
-    assert(v->code == jit_code_arg);
-    jit_inc_synth_wp(putargi, u, v);
+    assert_putarg_type(code, v->code);
+    jit_code_inc_synth_wp(code, u, v);
     if (jit_arg_reg_p(v->u.w))
 	jit_movi(JIT_RA0 + v->u.w, u);
     else {
@@ -995,7 +995,7 @@ _patch(jit_state_t *_jit, jit_word_t instr, jit_node_t *node)
 }
 
 static jit_node_t *
-_jit_make_arg(jit_state_t *_jit, jit_node_t *node)
+_jit_make_arg(jit_state_t *_jit, jit_node_t *node, jit_code_t code)
 {
     jit_int32_t		 offset;
 
@@ -1007,7 +1007,7 @@ _jit_make_arg(jit_state_t *_jit, jit_node_t *node)
     }
 
     if (node == (jit_node_t *)0)
-	node = jit_new_node(jit_code_arg);
+	node = jit_new_node(code);
     else
 	link_node(node);
 
@@ -1066,10 +1066,11 @@ _jit_make_arg_d(jit_state_t *_jit, jit_node_t *node)
 }
 
 jit_node_t *
-_jit_arg(jit_state_t *_jit)
+_jit_arg(jit_state_t *_jit, jit_code_t code)
 {
     assert(_jitc->function);
-    return (jit_make_arg((jit_node_t*)0));
+    assert(!(_jitc->function->self.call & jit_call_varargs));
+    return (jit_make_arg((jit_node_t*)0, code));
 }
 
 void
@@ -1134,9 +1135,9 @@ _jit_getarg_i(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 }
 
 void
-_jit_pushargr(jit_state_t *_jit, jit_int32_t u)
+_jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 {
-    jit_inc_synth_w(pushargr, u);
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
     assert(_jitc->function);
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
@@ -1151,11 +1152,11 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u)
 }
 
 void
-_jit_pushargi(jit_state_t *_jit, jit_word_t u)
+_jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
 {
     jit_int32_t		regno;
     assert(_jitc->function);
-    jit_inc_synth_w(pushargi, u);
+    jit_code_inc_synth_w(code, u);
     jit_link_prepare();
     if (jit_arg_reg_p(_jitc->function->call.argi)) {
 	jit_movi(JIT_RA0 + _jitc->function->call.argi, u);
