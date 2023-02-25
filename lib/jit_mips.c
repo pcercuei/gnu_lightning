@@ -1255,73 +1255,91 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 void
 _jit_retval_c(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_c, r0);
     jit_extr_c(r0, JIT_RET);
+    jit_dec_synth();
 }
 
 void
 _jit_retval_uc(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_uc, r0);
     jit_extr_uc(r0, JIT_RET);
+    jit_dec_synth();
 }
 
 void
 _jit_retval_s(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_s, r0);
     jit_extr_s(r0, JIT_RET);
+    jit_dec_synth();
 }
 
 void
 _jit_retval_us(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_us, r0);
     jit_extr_us(r0, JIT_RET);
+    jit_dec_synth();
 }
 
 void
 _jit_retval_i(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_i, r0);
 #if __WORDSIZE == 32
     if (r0 != JIT_RET)
 	jit_movr(r0, JIT_RET);
 #else
     jit_extr_i(r0, JIT_RET);
 #endif
+    jit_dec_synth();
 }
 
 #if __WORDSIZE == 64
 void
 _jit_retval_ui(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_ui, r0);
     jit_extr_ui(r0, JIT_RET);
+    jit_dec_synth();
 }
 
 void
 _jit_retval_l(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_l, r0);
     if (r0 != JIT_RET)
 	jit_movr(r0, JIT_RET);
+    jit_dec_synth();
 }
 #endif
 
 void
 _jit_retval_f(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_f, r0);
 #if __mips_soft_float
     jit_movr_w_f(r0, JIT_RET);
 #else
     if (r0 != JIT_FRET)
 	jit_movr_f(r0, JIT_FRET);
 #endif
+    jit_dec_synth();
 }
 
 void
 _jit_retval_d(jit_state_t *_jit, jit_int32_t r0)
 {
+    jit_inc_synth_w(retval_d, r0);
 #if __mips_soft_float
     jit_movr_w_d(r0, JIT_RET);
 #else
     if (r0 != JIT_FRET)
 	jit_movr_d(r0, JIT_FRET);
 #endif
+    jit_dec_synth();
 }
 
 jit_pointer_t
