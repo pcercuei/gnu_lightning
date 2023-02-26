@@ -1218,7 +1218,7 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 			    assert(i.ic.b == 0);
 			    /* If these cop1 instructions in delay slot
 			     * wont work  */
-			    if (!jit_cpu.cop1_delay == 0)
+			    if (!jit_cpu.cop1_delay)
 				flush();
 			    if (mask & jit_class_gpr) {
 				regs[0] = i.rt.b;
@@ -1422,7 +1422,7 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 	case MIPS_SWC1:			/* 39 */
 	case MIPS_SDC1:			/* 3d */
 	    /* If these cop1 instructions in delay wont not work  */
-	    if (!jit_cpu.cop1_delay == 0)
+	    if (!jit_cpu.cop1_delay)
 		flush();
 	    if (mask & jit_class_gpr) {
 		regs[0] = i.rs.b;

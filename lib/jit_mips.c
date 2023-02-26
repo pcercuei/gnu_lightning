@@ -211,6 +211,9 @@ jit_get_cpu(void)
 		/* Cavium Octeon III V0.2  FPU V0.0 */
 		else if (strstr(buf + 13, "FPU V0.0"))
 		  jit_cpu.sll_delay = jit_cpu.cop1_delay = 0;
+		/* Cavium Octeon II V0.1 */
+		else if (strstr(buf + 13, " II "))
+		  jit_cpu.sll_delay = jit_cpu.cop1_delay = 0;
 		break;
 	    }
 	}
@@ -227,13 +230,14 @@ jit_get_cpu(void)
     if (!jit_cpu.release)
 	jit_cpu.release = __mips;
 #endif
-    /* Assume all mips 1, or detected as release 1 has this problem  */
+    /* Assume all mips 1 and 2, or detected as release 1 or 2 have this
+     *  problem */
     /* Note that jit_cpu is global, and can be overriden, that is, add
      * the C code "jit_cpu.cop1_delay = 1;" after the call to init_jit()
      * if it is functional. */
-    if (jit_cpu.cop1_delay && jit_cpu.release < 2)
+    if (jit_cpu.cop1_delay && jit_cpu.release < 3)
 	jit_cpu.cop1_delay = 0;
-    if (jit_cpu.sll_delay && jit_cpu.release < 2)
+    if (jit_cpu.sll_delay && jit_cpu.release < 3)
 	jit_cpu.sll_delay = 0;
 }
 
