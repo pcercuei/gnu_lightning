@@ -31,6 +31,12 @@ static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #  endif
 #  if defined(__arm__)
 #    define fallback_patch_at(inst,lbl)	patch_at(arm_patch_jump,inst,lbl)
+#  elif defined(__mips__)
+#    define fallback_patch_at(inst,lbl)					\
+    do {								\
+	flush();							\
+	patch_at(inst, lbl);						\
+    } while (0);
 #  elif defined(__ia64__)
 #    define fallback_patch_at(inst,lbl)					\
     do {								\

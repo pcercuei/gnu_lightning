@@ -1030,6 +1030,9 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		    }
 		    break;
 		case MIPS_SLL:		/* 00 */
+		    /* If cannot have a shift in delay slot */
+		    if (!jit_cpu.sll_delay)
+			flush();
 		case MIPS_SRL:		/* 02 */
 		case MIPS_SRA:		/* 03 */
 		case MIPS_DSLL:		/* 38 */
@@ -1208,6 +1211,10 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 			case MIPS_DMT:	/* 05 */
 			case MIPS_MTH:	/* 07 */
 			    assert(i.ic.b == 0);
+			    /* If these cop1 instructions in delay slot
+			     * wont work  */
+			    if (!jit_cpu.cop1_delay == 0)
+				flush();
 			    if (mask & jit_class_gpr) {
 				regs[0] = i.rt.b;
 				regs[1] = regs[2] = 0;
@@ -1405,13 +1412,24 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		regs[1] = regs[2] = 0;
 	    }
 	    break;
-	case MIPS_BEQ:			/* 04 */
-	case MIPS_BNE:			/* 05 */
-	    assert(i.rt.b == 0);
 	case MIPS_LWC1:			/* 31 */
 	case MIPS_LDC1:			/* 35 */
 	case MIPS_SWC1:			/* 39 */
 	case MIPS_SDC1:			/* 3d */
+	    /* If these cop1 instructions in delay wont not work  */
+	    if (!jit_cpu.cop1_delay == 0)
+		flush();
+	    if (mask & jit_class_gpr) {
+		regs[0] = i.rs.b;
+		regs[1] = i.rt.b;
+		regs[2] = 0;
+	    }
+	    else
+		regs[0] = i.rt.b;
+	    break;
+	case MIPS_BEQ:			/* 04 */
+	case MIPS_BNE:			/* 05 */
+	    assert(i.rt.b == 0);
 	    if (mask & jit_class_gpr) {
 		regs[0] = i.rs.b;
 		regs[1] = i.rt.b;
@@ -1646,73 +1664,89 @@ _bitswap(jit_state_t *_jit, jit_int32_t v, jit_int32_t r1)
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    if (jit_mips2_p()) {
 #if __WORDSIZE == 32
-    if (jit_mips6_p())
-	CLO_R6(r0, r1);
-    else
-	CLO(r0, r1);
+	if (jit_mips6_p())
+	    CLO_R6(r0, r1);
+	else
+	    CLO(r0, r1);
 #else
-    if (jit_mips6_p())
-	DCLO_R6(r0, r1);
-    else
-	DCLO(r0, r1);
+	if (jit_mips6_p())
+	    DCLO_R6(r0, r1);
+	else
+	    DCLO(r0, r1);
 #endif
+    }
+    else
+	fallback_clo(r0, r1);
 }
 
 static void
 _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    if (jit_mips2_p()) {
 #if __WORDSIZE == 32
-    if (jit_mips6_p())
-	CLZ_R6(r0, r1);
-    else
-	CLZ(r0, r1);
+	if (jit_mips6_p())
+	    CLZ_R6(r0, r1);
+	else
+	    CLZ(r0, r1);
 #else
-    if (jit_mips6_p())
-	DCLZ_R6(r0, r1);
-    else
-	DCLZ(r0, r1);
+	if (jit_mips6_p())
+	    DCLZ_R6(r0, r1);
+	else
+	    DCLZ(r0, r1);
 #endif
+    }
+    else
+	fallback_clz(r0, r1);
 }
 
 static void
 _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    if (jit_mips6_p()) {
+    if (jit_mips2_p()) {
+	if (jit_mips6_p()) {
 #if __WORDSIZE == 32
-	BITSWAP(r0, r1);
-	bswapr_ui(r0, r0);
-	CLO_R6(r0, r0);
+	    BITSWAP(r0, r1);
+	    bswapr_ui(r0, r0);
+	    CLO_R6(r0, r0);
 #else
-	DBITSWAP(r0, r1);
-	bswapr_ul(r0, r0);
-	DCLO_R6(r0, r0);
+	    DBITSWAP(r0, r1);
+	    bswapr_ul(r0, r0);
+	    DCLO_R6(r0, r0);
 #endif
+	}
+	else {
+	    bitswap(r0, r1);
+	    clor(r0, r0);
+	}
     }
-    else {
-	bitswap(r0, r1);
-	clor(r0, r0);
-    }
+    else
+	fallback_cto(r0, r1);
 }
 
 static void
 _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    if (jit_mips6_p()) {
+  if (jit_mips2_p()) {
+	if (jit_mips6_p()) {
 #if __WORDSIZE == 32
-	BITSWAP(r0, r1);
-	bswapr_ui(r0, r0);
-	CLZ_R6(r0, r0);
+	    BITSWAP(r0, r1);
+	    bswapr_ui(r0, r0);
+	    CLZ_R6(r0, r0);
 #else
-	DBITSWAP(r0, r1);
-	bswapr_ul(r0, r0);
-	DCLZ_R6(r0, r0);
+	    DBITSWAP(r0, r1);
+	    bswapr_ul(r0, r0);
+	    DCLZ_R6(r0, r0);
 #endif
+	}
+	else {
+	    bitswap(r0, r1);
+	    clzr(r0, r0);
+	}
     }
-    else {
-	bitswap(r0, r1);
-	clzr(r0, r0);
-    }
+    else
+	fallback_ctz(r0, r1);
 }
 
 static void

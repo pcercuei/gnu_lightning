@@ -1,3 +1,17 @@
+2023-02-26 Paulo Andrade <pcpa@gnu.org>
+
+	* check/bit.tst: Correct 32 bit sample ctz implementation.
+	* include/lightning/jit_mips.h: Add jit_cpu flags for instructions
+	that cannot be used in delay slot.
+	* lib/jit_fallback.c: Mips fallbacks now might need a flush of
+	instructions to get correct label addresses, due to pending
+	instruction candidate to delay slot.
+	* lib/jit_mips-cpu.c: Flush any pending instruction if it cannot
+	be used in the delay slot. Add calls to fallback clo, clz, cto and
+	ctz for mips 1.
+	* lib/jit_mips.c: Add code to set defaults or detect if can use
+	certain instructions to delay slots.
+
 2023-02-23 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning/jit_private.h: Add new 'inst' field to

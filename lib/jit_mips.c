@@ -193,11 +193,24 @@ jit_get_cpu(void)
     char	*ptr;
     char	 buf[128];
 
+    /* By default assume it works. */
+    jit_cpu.sll_delay = jit_cpu.cop1_delay = 1;
     if ((fp = fopen("/proc/cpuinfo", "r")) != NULL) {
 	while (fgets(buf, sizeof(buf), fp)) {
-	    if (strncmp(buf, "isa			: ", 8) == 0) {
+	    if (strncmp(buf, "isa\t\t\t: ", 8) == 0) {
 		if ((ptr = strstr(buf + 9, "mips64r")))
 		    jit_cpu.release = strtoul(ptr + 7, NULL, 10);
+		break;
+	    }
+	    /* Just for some actual hardware tested. Below check
+	     * for mips 1 would disable these delays anyway. */
+	    if (strncmp(buf, "cpu model\t\t: ", 13) == 0) {
+		/* ICT Loongson-2 V0.3  FPU V0.1 */
+		if (strstr(buf + 13, "FPU V0.1"))
+		  jit_cpu.sll_delay = jit_cpu.cop1_delay = 0;
+		/* Cavium Octeon III V0.2  FPU V0.0 */
+		else if (strstr(buf + 13, "FPU V0.0"))
+		  jit_cpu.sll_delay = jit_cpu.cop1_delay = 0;
 		break;
 	    }
 	}
@@ -214,6 +227,14 @@ jit_get_cpu(void)
     if (!jit_cpu.release)
 	jit_cpu.release = __mips;
 #endif
+    /* Assume all mips 1, or detected as release 1 has this problem  */
+    /* Note that jit_cpu is global, and can be overriden, that is, add
+     * the C code "jit_cpu.cop1_delay = 1;" after the call to init_jit()
+     * if it is functional. */
+    if (jit_cpu.cop1_delay && jit_cpu.release < 2)
+	jit_cpu.cop1_delay = 0;
+    if (jit_cpu.sll_delay && jit_cpu.release < 2)
+	jit_cpu.sll_delay = 0;
 }
 
 void
