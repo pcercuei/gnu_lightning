@@ -234,7 +234,7 @@ typedef union {
 #  define MIPS_BGEZALL			0x13
 #  define MIPS_SYNCI			0x1f
 #  define MIPS_WSBH			0x02
-#  define MIPS_DBSH			0x02
+#  define MIPS_DSBH			0x02
 #  define MIPS_DSHD			0x05
 #  define MIPS_SEB			0x10
 #  define MIPS_SEH			0x18
@@ -451,6 +451,8 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define WSBH(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_WSBH,MIPS_BSHFL)
 #  define SEB(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_SEB,MIPS_BSHFL)
 #  define SEH(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_SEH,MIPS_BSHFL)
+#  define DSBH(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_DSBH,MIPS_DBSHFL)
+#  define DSHD(rd,rt)			hrrrit(MIPS_SPECIAL3,0,rt,rd,MIPS_DSHD,MIPS_DBSHFL)
 #  define SLT(rd,rs,rt)			rrr_t(rs,rt,rd,MIPS_SLT)
 #  define SLTU(rd,rs,rt)		rrr_t(rs,rt,rd,MIPS_SLTU)
 #  define SLTI(rt,rs,im)		hrri(MIPS_SLTI,rs,rt,im)
@@ -732,7 +734,8 @@ static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  if __WORDSIZE == 64
-#    define bswapr_ul(r0,r1)		generic_bswapr_ul(_jit,r0,r1)
+#  define bswapr_ul(r0,r1)		_bswapr_ul(_jit,r0,r1)
+static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #  endif
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
@@ -1159,7 +1162,9 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		/* DBITSWAP */
 		case MIPS_DBSHFL:	/* 24 */
 		    switch (i.ic.b) {
+			/* DSBH */
 			case MIPS_WSBH:	/* 02 */
+			case MIPS_DSHD:	/* 05 */
 			case MIPS_SEB:	/* 10 */
 			case MIPS_SEH:	/* 18 */
 			    if (mask & jit_class_gpr) {
@@ -2900,6 +2905,19 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
         generic_bswapr_ui(_jit, r0, r1);
     }
 }
+
+#if __WORDSIZE == 64
+static void
+_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_mips2_p()) {
+	DSBH(r0, r1);
+	DSHD(r0, r0);
+    }
+    else
+	generic_bswapr_ul(_jit, r0, r1);
+}
+#endif
 
 static void
 _extr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
