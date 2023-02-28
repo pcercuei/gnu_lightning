@@ -1,4 +1,5 @@
 #if PROTO
+#define USE_BIT_TABLES			1
 #define fallback_save(r0)		_fallback_save(_jit, r0)
 static void _fallback_save(jit_state_t*, jit_int32_t);
 #define fallback_load(r0)		_fallback_load(_jit, r0)
@@ -265,6 +266,51 @@ _fallback_clo(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+#  if USE_BIT_TABLES
+    /*		t0 = __WORDSIZE - 8;
+     *	loop:
+     *		t1 = r1 >> t0;
+     *		if (t1)
+     *			goto done;
+     *		t0 -= 8;
+     *		if (t0)
+     *			goto loop;
+     *		t1 = r1;
+     *	done:
+     *		r0 = __WORDSIZE - 8 - t0 + clz_tab[t1]
+     */
+     /* Table below is count of leading zeros of 8 bit values. */
+    static const jit_uint8_t clz_tab[256] = {
+	8,7,6,6,5,5,5,5,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    };
+    jit_int32_t		t0, t1;
+    jit_word_t		loop, done;
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    movi(rn(t0), __WORDSIZE - 8);
+    fallback_flush();
+    loop = _jit->pc.w;
+    rshr_u(rn(t1), r1, rn(t0));
+    done = fallback_bnei(_jit->pc.w, rn(t1), 0);
+    subi(rn(t0), rn(t0), 8);
+    fallback_bnei(loop, rn(t0), 0);
+    movr(rn(t1), r1);
+    fallback_flush();
+    fallback_patch_bnei(done, _jit->pc.w);
+    rsbi(r0, rn(t0), __WORDSIZE - 8);
+    movi(rn(t0), (jit_word_t)clz_tab);
+    ldxr_uc(rn(t1), rn(t0), rn(t1));
+    addr(r0, r0, rn(t1));
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
+#  else
     jit_int32_t		r1_reg, r2, r2_reg;
     jit_word_t		clz, l32, l16, l8, l4, l2, l1;
     l32 = fallback_bnei(_jit->pc.w, r1, 0);
@@ -278,7 +324,7 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     movr(rn(r1_reg), r1);
     r1 = rn(r1_reg);
     movi(r0, 0);
-#  if __WORDSIZE == 64
+#    if __WORDSIZE == 64
     movi(r2, 0xffffffff00000000UL);
     l32 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 32);
@@ -286,9 +332,9 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     fallback_flush();
     fallback_patch_bmsr(l32, _jit->pc.w);
     lshi(r2, r2, 16);
-#  else
+#    else
     movi(r2, 0xffff0000UL);
-#  endif
+#    endif
     l16 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 16);
     addi(r0, r0, 16);
@@ -320,6 +366,7 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     fallback_patch_jmpi(clz, _jit->pc.w);
     jit_unget_reg(r2_reg);
     jit_unget_reg(r1_reg);
+#  endif
 }
 
 static void
@@ -340,6 +387,49 @@ _fallback_cto(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+#  if USE_BIT_TABLES
+    /* Adapted from http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightModLookup
+     * Table for 64 bits was recomputed choosing 67 as next prime number.
+     * The cost of the modulo might not compensate and could be better to
+     * use the alternate version (or bitswap and use clz).
+     */
+    jit_int32_t		t0;
+#    if __WORDSIZE == 32
+    static const jit_uint8_t mod37[] = {
+	32,  0,  1, 26,  2, 23, 27,  0,  3, 16, 24, 30, 28, 11,  0, 13,
+	 4,  7, 17,  0, 25, 22, 31, 15, 29, 10, 12,  6,  0, 21, 14,  9,
+	 5, 20, 8, 19, 18
+    };
+    /* return mod37[(-r1 & r1) % 37]; */
+#    else
+    static const jit_uint8_t mod67[] = {
+	64,  0,  1, 39,  2, 15, 40, 23,  3, 12, 16, 59, 41, 19, 24, 54,
+         4,  0, 13, 10, 17, 62, 60, 28, 42, 30, 20, 51, 25, 44, 55, 47,
+         5, 32,  0, 38, 14, 22, 11, 58, 18, 53, 63,  9, 61, 27, 29, 50,
+        43, 46, 31, 37, 21, 57, 52,  8, 26, 49, 45, 36, 56,  7, 48, 35,
+         6, 34, 33
+    };
+    /* return mod67[(-r1 & r1) % 67]; */
+#    endif
+    t0 = jit_get_reg(jit_class_gpr);
+    if (r0 == r1) {
+	negr(rn(t0), r1);
+	andr(r0, rn(t0), r1);
+    }
+    else {
+	negr(r0, r1);
+	andr(r0, r0, r1);
+    }
+#    if __WORDSIZE == 32
+    remi_u(r0, r0, 37);
+    movi(rn(t0), (jit_word_t)mod37);
+#    else
+    remi_u(r0, r0, 67);
+    movi(rn(t0), (jit_word_t)mod67);
+#    endif
+    ldxr_uc(r0, rn(t0), r0);
+    jit_unget_reg(t0);
+#  else
     jit_int32_t		r1_reg, r2, r2_reg;
     jit_word_t		ctz, l32, l16, l8, l4, l2, l1;
     l32 = fallback_bnei(_jit->pc.w, r1, 0);
@@ -353,7 +443,7 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     movr(rn(r1_reg), r1);
     r1 = rn(r1_reg);
     movi(r0, 0);
-#  if __WORDSIZE == 64
+#    if __WORDSIZE == 64
     movi(r2, 0xffffffffUL);
     l32 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 32);
@@ -361,9 +451,9 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     fallback_flush();
     fallback_patch_bmsr(l32, _jit->pc.w);
     rshi(r2, r2, 16);
-#  else
+#    else
     movi(r2, 0xffffUL);
-#  endif
+#    endif
     l16 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 16);
     addi(r0, r0, 16);
@@ -395,5 +485,6 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     fallback_patch_jmpi(ctz, _jit->pc.w);
     jit_unget_reg(r2_reg);
     jit_unget_reg(r1_reg);
+#  endif
 }
 #endif
