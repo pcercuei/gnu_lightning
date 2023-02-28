@@ -140,6 +140,7 @@ static void _x87_from_sse_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  include "jit_x86-cpu.c"
 #  include "jit_x86-sse.c"
 #  include "jit_x86-x87.c"
+#  include "jit_fallback.c"
 #undef PROTO
 
 /*
@@ -1809,6 +1810,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(clz,);
 		case_rr(cto,);
 		case_rr(ctz,);
+#define rbitr(r0, r1)	fallback_bitswap(r0, r1)
+		case_rr(rbit,);
 		case_rrr(lt,);
 		case_rrw(lt,);
 		case_rrr(lt, _u);
@@ -2426,6 +2429,7 @@ _emit_code(jit_state_t *_jit)
 #  include "jit_x86-cpu.c"
 #  include "jit_x86-sse.c"
 #  include "jit_x86-x87.c"
+#  include "jit_fallback.c"
 #undef CODE
 
 void

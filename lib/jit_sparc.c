@@ -1561,6 +1561,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(clz,);
 		case_rr(cto,);
 		case_rr(ctz,);
+#define rbitr(r0, r1)	fallback_bitswap(r0, r1)
+		case_rr(rbit,);
 		case_brr(blt,);
 		case_brw(blt,);
 		case_brr(blt, _u);

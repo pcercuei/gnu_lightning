@@ -255,4 +255,5 @@ static char *code_name[] = {
     "movr_d_w",		"movi_d_w",
     "clo",		"clz",
     "cto",		"ctz",
+    "rbit",
 };

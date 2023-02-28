@@ -672,7 +672,7 @@ while ((s >>= 1) > 0)
     comr(v, rn(mask));				/* v = ~mask */
     andr(rn(t1), v, rn(t1));			/* t1 = t1 & v */
     orr(v, rn(t0), rn(t1));			/* v = t0 | t1 */
-    jmpi(loop, 0);
+    jmpi(loop);
     flush();
     patch_at(done, _jit->pc.w);
     jit_unget_reg(t1);

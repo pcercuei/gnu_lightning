@@ -124,7 +124,8 @@ EXTRA_DIST =				\
 	check.nodata.sh			\
 	check.x87.nodata.sh		\
 	run-test	all.tst		\
-	collatz.tst	factorial.tst
+	collatz.tst	factorial.tst	\
+	rbit.tst
 
 base_TESTS =				\
 	3to2 add align allocai		\

@@ -1448,6 +1448,7 @@ _emit_code(jit_state_t *_jit)
 		case_rr(clz,);
 		case_rr(cto,);
 		case_rr(ctz,);
+		case_rr(rbit,);
 		case_rrr(and,);
 		case_rrw(and,);
 		case_rrr(or,);

@@ -1379,6 +1379,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(clz,);
 		case_rr(cto,);
 		case_rr(ctz,);
+#define rbitr(r0, r1)	fallback_bitswap(r0, r1)
+		case_rr(rbit,);
 	    case jit_code_casr:
 		casr(rn(node->u.w), rn(node->v.w),
 		     rn(node->w.q.l), rn(node->w.q.h));

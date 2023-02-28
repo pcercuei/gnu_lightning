@@ -914,6 +914,8 @@ static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define rbitr(r0, r1)			_rbitr(_jit, r0, r1)
+static void _rbitr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define addr(r0,r1,r2)		_addr(_jit,r0,r1,r2)
 static void _addr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -1811,6 +1813,19 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     }
     else
 	fallback_ctz(r0, r1);
+}
+
+static void
+_rbitr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_armv7_p()) {	/* armv6t2 actually */
+	if (jit_thumb_p())
+	    T2_RBIT(r0, r1);
+	else
+	    RBIT(r0, r1);
+    }
+    else
+	fallback_bitswap(r0, r1);
 }
 
 static void

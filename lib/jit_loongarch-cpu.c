@@ -338,6 +338,7 @@ static void _oj26(jit_state_t*, jit_int32_t,jit_int32_t);
 # define clzr(r0, r1)			CLZ_D(r0, r1)
 # define ctor(r0, r1)			CTO_D(r0, r1)
 # define ctzr(r0, r1)			CTZ_D(r0, r1)
+# define rbitr(r0, r1)			BITREV_D(r0, r1)
 static void _nop(jit_state_t*,jit_int32_t);
 # define movr(r0, r1)			_movr(_jit, r0, r1)
 static void _movr(jit_state_t*, jit_int32_t, jit_int32_t);

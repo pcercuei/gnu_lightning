@@ -1056,6 +1056,9 @@ typedef enum {
 #define jit_ctzr(u,v)		jit_new_node_ww(jit_code_ctzr,u,v)
     jit_code_ctor,		jit_code_ctzr,
 
+#define jit_rbitr(u,v)		jit_new_node_ww(jit_code_rbitr,u,v)
+    jit_code_rbitr,
+
     jit_code_last_code
 } jit_code_t;
 

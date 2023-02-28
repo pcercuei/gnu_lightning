@@ -501,6 +501,8 @@ static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define rbitr(r0, r1)			_rbitr(_jit, r0, r1)
+static void _rbitr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  if __WORDSIZE == 32
 #    define addr(rd,rs,rt)		ADDU(rd,rs,rt)
 #    define addiu(r0,r1,i0)		ADDIU(r0,r1,i0)
@@ -1707,6 +1709,22 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     }
     else
 	fallback_ctz(r0, r1);
+}
+
+static void
+_rbitr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_mips6_p()) {
+#if __WORDSIZE == 32
+	BITSWAP(r0, r1);
+	bswapr_ui(r0, r0);
+#else
+	DBITSWAP(r0, r1);
+	bswapr_ul(r0, r0);
+#endif
+    }
+    else
+	fallback_bitswap(r0, r1);
 }
 
 static void
