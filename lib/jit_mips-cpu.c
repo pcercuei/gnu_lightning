@@ -493,8 +493,6 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define SELNEZ(rd,rs,rt)		hrrrit(0,rs,rt,rd,0,55)
 #  define comr(r0,r1)			xori(r0,r1,-1)
 #  define negr(r0,r1)			subr(r0,_ZERO_REGNO,r1)
-#  define bitswap(r0,r1)		_bitswap(_jit, r0, r1);
-static void _bitswap(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define clor(r0, r1)			_clor(_jit, r0, r1)
 static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define clzr(r0, r1)			_clzr(_jit, r0, r1)
@@ -1623,49 +1621,6 @@ _insr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
         DINS(r0, r1, pos, size);
 }
 
-/* http://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel */
-/*
-unsigned int s = sizeof(v) * CHAR_BIT; // bit size; must be power of 2 
-unsigned int mask = ~0;         
-while ((s >>= 1) > 0) 
-{
-  mask ^= (mask << s);
-  v = ((v >> s) & mask) | ((v << s) & ~mask);
-}
-*/
-static void
-_bitswap(jit_state_t *_jit, jit_int32_t v, jit_int32_t r1)
-{
-    jit_int32_t		s, mask;
-    jit_word_t		loop, done, t0, t1;
-    movr(v, r1);
-    s = jit_get_reg(jit_class_gpr);
-    movi(rn(s), __WORDSIZE);			/* s = sizeof(v) * CHAR_BIT; */
-    mask = jit_get_reg(jit_class_gpr);
-    movi(rn(mask), ~0L);			/* mask = ~0; */
-    flush();
-    loop = _jit->pc.w;				/* while ((s >>= 1) > 0) */
-    rshi(rn(s), rn(s), 1);			/*        (s >>= 1) */
-    done = blei(_jit->pc.w, rn(s), 0);		/* no loop if s <= 0 */
-    t0 = jit_get_reg(jit_class_gpr);
-    lshr(rn(t0), rn(mask), rn(s));		/* t0 = (mask << s) */
-    xorr(rn(mask), rn(mask), rn(t0));		/* mask ^= t0 */
-    rshr(rn(t0), v, rn(s));			/* t0 = v >> s */
-    andr(rn(t0), rn(t0), rn(mask));		/* t0 = t0 & mask */
-    t1 = jit_get_reg(jit_class_gpr);
-    lshr(rn(t1), v, rn(s));			/* t1 = v << s */
-    comr(v, rn(mask));				/* v = ~mask */
-    andr(rn(t1), v, rn(t1));			/* t1 = t1 & v */
-    orr(v, rn(t0), rn(t1));			/* v = t0 | t1 */
-    jmpi(loop, 0);
-    flush();
-    patch_at(done, _jit->pc.w);
-    jit_unget_reg(t1);
-    jit_unget_reg(t0);
-    jit_unget_reg(mask);
-    jit_unget_reg(s);
-}
-
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
@@ -1722,7 +1677,7 @@ _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #endif
 	}
 	else {
-	    bitswap(r0, r1);
+	    fallback_bitswap(r0, r1);
 	    clor(r0, r0);
 	}
     }
@@ -1746,7 +1701,7 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #endif
 	}
 	else {
-	    bitswap(r0, r1);
+	    fallback_bitswap(r0, r1);
 	    clzr(r0, r0);
 	}
     }

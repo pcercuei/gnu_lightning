@@ -533,8 +533,6 @@ static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
 #define casi(r0, i0, r1, r2)		casx(r0, _NOREG, r1, r2, i0)
 #  define negr(r0,r1)			NEG(r0,r1)
 #  define comr(r0,r1)			NOT(r0,r1)
-#  define bitswap(r0, r1)		_bitswap(_jit, r0, r1)
-static void _bitswap(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define clor(r0, r1)			_clor(_jit, r0, r1)
 static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  if __WORDSIZE == 32
@@ -1220,73 +1218,6 @@ _casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	jit_unget_reg(r1_reg);
 }
 
-/* http://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel */
-/*
-unsigned int v; // 32-bit word to reverse bit order
-
-// swap odd and even bits
-v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) << 1);
-// swap consecutive pairs
-v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) << 2);
-// swap nibbles ... 
-v = ((v >> 4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) << 4);
-// swap bytes
-v = ((v >> 8) & 0x00FF00FF) | ((v & 0x00FF00FF) << 8);
-// swap 2-byte long pairs
-v = ( v >> 16             ) | ( v               << 16);
- */
-static void
-_bitswap(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		t0, t1, t2, t3, t4;
-    movr(r0, r1);
-    t0 = jit_get_reg(jit_class_gpr);
-    t1 = jit_get_reg(jit_class_gpr);
-    t2 = jit_get_reg(jit_class_gpr);
-    movi(rn(t0), __WORDSIZE == 32 ? 0x55555555L : 0x5555555555555555L);
-    rshi_u(rn(t1), r0, 1);		/* t1 = v >> 1 */
-    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
-    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
-    lshi(rn(t2), rn(t2), 1);		/* t2 <<= 1 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-    movi(rn(t0), __WORDSIZE == 32 ? 0x33333333L : 0x3333333333333333L);
-    rshi_u(rn(t1), r0, 2);		/* t1 = v >> 2 */
-    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
-    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
-    lshi(rn(t2), rn(t2), 2);		/* t2 <<= 2 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-    movi(rn(t0), __WORDSIZE == 32 ? 0x0f0f0f0fL : 0x0f0f0f0f0f0f0f0fL);
-    rshi_u(rn(t1), r0, 4);		/* t1 = v >> 4 */
-    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
-    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
-    lshi(rn(t2), rn(t2), 4);		/* t2 <<= 4 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-    movi(rn(t0), __WORDSIZE == 32 ?  0x00ff00ffL : 0x00ff00ff00ff00ffL);
-    rshi_u(rn(t1), r0, 8);		/* t1 = v >> 8 */
-    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
-    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
-    lshi(rn(t2), rn(t2), 8);		/* t2 <<= 8 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-#  if __WORDSIZE == 32
-    rshi_u(rn(t1), r0, 16);		/* t1 = v >> 16 */
-    lshi(rn(t2), r0, 16);		/* t2 = v << 16 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-#  else
-    movi(rn(t0), 0x0000ffff0000ffffL);
-    rshi_u(rn(t1), r0, 16);		/* t1 = v >> 16 */
-    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
-    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
-    lshi(rn(t2), rn(t2), 16);		/* t2 <<= 16 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-    rshi_u(rn(t1), r0, 32);		/* t1 = v >> 32 */
-    lshi(rn(t2), r0, 32);		/* t2 = v << 32 */
-    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
-#  endif
-    jit_unget_reg(t2);
-    jit_unget_reg(t1);
-    jit_unget_reg(t0);
-}
-
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
@@ -1297,14 +1228,14 @@ _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    bitswap(r0, r1);
+    fallback_bitswap(r0, r1);
     clor(r0, r0);
 }
 
 static void
 _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    bitswap(r0, r1);
+    fallback_bitswap(r0, r1);
     clzr(r0, r0);
 }
 

@@ -97,6 +97,7 @@ extern void __clear_cache(void *, void *);
 #define PROTO				1
 #  include "jit_ppc-cpu.c"
 #  include "jit_ppc-fpu.c"
+#  include "jit_fallback.c"
 #undef PROTO
 
 /*
@@ -1926,6 +1927,7 @@ _emit_code(jit_state_t *_jit)
 #define CODE				1
 #  include "jit_ppc-cpu.c"
 #  include "jit_ppc-fpu.c"
+#  include "jit_fallback.c"
 #undef CODE
 
 void
