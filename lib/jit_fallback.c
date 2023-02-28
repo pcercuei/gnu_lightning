@@ -21,13 +21,41 @@ static void _fallback_cto(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_ctz(r0,r1)		_fallback_ctz(_jit,r0,r1)
 static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #  if defined(__ia64__)
-#    define fallback_patch_jmpi(inst,lbl)				\
-    do {								\
-	sync();								\
-	patch_at(jit_code_jmpi, inst, lbl);				\
-    } while (0)
+#    define fallback_flush()		sync()
+#  elif defined(__mips__)
+#    define fallback_flush()		flush()
 #  else
-#    define fallback_patch_jmpi(inst,lbl) fallback_patch_at(inst,lbl)
+#    define fallback_flush()		/**/
+#  endif
+#  if defined(__mips__)
+#    define fallback_jmpi(i0)		jmpi(i0, 1)
+#  elif defined(__arm__)
+#    define fallback_jmpi(i0)		jmpi_p(i0, 1)
+#  elif defined(__s390__) || defined(__s390x__)
+#    define fallback_jmpi(i0)		jmpi(i0, 1)
+#  else
+#    define fallback_jmpi(i0)		jmpi(i0)
+#  endif
+#  if defined(__s390__) || defined(__s390x__)
+#    define fallback_bnei(i0,r0,i1)	bnei_p(i0,r0,i1)
+#    define fallback_blei(i0,r0,i1)	blei_p(i0,r0,i1)
+#    define fallback_bmsr(i0,r0,r1)	bmsr_p(i0,r0,r1)
+#    define fallback_bmsi(i0,r0,i1)	bmsi_p(i0,r0,i1)
+#  else
+#    define fallback_bnei(i0,r0,r1)	bnei(i0,r0,r1)
+#    define fallback_blei(i0,r0,r1)	blei(i0,r0,r1)
+#    define fallback_bmsr(i0,r0,r1)	bmsr(i0,r0,r1)
+#    define fallback_bmsi(i0,r0,i1)	bmsi(i0,r0,i1)
+#  endif
+#  if defined(__ia64__)
+#    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(jit_code_jmpi, inst, lbl)
+ #  elif defined(__arm__)
+#    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(arm_patch_jump, inst, lbl)
+#   else
+#    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(inst, lbl)
 #  endif
 #  if defined(__arm__)
 #    define fallback_patch_at(inst,lbl)	patch_at(arm_patch_jump,inst,lbl)
@@ -46,26 +74,39 @@ static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #  else
 #    define fallback_patch_at(inst,lbl)	patch_at(inst,lbl)
 #  endif
-#  if defined(__mips__)
-#    define fallback_jmpi(i0)		jmpi(i0,1)
+#  if defined(__ia64__)
+#    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(jit_code_jmpi, inst, lbl)
+#    define fallback_patch_bnei(inst, lbl)				\
+	patch_at(jit_code_bnei, inst, lbl)
+#    define fallback_patch_blei(inst, lbl)				\
+	patch_at(jit_code_blei, inst, lbl)
+#    define fallback_patch_bmsr(inst, lbl)				\
+	patch_at(jit_code_bmsr, inst, lbl)
+#    define fallback_patch_bmsi(inst, lbl)				\
+	patch_at(jit_code_bmsi, inst, lbl)
 #  elif defined(__arm__)
-#    define fallback_jmpi(i0)		jmpi_p(i0,1)
-#  elif defined(__s390__) || defined(__s390x__)
-#    define fallback_jmpi(i0)		jmpi(i0,1)
-#  else
-#    define fallback_jmpi(i0)		jmpi(i0)
-#  endif
-#  if defined(__mips__)
-#    define fallback_bnei(i0,r0,i1)	bnei(i0,r0,i1)
-#  elif defined(__s390__) || defined(__s390x__)
-#    define fallback_bnei(i0,r0,i1)	bnei_p(i0,r0,i1)
-#  else
-#    define fallback_bnei(i0,r0,i1)	bnei(i0,r0,i1)
-#  endif
-#  if defined(__s390__) || defined(__s390x__)
-#    define fallback_bmsr(i0,r0,r1)	bmsr_p(i0,r0,r1)
-#  else
-#    define fallback_bmsr(i0,r0,r1)	bmsr(i0,r0,r1)
+#    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(arm_patch_jump,inst, lbl)
+#    define fallback_patch_bnei(inst, lbl)				\
+	patch_at(arm_patch_jump,inst, lbl)
+#    define fallback_patch_blei(inst, lbl)				\
+	patch_at(arm_patch_jump,inst, lbl)
+#    define fallback_patch_bmsr(inst, lbl)				\
+	patch_at(arm_patch_jump,inst, lbl)
+#    define fallback_patch_bmsi(inst, lbl)				\
+	patch_at(arm_patch_jump,inst, lbl)
+ #  else
+#    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(inst, lbl)
+#    define fallback_patch_bnei(inst, lbl)				\
+	patch_at(inst, lbl)
+#    define fallback_patch_blei(inst, lbl)				\
+	patch_at(inst, lbl)
+#    define fallback_patch_bmsr(inst, lbl)				\
+	patch_at(inst, lbl)
+#    define fallback_patch_bmsi(inst, lbl)				\
+	patch_at(inst, lbl)
 #  endif
 #endif
 
@@ -195,10 +236,11 @@ _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     str_l(r1, r3);
 #  endif
     /* done: */
+    fallback_flush();
     done = _jit->pc.w;
     fallback_calli((jit_word_t)pthread_mutex_unlock, (jit_word_t)&mutex);
     fallback_load(r0);
-    fallback_patch_at(jump, done);
+    fallback_patch_bnei(jump, done);
     fallback_load_regs(r0);
     if (iscasi)
 	jit_unget_reg(r1_reg);
@@ -211,9 +253,12 @@ _fallback_clo(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     comr(r0, r1);
     clz = fallback_bnei(_jit->pc.w, r0, 0);
     movi(r0, __WORDSIZE);
+    fallback_flush();
     done = fallback_jmpi(_jit->pc.w);
-    fallback_patch_at(clz, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bnei(clz, _jit->pc.w);
     fallback_clz(r0, r0);
+    fallback_flush();
     fallback_patch_jmpi(done, _jit->pc.w);
 }
 
@@ -225,7 +270,8 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l32 = fallback_bnei(_jit->pc.w, r1, 0);
     movi(r0, __WORDSIZE);
     clz = fallback_jmpi(_jit->pc.w);
-    fallback_patch_at(l32, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bnei(l32, _jit->pc.w);
     r2_reg = jit_get_reg(jit_class_gpr);
     r2 = rn(r2_reg);
     r1_reg = jit_get_reg(jit_class_gpr);
@@ -237,7 +283,8 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l32 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 32);
     addi(r0, r0, 32);
-    fallback_patch_at(l32, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l32, _jit->pc.w);
     lshi(r2, r2, 16);
 #  else
     movi(r2, 0xffff0000UL);
@@ -245,26 +292,31 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l16 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 16);
     addi(r0, r0, 16);
-    fallback_patch_at(l16, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l16, _jit->pc.w);
     lshi(r2, r2, 8);
     l8 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 8);
     addi(r0, r0, 8);
-    fallback_patch_at(l8, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l8, _jit->pc.w);
     lshi(r2, r2, 4);
     l4 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 4);
     addi(r0, r0, 4);
-    fallback_patch_at(l4, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l4, _jit->pc.w);
     lshi(r2, r2, 2);
     l2 = fallback_bmsr(_jit->pc.w, r1, r2);
     lshi(r1, r1, 2);
     addi(r0, r0, 2);
-    fallback_patch_at(l2, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l2, _jit->pc.w);
     lshi(r2, r2, 1);
     l1 = fallback_bmsr(_jit->pc.w, r1, r2);
     addi(r0, r0, 1);
-    fallback_patch_at(l1, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l1, _jit->pc.w);
     fallback_patch_jmpi(clz, _jit->pc.w);
     jit_unget_reg(r2_reg);
     jit_unget_reg(r1_reg);
@@ -278,8 +330,10 @@ _fallback_cto(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     ctz = fallback_bnei(_jit->pc.w, r0, 0);
     movi(r0, __WORDSIZE);
     done = fallback_jmpi(_jit->pc.w);
-    fallback_patch_at(ctz, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bnei(ctz, _jit->pc.w);
     fallback_ctz(r0, r0);
+    fallback_flush();
     fallback_patch_jmpi(done, _jit->pc.w);
 }
 
@@ -291,7 +345,8 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l32 = fallback_bnei(_jit->pc.w, r1, 0);
     movi(r0, __WORDSIZE);
     ctz = fallback_jmpi(_jit->pc.w);
-    fallback_patch_at(l32, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bnei(l32, _jit->pc.w);
     r2_reg = jit_get_reg(jit_class_gpr);
     r2 = rn(r2_reg);
     r1_reg = jit_get_reg(jit_class_gpr);
@@ -303,7 +358,8 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l32 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 32);
     addi(r0, r0, 32);
-    fallback_patch_at(l32, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l32, _jit->pc.w);
     rshi(r2, r2, 16);
 #  else
     movi(r2, 0xffffUL);
@@ -311,26 +367,31 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     l16 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 16);
     addi(r0, r0, 16);
-    fallback_patch_at(l16, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l16, _jit->pc.w);
     rshi(r2, r2, 8);
     l8 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 8);
     addi(r0, r0, 8);
-    fallback_patch_at(l8, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l8, _jit->pc.w);
     rshi(r2, r2, 4);
     l4 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 4);
     addi(r0, r0, 4);
-    fallback_patch_at(l4, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l4, _jit->pc.w);
     rshi(r2, r2, 2);
     l2 = fallback_bmsr(_jit->pc.w, r1, r2);
     rshi_u(r1, r1, 2);
     addi(r0, r0, 2);
-    fallback_patch_at(l2, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l2, _jit->pc.w);
     rshi(r2, r2, 1);
     l1 = fallback_bmsr(_jit->pc.w, r1, r2);
     addi(r0, r0, 1);
-    fallback_patch_at(l1, _jit->pc.w);
+    fallback_flush();
+    fallback_patch_bmsr(l1, _jit->pc.w);
     fallback_patch_jmpi(ctz, _jit->pc.w);
     jit_unget_reg(r2_reg);
     jit_unget_reg(r1_reg);
