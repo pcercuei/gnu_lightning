@@ -311,6 +311,8 @@ static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define rbitr(r0, r1)			_rbitr(_jit, r0, r1)
+static void _rbitr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define cr(code, r0, r1, r2)		_cr(_jit, code, r0, r1, r2)
 static void
 _cr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
@@ -1332,38 +1334,49 @@ _muli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 #define savset(rn)							\
-    if (r0 != rn) {							\
-	sav |= 1 << rn;							\
-	if (r1 != rn && r2 != rn)					\
-	    set |= 1 << rn;						\
-    }
+    do {								\
+	if (r0 != rn) { 						\
+	    sav |= 1 << rn;						\
+	    if (r1 != rn && r2 != rn)					\
+		set |= 1 << rn; 					\
+	}								\
+    } while (0)
 #define isavset(rn)							\
-    if (r0 != rn) {							\
-	sav |= 1 << rn;							\
-	if (r1 != rn)							\
-	    set |= 1 << rn;						\
-    }
+    do {								\
+	if (r0 != rn) {							\
+	    sav |= 1 << rn;						\
+	    if (r1 != rn)						\
+		set |= 1 << rn;						\
+	}								\
+    } while (0)
 #define qsavset(rn)							\
-    if (r0 != rn && r1 != rn) {						\
-	sav |= 1 << rn;							\
-	if (r2 != rn && r3 != rn)					\
-	    set |= 1 << rn;						\
-    }
+    do {								\
+	if (r0 != rn && r1 != rn) {					\
+	    sav |= 1 << rn;						\
+	    if (r2 != rn && r3 != rn)					\
+		set |= 1 << rn;						\
+	}								\
+    } while (0)
 #define allocr(rn, rv)							\
-    if (set & (1 << rn))						\
-	(void)jit_get_reg(rv|jit_class_gpr|jit_class_named);		\
-    if (sav & (1 << rn)) {						\
-	if ( jit_regset_tstbit(&_jitc->regsav, rv) ||			\
-	    !jit_regset_tstbit(&_jitc->reglive, rv))			\
-	    sav &= ~(1 << rn);						\
-	else								\
-	    save(rv);							\
-    }
+    do {								\
+	if (set & (1 << rn))						\
+	    (void)jit_get_reg(rv|jit_class_gpr|jit_class_named);	\
+	if (sav & (1 << rn)) {						\
+	    if ( jit_regset_tstbit(&_jitc->regsav, rv) ||		\
+		!jit_regset_tstbit(&_jitc->reglive, rv))		\
+		sav &= ~(1 << rn);					\
+	    else							\
+		save(rv);						\
+	}								\
+    } while (0)
 #define clear(rn, rv)							\
-    if (set & (1 << rn))						\
-	jit_unget_reg(rv);						\
-    if (sav & (1 << rn))						\
-	load(rv);
+    do {								\
+	if (set & (1 << rn))						\
+	    jit_unget_reg(rv);						\
+	if (sav & (1 << rn))						\
+	    load(rv);							\
+    } while (0)
+
 static void
 _iqmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	jit_int32_t r2, jit_int32_t r3, jit_bool_t sign)
@@ -1710,9 +1723,6 @@ _iqdivi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	qdivr_u(r0, r1, r2, rn(reg));
     jit_unget_reg(reg);
 }
-#undef clear
-#undef allocr
-#undef savset
 
 static void
 _andr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
@@ -2057,6 +2067,100 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	}
     }
     /* TZCNT has defined behavior for value zero */
+}
+
+static void
+_rbitr(jit_state_t * _jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_word_t		loop;
+    jit_int32_t		sav, set, use;
+    jit_int32_t		r0_reg, t0, r1_reg, t1, t2, t3;
+    static const unsigned char swap_tab[256] = {
+	 0, 128, 64, 192, 32, 160,  96, 224,
+	16, 144, 80, 208, 48, 176, 112, 240,
+	 8, 136, 72, 200, 40, 168, 104, 232,
+	24, 152, 88, 216 ,56, 184, 120, 248,
+	 4, 132, 68, 196, 36, 164, 100, 228,
+	20, 148, 84, 212, 52, 180, 116, 244,
+	12, 140, 76, 204, 44, 172, 108, 236,
+	28, 156, 92, 220, 60, 188, 124, 252,
+	 2, 130, 66, 194, 34, 162,  98, 226,
+	18, 146, 82, 210, 50, 178, 114, 242,
+	10, 138, 74, 202, 42, 170, 106, 234,
+	26, 154, 90, 218, 58, 186, 122, 250,
+	 6, 134, 70, 198, 38, 166, 102, 230,
+	22, 150, 86, 214, 54, 182, 118, 246,
+	14, 142, 78, 206, 46, 174, 110, 238,
+	30, 158, 94, 222, 62, 190, 126, 254,
+	 1, 129, 65, 193, 33, 161,  97, 225,
+	17, 145, 81, 209, 49, 177, 113, 241,
+	 9, 137, 73, 201, 41, 169, 105, 233,
+	25, 153, 89, 217, 57, 185, 121, 249,
+	 5, 133, 69, 197, 37, 165, 101, 229,
+	21, 149, 85, 213, 53, 181, 117, 245,
+	13, 141, 77, 205, 45, 173, 109, 237,
+	29, 157, 93, 221, 61, 189, 125, 253,
+	 3, 131, 67, 195, 35, 163,  99, 227,
+	19, 147, 83, 211, 51, 179, 115, 243,
+	11, 139, 75, 203, 43, 171, 107, 235,
+	27, 155, 91, 219, 59, 187, 123, 251,
+	 7, 135, 71, 199, 39, 167, 103, 231,
+	23, 151, 87, 215, 55, 183, 119, 247,
+	15, 143, 79, 207, 47, 175, 111, 239,
+	31, 159, 95, 223, 63, 191, 127, 255
+    };
+    sav = set = use = 0;
+    isavset(_RCX_REGNO);
+    allocr(_RCX_REGNO, _RCX);
+    if (r0 == _RCX_REGNO) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r0_reg = rn(t0);
+    }
+    else {
+	t0 = JIT_NOREG;
+	r0_reg = r0;
+    }
+    if (r1 == _RCX_REGNO || r0 == r1) {
+	t1 = jit_get_reg(jit_class_gpr);
+	r1_reg = rn(t1);
+	movr(r1_reg, r1);
+    }
+    else {
+	t1 = JIT_NOREG;
+	r1_reg = r1;
+    }
+    t2 = jit_get_reg(jit_class_gpr);
+    t3 = jit_get_reg(jit_class_gpr);
+#if __WORDSIZE == 32
+    /* Avoid condition that causes running out of registers */
+    if (!reg8_p(r1_reg)) {
+	movi(rn(t2), 0xff);
+	andr(rn(t2), r1_reg, rn(t2));
+    }
+    else
+#endif
+	extr_uc(rn(t2), r1_reg);
+    movi(rn(t3), (jit_word_t)swap_tab);
+    ldxr_uc(r0_reg, rn(t3), rn(t2));
+    movi(_RCX_REGNO, 8);
+    loop = _jit->pc.w;
+    rshr(rn(t2), r1_reg, _RCX_REGNO);
+    extr_uc(rn(t2), rn(t2));
+    lshi(r0_reg, r0_reg, 8);
+    ldxr_uc(rn(t2), rn(t3), rn(t2));
+    orr(r0_reg, r0_reg, rn(t2));
+    addi(_RCX_REGNO, _RCX_REGNO, 8);
+    alui(X86_CMP, _RCX_REGNO, __WORDSIZE);
+    jls(loop);
+    clear(_RCX_REGNO, _RCX);
+    jit_unget_reg(t3);
+    jit_unget_reg(t2);
+    if (t1 != JIT_NOREG)
+	jit_unget_reg(t1);
+    if (t0 != JIT_NOREG) {
+	movr(r0, r0_reg);
+	jit_unget_reg(t0);
+    }
 }
 
 static void
@@ -3913,6 +4017,9 @@ _jmpsi(jit_state_t *_jit, jit_uint8_t i0)
     ic(i0);
     return (w);
 }
+#undef clear
+#undef allocr
+#undef savset
 
 static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
