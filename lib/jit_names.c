@@ -253,7 +253,7 @@ static char *code_name[] = {
     "movr_f_w",		"movi_f_w",
     "movr_d_ww",	"movi_d_ww",
     "movr_d_w",		"movi_d_w",
-    "clo",		"clz",
-    "cto",		"ctz",
-    "rbit",
+    "clor",		"clzr",
+    "ctor",		"ctzr",
+    "rbitr",
 };
