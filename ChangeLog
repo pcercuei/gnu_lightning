@@ -1,3 +1,28 @@
+2023-03-02 Paulo Andrade <pcpa@gnu.org>
+
+	* check/popcnt.tst, check/popcnt.ok: New test files for the new
+	popcntr instruction.
+	* check/Makefile.am, check/lightning.c, include/lightning.h.in,
+	lib/jit_names.c: lib/lightning.c, doc/body.texi: Update for popcntr.
+	* lib/jit_aarch64-fpu.c, lib/jit_aarch64.c: Implement optimized
+	popcntr using the fpu.
+	* lib/jit_alpha-cpu.c, lib/jit_alpha.c: Implement optimized
+	popcntr using the ctpop instruction.
+	* lib/jit_arm-vfp.c, lib/jit_arm-cpu.c, lib/jit_arm.c: Implement
+	untested optimized popcntr using vfp >= 4, otherwise use a
+	software fallback.
+	* lib/jit_ia64-cpu.c, lib/jit_jia64.c: Implement optimized
+	popcntr using the popcnt instruction.
+	* lib/jit_ppc-cpu.c, lib/jit_ppc.c: Implement optimized
+	popcntr using the popcntb, plus mullr and rshi_u instruction.
+	* lib/jit_x86-cpu.c, lib/jit_x86.c: Implement optimized
+	popcntr instruction using the popcnt instruction if available,
+	otherwise use an optimized fallback.
+	* lib/jit_fallback.c: Implement simple fallback popcnt.
+	* lib/jit_hppa.c, lib/jit_loongarch.c, lib/jit_mips.c,
+	lib/jit_riscv.c, lib/jit_s390.c, lib/jit_sparc.c: Use fallback
+	popcnt.
+
 2023-02-26 Paulo Andrade <pcpa@gnu.org>
 
 	* check/bit.tst: Correct 32 bit sample ctz implementation.

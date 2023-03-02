@@ -25,6 +25,8 @@ static void _fallback_cto(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_bitswap(r0,r1)		_fallback_bitswap(_jit, r0, r1)
 static void _fallback_bitswap(jit_state_t*, jit_int32_t, jit_int32_t);
+#define fallback_popcnt(r0,r1)		_fallback_popcnt(_jit, r0, r1)
+static void _fallback_popcnt(jit_state_t*, jit_int32_t, jit_int32_t);
 #  if defined(__ia64__)
 #    define fallback_flush()		sync()
 #  elif defined(__mips__)
@@ -680,5 +682,67 @@ while ((s >>= 1) > 0)
     jit_unget_reg(mask);
     jit_unget_reg(s);
 #  endif
+}
+
+static void
+_fallback_popcnt(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    /* Same approach as rbitr */
+    /*		t0 = r1;
+     *		t1 = t0 & 0xff;
+     *		t2 = pop_tab;
+     *		r0 = t2[t1];
+     *		t3 = 8;
+     *	loop:
+     *		t1 = t0 >> t3;
+     *		t1 &= 0xff;
+     *		r0 <<= 8;
+     *		r0 |= t2[t1];
+     *		t3 += 8;
+     *		if (t3 < __WORDSIZE)
+     *		    goto loop;
+     */
+    jit_word_t		loop;
+    jit_int32_t		t0, r1_reg, t1, t2, t3;
+    static const unsigned char pop_tab[256] = {
+	0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
+	1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+	1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+	2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+	1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+	2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+	2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+	3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8
+    };
+    if (r0 == r1) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r1_reg = rn(t0);
+    }
+    else {
+	t0 = JIT_NOREG;
+	r1_reg = r1;
+    }
+    t1 = jit_get_reg(jit_class_gpr);
+    t2 = jit_get_reg(jit_class_gpr);
+    t3 = jit_get_reg(jit_class_gpr);
+    if (r0 == r1)
+	movr(rn(t0), r1);
+    extr_uc(rn(t1), r1_reg);
+    movi(rn(t2), (jit_word_t)pop_tab);
+    ldxr_uc(r0, rn(t2), rn(t1));
+    movi(rn(t3), 8);
+    fallback_flush();
+    loop = _jit->pc.w;
+    rshr(rn(t1), r1_reg, rn(t3));
+    extr_uc(rn(t1), rn(t1));
+    ldxr_uc(rn(t1), rn(t2), rn(t1));
+    addr(r0, r0, rn(t1));
+    addi(rn(t3), rn(t3), 8);
+    blti(loop, rn(t3), __WORDSIZE);
+    jit_unget_reg(t3);
+    jit_unget_reg(t2);
+    jit_unget_reg(t1);
+    if (t0 != JIT_NOREG)
+	jit_unget_reg(t0);
 }
 #endif

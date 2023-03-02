@@ -386,6 +386,7 @@ static void _MCRXR(jit_state_t*, jit_int32_t);
 #  define ORI(d,a,u)			FDu(24,a,d,u)
 #  define NOP()				ORI(0,0,0)
 #  define ORIS(d,a,u)			FDu(25,a,d,u)
+#  define POPCNTB(a,s)			FX(31,s,a,0,122)
 #  define RFI()				FXL(19,0,0,50)
 #  define RLWIMI(d,s,h,b,e)		FM(20,s,d,h,b,e,0)
 #  define RLWIMI_(d,s,h,b,e)		FM(20,s,d,h,b,e,1)
@@ -544,6 +545,8 @@ static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define popcntr(r0, r1)		_popcntr(_jit, r0, r1)
+static void _popcntr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define extr_c(r0,r1)			EXTSB(r0,r1)
 #  define extr_uc(r0,r1)		ANDI_(r0,r1,0xff)
 #  define extr_s(r0,r1)			EXTSH(r0,r1)
@@ -1237,6 +1240,22 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     fallback_bitswap(r0, r1);
     clzr(r0, r0);
+}
+
+static void
+_popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    POPCNTB(r0, r1);
+#if __WORDSIZE == 32
+    movi(rn(reg), 0x01010101);
+#else
+    movi(rn(reg), 0x0101010101010101);
+#endif
+    mullr(r0, r0, rn(reg));
+    rshi_u(r0, r0, __WORDSIZE - 8);
+    jit_unget_reg(reg);
 }
 
 static void

@@ -18,6 +18,8 @@
  */
 
 #if PROTO
+#  define A64_CNT			0x0e205800
+#  define A64_ADDV			0x0e31b800
 #  define A64_SCVTF			0x1e220000
 #  define A64_FMOVWV			0x1e260000
 #  define A64_FMOVVW			0x1e270000
@@ -35,6 +37,8 @@
 #  define A64_FDIV			0x1e201800
 #  define A64_FADD			0x1e202800
 #  define A64_FSUB			0x1e203800
+#  define CNT(Rd,Rn)			vqo_vv(0,A64_CNT,Rn,Rd)
+#  define ADDV(Rd,Rn)			vqo_vv(0,A64_ADDV,Rn,Rd)
 #  define FCMPES(Rn,Rm)			os_vv(A64_FCMPE,0,Rn,Rm)
 #  define FCMPED(Rn,Rm)			os_vv(A64_FCMPE,1,Rn,Rm)
 #  define FMOVS(Rd,Rn)			osvv_(A64_FMOV,0,Rd,Rn)
@@ -59,6 +63,7 @@
 #  define FSQRTD(Rd,Rn)			osvv_(A64_FSQRT,1,Rd,Rn)
 #  define FADDS(Rd,Rn,Rm)		osvvv(A64_FADD,0,Rd,Rn,Rm)
 #  define FADDD(Rd,Rn,Rm)		osvvv(A64_FADD,1,Rd,Rn,Rm)
+#  define FADDV(Rd,Rn,Rm)		osvvv(A64_FADD,0,Rd,Rn,Rm)
 #  define FSUBS(Rd,Rn,Rm)		osvvv(A64_FSUB,0,Rd,Rn,Rm)
 #  define FSUBD(Rd,Rn,Rm)		osvvv(A64_FSUB,1,Rd,Rn,Rm)
 #  define FMULS(Rd,Rn,Rm)		osvvv(A64_FMUL,0,Rd,Rn,Rm)
@@ -74,6 +79,11 @@ static void _osvv_(jit_state_t*,jit_int32_t,
 #  define os_vv(Op,Sz,Rn,Rm)		_os_vv(_jit,Op,Sz,Rn,Rm)
 static void _os_vv(jit_state_t*,jit_int32_t,
 		   jit_int32_t,jit_int32_t,jit_int32_t);
+#  define vqo_vv(Q,Op,Rn,Rd)		_vqo_vv(_jit,Q,Op,Rn,Rd)
+static void _vqo_vv(jit_state_t*,jit_int32_t,
+		    jit_int32_t,jit_int32_t,jit_int32_t);
+#  define popcntr(r0,r1)		_popcntr(_jit,r0,r1);
+static void _popcntr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define truncr_f_i(r0,r1)		_truncr_f_i(_jit,r0,r1)
 static void _truncr_f_i(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define truncr_f_l(r0,r1)		FCVTSZ_XS(r0,r1)
@@ -365,6 +375,22 @@ _os_vv(jit_state_t *_jit, jit_int32_t Op,
     ii(i.w);
 }
 
+static void
+_vqo_vv(jit_state_t *_jit, jit_int32_t Q,
+	jit_int32_t Op, jit_int32_t Rn, jit_int32_t Rd)
+{
+    instr_t	i;
+    assert(!(Rn &       ~0x1f));
+    assert(!(Rd &       ~0x1f));
+    assert(!(Q &         ~0x1));
+    assert(!(Op & ~0xbffffc00));
+    i.w = Op;
+    i.Q.b  = Q;
+    i.Rn.b = Rn;
+    i.Rd.b = Rd;
+    ii(i.w);
+}
+
 #define fopi(name)							\
 static void								\
 _##name##i_f(jit_state_t *_jit,						\
@@ -410,6 +436,18 @@ _b##name##i_d(jit_state_t *_jit,					\
     word = b##name##r_d(i0, r0, rn(reg));				\
     jit_unget_reg(reg);							\
     return (word);							\
+}
+
+static void
+_popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_fpr);
+    FMOVDX(rn(reg), r1);
+    CNT(rn(reg), rn(reg));
+    ADDV(rn(reg), rn(reg));
+    FMOVXD(r0, rn(reg));
+    jit_unget_reg(reg);
 }
 
 static void

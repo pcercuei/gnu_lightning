@@ -131,7 +131,7 @@
 #  define ARM_VMOV_ADV_16		0x00000020
 #  define ARM_VMOV_A_D			0x0e100b10
 #  define ARM_VMOV_D_A			0x0e000b10
-
+#  define ARM_VCNT			0x03b00500
 #  define vodi(oi,r0)			_vodi(_jit,oi,r0)
 static void _vodi(jit_state_t*,int,int) maybe_unused;
 #  define voqi(oi,r0)			_voqi(_jit,oi,r0)
@@ -157,6 +157,8 @@ static void _cc_vors_(jit_state_t*,int,int,int,int);
 #  define vorv_(o,r0,r1)		_cc_vorv_(_jit,ARM_CC_NV,o,r0,r1)
 #  define cc_vorv_(cc,o,r0,r1)		_cc_vorv_(_jit,cc,o,r0,r1)
 static void _cc_vorv_(jit_state_t*,int,int,int,int) maybe_unused;
+#  define vo_vv(o,r0,r1)		_cc_vo_vv(_jit,ARM_CC_NV,o,r0,r1)
+static void _cc_vo_vv(jit_state_t*,int,int,int,int) maybe_unused;
 #  define vori_(o,r0,r1)		_cc_vori_(_jit,ARM_CC_NV,o,r0,r1)
 #  define cc_vori_(cc,o,r0,r1)		_cc_vori_(_jit,cc,o,r0,r1)
 static void _cc_vori_(jit_state_t*,int,int,int,int);
@@ -320,6 +322,7 @@ static void _cc_vorsl(jit_state_t*,int,int,int,int,int);
 #  define VMOV_V_I16(r0,r1)		CC_VMOV_V_I16(ARM_CC_AL,r0,r1)
 #  define CC_VMOV_V_I32(cc,r0,r1)	cc_vori_(cc,ARM_VMOV_D_A,r1,r0)
 #  define VMOV_V_I32(r0,r1)		CC_VMOV_V_I32(ARM_CC_AL,r0,r1)
+#  define VCNT(r0,r1)			vo_vv(ARM_VCNT,r0,r1)
 #  define VADD_I8(r0,r1,r2)		voddd(ARM_VADD_I,r0,r1,r2)
 #  define VADDQ_I8(r0,r1,r2)		voqqq(ARM_VADD_I|ARM_V_Q,r0,r1,r2)
 #  define VADD_I16(r0,r1,r2)		voddd(ARM_VADD_I|ARM_V_I16,r0,r1,r2)
@@ -466,6 +469,8 @@ static void _cc_vorsl(jit_state_t*,int,int,int,int,int);
 #  define VSTRN_F64(r0,r1,i0)		CC_VSTRN_F64(ARM_CC_AL,r0,r1,i0)
 #  define CC_VSTR_F64(cc,r0,r1,i0)	cc_vldst(cc,ARM_VSTR|ARM_V_F64|ARM_P,r0,r1,i0)
 #  define VSTR_F64(r0,r1,i0)		CC_VSTR_F64(ARM_CC_AL,r0,r1,i0)
+#  define vfp_popcntr(r0,r1)		_vfp_popcntr(_jit,r0,r1)
+static void _vfp_popcntr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_movr_f(r0,r1)		_vfp_movr_f(_jit,r0,r1)
 static void _vfp_movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_movr_d(r0,r1)		_vfp_movr_d(_jit,r0,r1)
@@ -1062,6 +1067,21 @@ _cc_vorv_(jit_state_t *_jit, int cc, int o, int r0, int r1)
 }
 
 static void
+_cc_vo_vv(jit_state_t *_jit, int cc, int o, int r0, int r1)
+{
+    jit_thumb_t	thumb;
+    assert(!(cc & 0x0fffffff));
+    assert(!(o  & 0xf000f00f));
+    r0 = vfp_regno(r0);
+    r1 = vfp_regno(r1);
+    thumb.i = cc|o|(_u4(r1)<<12)|_u4(r0);
+    if (jit_thumb_p())
+	iss(thumb.s[0], thumb.s[1]);
+    else
+	ii(thumb.i);
+}
+
+static void
 _cc_vori_(jit_state_t *_jit, int cc, int o, int r0, int r1)
 {
     jit_thumb_t	thumb;
@@ -1202,6 +1222,18 @@ _cc_vorsl(jit_state_t *_jit, int cc, int o, int r0, int r1, int i0)
 	iss(thumb.s[0], thumb.s[1]);
     else
 	ii(thumb.i);
+}
+
+static void
+_vfp_popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_fpr);
+    VMOV_S_A(rn(reg), r1);
+    VCNT(rn(reg), rn(reg));
+    VADD_I8(rn(reg), rn(reg), rn(reg));
+    VMOV_A_S(r0, rn(reg));
+    jit_unget_reg(reg);
 }
 
 static void

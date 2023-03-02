@@ -1810,6 +1810,7 @@ _emit_code(jit_state_t *_jit)
 		case_rr(cto,);
 		case_rr(ctz,);
 		case_rr(rbit,);
+		case_rr(popcnt,);
 		case_rrr(lt,);
 		case_rrw(lt,);
 		case_rrr(lt, _u);

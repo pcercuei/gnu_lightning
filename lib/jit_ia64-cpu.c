@@ -1309,6 +1309,7 @@ static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#define popcntr(r0, r1)			POPCNT(r0, r1)
 #define negr(r0,r1)			subr(r0,0,r1)
 #define comr(r0,r1)			ANDCMI(r0,-1,r1)
 #define movr(r0,r1)			_movr(_jit,r0,r1)

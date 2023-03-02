@@ -1138,7 +1138,9 @@ _emit_code(jit_state_t *_jit)
 		case_rr(cto,);
 		case_rr(ctz,);
 #define rbitr(r0, r1)	fallback_bitswap(r0, r1)
+#define popcntr(r0, r1)	fallback_popcnt(r0, r1)
 		case_rr(rbit,);
+		case_rr(popcnt,);
 		case_rrr(and,);
 		case_rrw(and,);
 		case_rrr(or,);

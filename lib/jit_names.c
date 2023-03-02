@@ -256,4 +256,5 @@ static char *code_name[] = {
     "clor",		"clzr",
     "ctor",		"ctzr",
     "rbitr",
+    "popcntr",
 };

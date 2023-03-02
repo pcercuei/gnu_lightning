@@ -326,6 +326,7 @@ static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctor(r0, r1)			_ctor(_jit, r0, r1)
 static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define ctzr(r0, r1)			CTTZ(r1, r0)
+#  define popcntr(r0, r1)		CTPOP(r1, r0)
 #  define addr(r0,r1,r2)		ADDQ(r1,r2,r0)
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);

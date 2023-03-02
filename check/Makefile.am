@@ -117,6 +117,7 @@ EXTRA_DIST =				\
 	va_list.tst	va_list.ok	\
 	bit.tst		bit.ok		\
 	rbit.tst	rbit.ok		\
+	popcnt.tst	popcnt.ok	\
 	check.sh			\
 	check.x87.sh			\
 	check.arm.sh	check.swf.sh	\
@@ -147,7 +148,7 @@ base_TESTS =				\
 	float jmpr live put		\
 	qalu_mul qalu_div		\
 	range ranger ret skip tramp	\
-	va_list bit rbit
+	va_list bit rbit popcnt
 
 $(base_TESTS):	check.sh
 	$(LN_S) $(srcdir)/check.sh $@

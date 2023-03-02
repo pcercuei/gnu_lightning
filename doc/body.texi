@@ -296,6 +296,7 @@ clzr		     O1 = number of leading zero bits in O2
 ctor		     O1 = number of trailing one bits in O2
 ctzr		     O1 = number of trailing zero bits in O2
 rbitr		     O1 = bits of O2 reversed
+popcntr		     O1 = number of bits set in O2
 @end example
 
 Note that @code{ctzr} is basically equivalent of a @code{C} call

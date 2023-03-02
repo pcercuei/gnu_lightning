@@ -313,6 +313,8 @@ static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define rbitr(r0, r1)			_rbitr(_jit, r0, r1)
 static void _rbitr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define popcntr(r0, r1)		_popcntr(_jit, r0, r1)
+static void _popcntr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define cr(code, r0, r1, r2)		_cr(_jit, code, r0, r1, r2)
 static void
 _cr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
@@ -2160,6 +2162,84 @@ _rbitr(jit_state_t * _jit, jit_int32_t r0, jit_int32_t r1)
     if (t0 != JIT_NOREG) {
 	movr(r0, r0_reg);
 	jit_unget_reg(t0);
+    }
+}
+
+static void
+_popcntr(jit_state_t * _jit, jit_int32_t r0, jit_int32_t r1)
+{
+    if (jit_cpu.abm) {
+	ic(0xf3);
+	rex(0, WIDE, r0, _NOREG, r1);
+	ic(0x0f);
+	ic(0xb8);
+	mrm(0x3, r7(r0), r7(r1));
+    }
+    else {
+	jit_word_t	    loop;
+	jit_int32_t	    sav, set, use;
+	jit_int32_t	    r0_reg, t0, r1_reg, t1, t2, t3;
+	static const unsigned char pop_tab[256] = {
+	    0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
+	    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+	    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+	    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+	    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+	    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+	    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+	    3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8
+	};
+	sav = set = use = 0;
+	isavset(_RCX_REGNO);
+	allocr(_RCX_REGNO, _RCX);
+	if (r0 == _RCX_REGNO) {
+	    t0 = jit_get_reg(jit_class_gpr);
+	    r0_reg = rn(t0);
+	}
+	else {
+	    t0 = JIT_NOREG;
+	    r0_reg = r0;
+	}
+	if (r1 == _RCX_REGNO || r0 == r1) {
+	    t1 = jit_get_reg(jit_class_gpr);
+	    r1_reg = rn(t1);
+	    movr(r1_reg, r1);
+	}
+	else {
+	    t1 = JIT_NOREG;
+	    r1_reg = r1;
+	}
+	t2 = jit_get_reg(jit_class_gpr);
+	t3 = jit_get_reg(jit_class_gpr);
+#if __WORDSIZE == 32
+	/* Avoid condition that causes running out of registers */
+	if (!reg8_p(r1_reg)) {
+	    movi(rn(t2), 0xff);
+	    andr(rn(t2), r1_reg, rn(t2));
+	}
+	else
+#endif
+	    extr_uc(rn(t2), r1_reg);
+	movi(rn(t3), (jit_word_t)pop_tab);
+	ldxr_uc(r0_reg, rn(t3), rn(t2));
+	movi(_RCX_REGNO, 8);
+	loop = _jit->pc.w;
+	rshr(rn(t2), r1_reg, _RCX_REGNO);
+	extr_uc(rn(t2), rn(t2));
+	ldxr_uc(rn(t2), rn(t3), rn(t2));
+	addr(r0_reg, r0_reg, rn(t2));
+	addi(_RCX_REGNO, _RCX_REGNO, 8);
+	alui(X86_CMP, _RCX_REGNO, __WORDSIZE);
+	jls(loop);
+	clear(_RCX_REGNO, _RCX);
+	jit_unget_reg(t3);
+	jit_unget_reg(t2);
+	if (t1 != JIT_NOREG)
+	    jit_unget_reg(t1);
+	if (t0 != JIT_NOREG) {
+	    movr(r0, r0_reg);
+	    jit_unget_reg(t0);
+	}
     }
 }
 
