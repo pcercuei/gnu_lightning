@@ -116,6 +116,7 @@ EXTRA_DIST =				\
 	tramp.tst	tramp.ok	\
 	va_list.tst	va_list.ok	\
 	bit.tst		bit.ok		\
+	rbit.tst	rbit.ok		\
 	check.sh			\
 	check.x87.sh			\
 	check.arm.sh	check.swf.sh	\
@@ -124,8 +125,7 @@ EXTRA_DIST =				\
 	check.nodata.sh			\
 	check.x87.nodata.sh		\
 	run-test	all.tst		\
-	collatz.tst	factorial.tst	\
-	rbit.tst
+	collatz.tst	factorial.tst
 
 base_TESTS =				\
 	3to2 add align allocai		\
@@ -147,7 +147,7 @@ base_TESTS =				\
 	float jmpr live put		\
 	qalu_mul qalu_div		\
 	range ranger ret skip tramp	\
-	va_list bit
+	va_list bit rbit
 
 $(base_TESTS):	check.sh
 	$(LN_S) $(srcdir)/check.sh $@
