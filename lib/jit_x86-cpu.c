@@ -3395,7 +3395,7 @@ _jccs(jit_state_t *_jit, jit_int32_t code, jit_word_t i0)
     jit_word_t		d;
     jit_word_t		w;
     w = _jit->pc.w;
-    d = i0 - (w + 1);
+    d = i0 - (w + 2);
     ic(0x70 | code);
     ic(d);
     return (w);
