@@ -188,6 +188,7 @@ _fallback_calli(jit_state_t *_jit, jit_word_t i0, jit_word_t i1)
 #  endif
 }
 
+#ifdef NEED_FALLBACK_CASX
 static void
 _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	       jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
@@ -225,6 +226,7 @@ _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     if (iscasi)
 	jit_unget_reg(r1_reg);
 }
+#endif
 
 static void
 _fallback_clo(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)

@@ -933,6 +933,8 @@ static void _vastart(jit_state_t*, jit_int32_t);
 static void _vaarg(jit_state_t*, jit_int32_t, jit_int32_t);
 #define patch_at(i,l)		_patch_at(_jit,i,l)
 static void _patch_at(jit_state_t*,jit_word_t,jit_word_t);
+
+#  define NEED_FALLBACK_CASX 1
 #endif
 
 #if CODE
