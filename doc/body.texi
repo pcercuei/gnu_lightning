@@ -261,9 +261,17 @@ lshr                 O1 = O2 << O3
 lshi                 O1 = O2 << O3
 rshr     _u          O1 = O2 >> O3@footnote{The sign bit is propagated unless using the @code{_u} modifier.}
 rshi     _u          O1 = O2 >> O3@footnote{The sign bit is propagated unless using the @code{_u} modifier.}
+lrotr                O1 = (O2 << O3) | (O3 >> (WORDSIZE - O3))
+lroti                O1 = (O2 << O3) | (O3 >> (WORDSIZE - O3))
+rrotr                O1 = (O2 >> O3) | (O3 << (WORDSIZE - O3))
+rroti                O1 = (O2 >> O3) | (O3 << (WORDSIZE - O3))
 movzr                O1 = O3 ? O1 : O2
 movnr                O1 = O3 ? O2 : O1
 @end example
+
+Note that @code{lrotr}, @code{lroti}, @code{rrotr} and @code{rroti}
+are described as the fallback operation. These are bit shift/rotation
+operation.
 
 @item Four operand binary ALU operations
 These accept two result registers, and two operands; the last one can

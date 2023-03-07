@@ -27,6 +27,19 @@ static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _fallback_bitswap(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_popcnt(r0,r1)		_fallback_popcnt(_jit, r0, r1)
 static void _fallback_popcnt(jit_state_t*, jit_int32_t, jit_int32_t);
+#define fallback_lrotr(r0, r1, r2)	_fallback_lrotr(_jit, r0, r1, r2)
+static void _fallback_lrotr(jit_state_t*, jit_int32_t,jit_int32_t,jit_int32_t);
+#define fallback_lroti(r0, r1, i0)	_fallback_lroti(_jit, r0, r1, i0)
+static void _fallback_lroti(jit_state_t*, jit_int32_t,jit_int32_t,jit_word_t);
+#define fallback_rrotr(r0, r1, r2)	_fallback_rrotr(_jit, r0, r1, r2)
+static void _fallback_rrotr(jit_state_t*, jit_int32_t,jit_int32_t,jit_int32_t);
+#define fallback_rroti(r0, r1, i0)	_fallback_rroti(_jit, r0, r1, i0)
+static void _fallback_rroti(jit_state_t*, jit_int32_t,jit_int32_t,jit_word_t);
+#  if defined(__s390__) || defined(__s390x__)
+#    define fallback_jit_get_reg(flags)	jit_get_reg_but_zero(flags)
+#  else
+#    define fallback_jit_get_reg(flags)	jit_get_reg(flags)
+#  endif
 #  if defined(__ia64__)
 #    define fallback_flush()		sync()
 #  elif defined(__mips__)
@@ -198,7 +211,7 @@ _fallback_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     /* XXX only attempts to fallback cas for lightning jit code */
     static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     if ((iscasi = r1 == _NOREG)) {
-	r1_reg = jit_get_reg(jit_class_gpr|jit_class_sav);
+	r1_reg = fallback_jit_get_reg(jit_class_gpr|jit_class_sav);
 	r1 = rn(r1_reg);
 	movi(r1, i0);
     }
@@ -273,8 +286,8 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     };
     jit_int32_t		t0, t1;
     jit_word_t		loop, done;
-    t0 = jit_get_reg(jit_class_gpr);
-    t1 = jit_get_reg(jit_class_gpr);
+    t0 = fallback_jit_get_reg(jit_class_gpr);
+    t1 = fallback_jit_get_reg(jit_class_gpr);
     movi(rn(t0), __WORDSIZE - 8);
     fallback_flush();
     loop = _jit->pc.w;
@@ -299,9 +312,9 @@ _fallback_clz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     clz = fallback_jmpi(_jit->pc.w);
     fallback_flush();
     fallback_patch_bnei(l32, _jit->pc.w);
-    r2_reg = jit_get_reg(jit_class_gpr);
+    r2_reg = fallback_jit_get_reg(jit_class_gpr);
     r2 = rn(r2_reg);
-    r1_reg = jit_get_reg(jit_class_gpr);
+    r1_reg = fallback_jit_get_reg(jit_class_gpr);
     movr(rn(r1_reg), r1);
     r1 = rn(r1_reg);
     movi(r0, 0);
@@ -392,7 +405,7 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     };
     /* return mod67[(-r1 & r1) % 67]; */
 #    endif
-    t0 = jit_get_reg(jit_class_gpr);
+    t0 = fallback_jit_get_reg(jit_class_gpr);
     if (r0 == r1) {
 	negr(rn(t0), r1);
 	andr(r0, rn(t0), r1);
@@ -418,9 +431,9 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     ctz = fallback_jmpi(_jit->pc.w);
     fallback_flush();
     fallback_patch_bnei(l32, _jit->pc.w);
-    r2_reg = jit_get_reg(jit_class_gpr);
+    r2_reg = fallback_jit_get_reg(jit_class_gpr);
     r2 = rn(r2_reg);
-    r1_reg = jit_get_reg(jit_class_gpr);
+    r1_reg = fallback_jit_get_reg(jit_class_gpr);
     movr(rn(r1_reg), r1);
     r1 = rn(r1_reg);
     movi(r0, 0);
@@ -524,16 +537,16 @@ _fallback_bitswap(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	31, 159, 95, 223, 63, 191, 127, 255
     };
     if (r0 == r1) {
-	t0 = jit_get_reg(jit_class_gpr);
+	t0 = fallback_jit_get_reg(jit_class_gpr);
 	r1_reg = rn(t0);
     }
     else {
 	t0 = JIT_NOREG;
 	r1_reg = r1;
     }
-    t1 = jit_get_reg(jit_class_gpr);
-    t2 = jit_get_reg(jit_class_gpr);
-    t3 = jit_get_reg(jit_class_gpr);
+    t1 = fallback_jit_get_reg(jit_class_gpr);
+    t2 = fallback_jit_get_reg(jit_class_gpr);
+    t3 = fallback_jit_get_reg(jit_class_gpr);
     if (r0 == r1)
 	movr(rn(t0), r1);
     extr_uc(rn(t1), r1_reg);
@@ -572,9 +585,9 @@ v = ( v >> 16             ) | ( v               << 16);
  */
     jit_int32_t		t0, t1, t2, t3, t4;
     movr(r0, r1);
-    t0 = jit_get_reg(jit_class_gpr);
-    t1 = jit_get_reg(jit_class_gpr);
-    t2 = jit_get_reg(jit_class_gpr);
+    t0 = fallback_jit_get_reg(jit_class_gpr);
+    t1 = fallback_jit_get_reg(jit_class_gpr);
+    t2 = fallback_jit_get_reg(jit_class_gpr);
     movi(rn(t0), __WORDSIZE == 32 ? 0x55555555L : 0x5555555555555555L);
     rshi_u(rn(t1), r0, 1);		/* t1 = v >> 1 */
     andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
@@ -631,20 +644,20 @@ while ((s >>= 1) > 0)
     jit_int32_t		s, mask;
     jit_word_t		loop, done, t0, t1;
     movr(v, r1);
-    s = jit_get_reg(jit_class_gpr);
+    s = fallback_jit_get_reg(jit_class_gpr);
     movi(rn(s), __WORDSIZE);			/* s = sizeof(v) * CHAR_BIT; */
-    mask = jit_get_reg(jit_class_gpr);
+    mask = fallback_jit_get_reg(jit_class_gpr);
     movi(rn(mask), ~0L);			/* mask = ~0; */
     flush();
     loop = _jit->pc.w;				/* while ((s >>= 1) > 0) */
     rshi(rn(s), rn(s), 1);			/*        (s >>= 1) */
     done = blei(_jit->pc.w, rn(s), 0);		/* no loop if s <= 0 */
-    t0 = jit_get_reg(jit_class_gpr);
+    t0 = fallback_jit_get_reg(jit_class_gpr);
     lshr(rn(t0), rn(mask), rn(s));		/* t0 = (mask << s) */
     xorr(rn(mask), rn(mask), rn(t0));		/* mask ^= t0 */
     rshr(rn(t0), v, rn(s));			/* t0 = v >> s */
     andr(rn(t0), rn(t0), rn(mask));		/* t0 = t0 & mask */
-    t1 = jit_get_reg(jit_class_gpr);
+    t1 = fallback_jit_get_reg(jit_class_gpr);
     lshr(rn(t1), v, rn(s));			/* t1 = v << s */
     comr(v, rn(mask));				/* v = ~mask */
     andr(rn(t1), v, rn(t1));			/* t1 = t1 & v */
@@ -690,16 +703,16 @@ _fallback_popcnt(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8
     };
     if (r0 == r1) {
-	t0 = jit_get_reg(jit_class_gpr);
+	t0 = fallback_jit_get_reg(jit_class_gpr);
 	r1_reg = rn(t0);
     }
     else {
 	t0 = JIT_NOREG;
 	r1_reg = r1;
     }
-    t1 = jit_get_reg(jit_class_gpr);
-    t2 = jit_get_reg(jit_class_gpr);
-    t3 = jit_get_reg(jit_class_gpr);
+    t1 = fallback_jit_get_reg(jit_class_gpr);
+    t2 = fallback_jit_get_reg(jit_class_gpr);
+    t3 = fallback_jit_get_reg(jit_class_gpr);
     if (r0 == r1)
 	movr(rn(t0), r1);
     extr_uc(rn(t1), r1_reg);
@@ -719,5 +732,77 @@ _fallback_popcnt(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_unget_reg(t1);
     if (t0 != JIT_NOREG)
 	jit_unget_reg(t0);
+}
+
+static void
+_fallback_lrotr(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    /* r0 = (r1 << r2) | (r1 >> (__WORDSIZE - r2)) */
+    jit_int32_t		t0, t1;
+    t0 = fallback_jit_get_reg(jit_class_gpr);
+    if (r0 == r1 || r0 == r2) {
+	t1 = fallback_jit_get_reg(jit_class_gpr);
+	lshr(rn(t0), r1, r2);
+	rsbi(rn(t1), r2, __WORDSIZE);
+	rshr_u(rn(t1), r1, rn(t1));
+	orr(r0, rn(t0), rn(t1));
+	jit_unget_reg(t1);
+    }
+    else {
+	lshr(r0, r1, r2);
+	rsbi(rn(t0), r2, __WORDSIZE);
+	rshr_u(rn(t0), r1, rn(t0));
+	orr(r0, r0, rn(t0));
+    }
+    jit_unget_reg(t0);
+}
+
+static void
+_fallback_lroti(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		t0;
+    t0 = fallback_jit_get_reg(jit_class_gpr);
+    lshi(rn(t0), r1, i0);
+    rshi_u(r0, r1, __WORDSIZE - i0);
+    orr(r0, r0, rn(t0));
+    jit_unget_reg(t0);
+}
+
+static void
+_fallback_rrotr(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    /* r0 = (r1 >> r2) | (r1 << (__WORDSIZE - r2)) */
+    jit_int32_t		t0, t1;
+    t0 = fallback_jit_get_reg(jit_class_gpr);
+    if (r0 == r1 || r0 == r2) {
+	t1 = fallback_jit_get_reg(jit_class_gpr);
+	rshr_u(rn(t0), r1, r2);
+	rsbi(rn(t1), r2, __WORDSIZE);
+	lshr(rn(t1), r1, rn(t1));
+	orr(r0, rn(t0), rn(t1));
+	jit_unget_reg(t1);
+    }
+    else {
+	rshr_u(r0, r1, r2);
+	rsbi(rn(t0), r2, __WORDSIZE);
+	lshr(rn(t0), r1, rn(t0));
+	orr(r0, r0, rn(t0));
+    }
+    jit_unget_reg(t0);
+}
+
+static void
+_fallback_rroti(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		t0;
+    t0 = fallback_jit_get_reg(jit_class_gpr);
+    rshi_u(rn(t0), r1, i0);
+    lshi(r0, r1, __WORDSIZE - i0);
+    orr(r0, r0, rn(t0));
+    jit_unget_reg(t0);
 }
 #endif

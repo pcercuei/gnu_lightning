@@ -94,6 +94,7 @@ EXTRA_DIST =				\
 	alu_rsh.tst	alu_rsh.ok	\
 	alu_com.tst	alu_com.ok	\
 	alu_neg.tst	alu_neg.ok	\
+	alu_rot.tst	alu_rot.ok	\
 	movzr.tst	movzr.ok	\
 	fop_abs.tst	fop_abs.ok	\
 	fop_sqrt.tst	fop_sqrt.ok	\
@@ -140,7 +141,7 @@ base_TESTS =				\
 	alu_mul alu_div alu_rem		\
 	alu_and alu_or alu_xor		\
 	alu_lsh alu_rsh			\
-	alu_com alu_neg			\
+	alu_com alu_neg	alu_rot		\
 	movzr				\
 	fop_abs fop_sqrt		\
 	varargs stack			\
@@ -168,7 +169,7 @@ x87_TESTS =					\
 	alu_sub.x87 alux_sub.x87 alu_rsb.x87	\
 	alu_mul.x87 alu_div.x87 alu_rem.x87	\
 	alu_and.x87 alu_or.x87 alu_xor.x87	\
-	alu_lsh.x87 alu_rsh.x87			\
+	alu_lsh.x87 alu_rsh.x87 alu_rot.x87	\
 	alu_com.x87 alu_neg.x87			\
 	movzr.x87				\
 	fop_abs.x87 fop_sqrt.x87		\
@@ -192,7 +193,7 @@ x87_nodata_TESTS =							\
 	alu_sub.x87.nodata alux_sub.x87.nodata alu_rsb.x87.nodata	\
 	alu_mul.x87.nodata alu_div.x87.nodata alu_rem.x87.nodata	\
 	alu_and.x87.nodata alu_or.x87.nodata alu_xor.x87.nodata		\
-	alu_lsh.x87.nodata alu_rsh.x87.nodata				\
+	alu_lsh.x87.nodata alu_rsh.x87.nodata alu_rot.x87.nodata	\
 	alu_com.x87.nodata alu_neg.x87.nodata				\
 	movzr.x87.nodata						\
 	fop_abs.x87.nodata fop_sqrt.x87.nodata				\
@@ -218,7 +219,7 @@ arm_TESTS =					\
 	alu_sub.arm alux_sub.arm alu_rsb.arm	\
 	alu_mul.arm alu_div.arm alu_rem.arm	\
 	alu_and.arm alu_or.arm alu_xor.arm	\
-	alu_lsh.arm alu_rsh.arm			\
+	alu_lsh.arm alu_rsh.arm alu_rot.arm	\
 	alu_com.arm alu_neg.arm			\
 	movzr.arm				\
 	fop_abs.arm fop_sqrt.arm		\
@@ -244,7 +245,7 @@ swf_TESTS =					\
 	alu_sub.swf alux_sub.swf alu_rsb.swf	\
 	alu_mul.swf alu_div.swf alu_rem.swf	\
 	alu_and.swf alu_or.swf alu_xor.swf	\
-	alu_lsh.swf alu_rsh.swf			\
+	alu_lsh.swf alu_rsh.swf alu_rot.swf	\
 	alu_com.swf alu_neg.swf			\
 	movzr.swf				\
 	fop_abs.swf fop_sqrt.swf		\
@@ -268,7 +269,7 @@ arm_swf_TESTS =							\
 	alu_sub.arm.swf alux_sub.arm.swf alu_rsb.arm.swf	\
 	alu_mul.arm.swf alu_div.arm.swf alu_rem.arm.swf		\
 	alu_and.arm.swf alu_or.arm.swf alu_xor.arm.swf		\
-	alu_lsh.arm.swf alu_rsh.arm.swf				\
+	alu_lsh.arm.swf alu_rsh.arm.swf alu_rot.arm.swf		\
 	alu_com.arm.swf alu_neg.arm.swf				\
 	movzr.arm.swf						\
 	fop_abs.arm.swf fop_sqrt.arm.swf			\
@@ -293,7 +294,7 @@ arm4_swf_TESTS =						\
 	alu_sub.arm4.swf alux_sub.arm4.swf alu_rsb.arm4.swf	\
 	alu_mul.arm4.swf alu_div.arm4.swf alu_rem.arm4.swf	\
 	alu_and.arm4.swf alu_or.arm4.swf alu_xor.arm4.swf	\
-	alu_lsh.arm4.swf alu_rsh.arm4.swf			\
+	alu_lsh.arm4.swf alu_rsh.arm4.swf alu_rot.arm4.swf	\
 	alu_com.arm4.swf alu_neg.arm4.swf			\
 	movzr.arm4.swf						\
 	fop_abs.arm4.swf fop_sqrt.arm4.swf			\
@@ -321,7 +322,7 @@ nodata_TESTS =						\
 	alu_sub.nodata alux_sub.nodata alu_rsb.nodata	\
 	alu_mul.nodata alu_div.nodata alu_rem.nodata	\
 	alu_and.nodata alu_or.nodata alu_xor.nodata	\
-	alu_lsh.nodata alu_rsh.nodata			\
+	alu_lsh.nodata alu_rsh.nodata alu_rot.nodata	\
 	alu_com.nodata alu_neg.nodata			\
 	movzr.nodata					\
 	fop_abs.nodata fop_sqrt.nodata			\

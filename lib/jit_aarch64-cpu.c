@@ -297,6 +297,8 @@ typedef union {
 #  define A64_LSL			0x1ac02000
 #  define A64_LSR			0x1ac02400
 #  define A64_ASR			0x1ac02800
+#  define A64_RORV			0x1ac02c00
+#  define A64_EXTR			0x13800000
 #  define A64_MUL			0x1b007c00
 #  define A64_SMULL			0x9b207c00
 #  define A64_SMULH			0x9b407c00
@@ -416,6 +418,9 @@ typedef union {
 #  define ASRI(r0,r1,i0)		SBFM(r0,r1,i0,63)
 #  define LSR(Rd,Rn,Rm)			oxxx(A64_LSR|XS,Rd,Rn,Rm)
 #  define LSRI(r0,r1,i0)		UBFM(r0,r1,i0,63)
+#  define RORV(Rd,Rn,Rm)		oxxx(A64_RORV|XS,Rd,Rn,Rm)
+#  define EXTR(Rd,Rn,Rm,Im)		oxxx6(A64_EXTR|XS|DS,Rm,Im,Rn,Rd)
+#  define ROR(Rd,Rn,Rm,Im)		EXTR(Rd,Rn,Rm,Im)
 #  define AND(Rd,Rn,Rm)			oxxx(A64_AND|XS,Rd,Rn,Rm)
 /* actually should use oxxrs but logical_immediate returns proper encoding */
 #  define ANDI(Rd,Rn,Imm12)		oxxi(A64_ANDI|XS,Rd,Rn,Imm12)
@@ -514,6 +519,10 @@ static void _oxxxc(jit_state_t*,jit_int32_t,jit_int32_t,
 #  define oxxx7(Op,Rt,Rt2,Rn,Simm7)	_oxxx7(_jit,Op,Rt,Rt2,Rn,Simm7)
 static void _oxxx7(jit_state_t*,jit_int32_t,
 		   jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define oxxx6(Op,Rm,Imm6,Rn,Rd)	_oxxx6(_jit,Op,Rm,Imm6,Rn,Rd)
+static void _oxxx6(jit_state_t*,jit_int32_t,
+		   jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+
 #  define nop(i0)			_nop(_jit,i0)
 static void _nop(jit_state_t*,jit_int32_t);
 #  define addr(r0,r1,r2)		ADD(r0,r1,r2)
@@ -584,6 +593,11 @@ static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define rshr_u(r0,r1,r2)		LSR(r0,r1,r2)
 #  define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define lrotr(r0,r1,r2)		_lrotr(_jit,r0,r1,r2)
+static void _lrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define lroti(r0,r1,i0)		rroti(r0,r1,64-i0)
+#  define rrotr(r0,r1,r2)		RORV(r0,r1,r2)
+#  define rroti(r0,r1,i0)		ROR(r0,r1,r1,i0)
 #  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
 static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
@@ -1033,6 +1047,24 @@ _oxxx7(jit_state_t *_jit, jit_int32_t Op,
 }
 
 static void
+_oxxx6(jit_state_t *_jit, jit_int32_t Op,
+       jit_int32_t Rm, jit_int32_t Imm6, jit_int32_t Rn, jit_int32_t Rd)
+{
+    instr_t	i;
+    assert(!(Rm  &      ~0x1f));
+    assert(!(Rn &       ~0x1f));
+    assert(!(Rd  &      ~0x1f));
+    assert(Imm6 >= 0 && Imm6 <= 63);
+    assert(!(Op & ~0xffe0fc00));
+    i.w = Op;
+    i.Rm.b = Rm;
+    i.imm6.b = Imm6;
+    i.Rn.b = Rn;
+    i.Rd.b = Rd;
+    ii(i.w);
+}
+
+static void
 _nop(jit_state_t *_jit, jit_int32_t i0)
 {
     for (; i0 > 0; i0 -= 4)
@@ -1377,6 +1409,22 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     else {
 	assert(i0 > 0 && i0 < 64);
 	LSRI(r0, r1, i0);
+    }
+}
+
+static void
+_lrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (r0 != r1 && r0 != r2) {
+	rsbi(r0, r2, 64);
+	rrotr(r0, r1, r0);
+    }
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	rsbi(rn(reg), r2, 64);
+	rrotr(r0, r1, rn(reg));
+	jit_unget_reg(reg);
     }
 }
 

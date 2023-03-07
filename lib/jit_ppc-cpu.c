@@ -669,6 +669,17 @@ static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  endif
 #  define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  if __WORDSIZE == 32
+#    define lrotr(r0,r1,r2)		ROTLW(r0,r1,r2)
+#  else
+#    define lrotr(r0,r1,r2)		ROTLD(r0,r1,r2)
+#  endif
+#  define lroti(r0,r1,i0)		_lroti(_jit,r0,r1,i0)
+static void _lroti(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define rrotr(r0,r1,r2)		_rrotr(_jit,r0,r1,r2)
+static void _rrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define rroti(r0,r1,i0)		_rroti(_jit,r0,r1,i0)
+static void _rroti(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ltr(r0,r1,r2)			_ltr(_jit,r0,r1,r2)
 static void _ltr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define lti(r0,r1,i0)			_lti(_jit,r0,r1,i0)
@@ -1684,6 +1695,50 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	SRWI(r0, r1, i0);
 #  else
 	SRDI(r0, r1, i0);
+#  endif
+    }
+}
+
+static void
+_lroti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (i0 == 0)
+	movr(r0, r1);
+    else {
+#  if __WORDSIZE == 32
+	ROTLWI(r0, r1, i0);
+#  else
+	RLDICL(r0, r1, i0, 0);
+#  endif
+    }
+}
+
+static void
+_rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (r0 != r1 && r0 != r2) {
+	rsbi(r0, r2, __WORDSIZE);
+	lrotr(r0, r1, r0);
+    }
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	rsbi(rn(reg), r2, __WORDSIZE);
+	lrotr(r0, r1, rn(reg));
+	jit_unget_reg(reg);
+    }
+}
+
+static void
+_rroti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (i0 == 0)
+	movr(r0, r1);
+    else {
+#  if __WORDSIZE == 32
+	ROTRWI(r0, r1, i0);
+#  else
+	RLDICL(r0, r1, 64 - i0, 0);
 #  endif
     }
 }

@@ -413,7 +413,10 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define DEXTU(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,size-1,pos-32,MIPS_DEXTU)
 #  define DEXTM(rt,rs,pos,size)		hrrrit(MIPS_SPECIAL3,rs,rt,size-32-1,pos,MIPS_DEXTM)
 #  define ROTR(rd,rt,sa)		hrrrit(MIPS_SPECIAL,1,rt,rd,sa,MIPS_SRL)
+#  define ROTRV(rd,rt,rs)		hrrrit(MIPS_SPECIAL,rs,rt,rd,1,MIPS_SRLV)
 #  define DROTR(rd,rt,sa)		hrrrit(MIPS_SPECIAL,1,rt,rd,sa,MIPS_DSRL)
+#  define DROTR32(rd,rt,sa)		hrrrit(MIPS_SPECIAL,1,rt,rd,sa,MIPS_DSRL32)
+#  define DROTRV(rd,rt,rs)		hrrrit(MIPS_SPECIAL,rs,rt,rd,1,MIPS_DSRLV)
 #  define SYNC()			rrr_t(_ZERO_REGNO,_ZERO_REGNO,_ZERO_REGNO,MIPS_SYNC)
 #  define MFHI(rd)			rrr_t(_ZERO_REGNO,_ZERO_REGNO,rd,MIPS_MFHI)
 #  define MFLO(rd)			rrr_t(_ZERO_REGNO,_ZERO_REGNO,rd,MIPS_MFLO)
@@ -620,6 +623,13 @@ static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #    define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  endif
+#    define lrotr(r0,r1,r2)		_lrotr(_jit,r0,r1,r2)
+static void _lrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#    define lroti(r0,r1,i0)		rroti(r0,r1,__WORDSIZE-i0)
+#    define rrotr(r0,r1,r2)		_rrotr(_jit,r0,r1,r2)
+static void _rrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#    define rroti(r0,r1,i0)		_rroti(_jit,r0,r1,i0)
+static void _rroti(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define andr(r0,r1,r2)		AND(r0,r1,r2)
 #  define andi(r0,r1,i0)		_andi(_jit,r0,r1,i0)
 static void _andi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -2197,6 +2207,58 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	DSRL32(r0, r1, i0 - 32);
 }
 #endif
+
+static void
+_lrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (jit_mips2_p()) {
+	if (r0 != r1 && r0 != r2) {
+	    rsbi(r0, r2, __WORDSIZE);
+	    rrotr(r0, r1, r0);
+	}
+	else {
+	    reg = jit_get_reg(jit_class_gpr);
+	    rsbi(rn(reg), r2, __WORDSIZE);
+	    rrotr(r0, r1, rn(reg));
+	    jit_unget_reg(reg);
+	}
+    }
+    else
+	fallback_lrotr(r0, r1, r2);
+}
+
+static void
+_rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    if (jit_mips2_p()) {
+#if __WORDSIZE == 32
+	ROTRV(r0, r1, r2);
+#else
+	DROTRV(r0, r1, r2);
+#endif
+    }
+    else
+	fallback_rrotr(r0, r1, r2);
+}
+
+static void
+_rroti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    assert(i0 >= 0 && i0 <= __WORDSIZE - 1);
+    if (jit_mips2_p()) {
+#if __WORDSIZE == 32
+	ROTR(r0, r1, i0);
+#else
+	if (i0 < 32)
+	    DROTR(r0, r1, i0);
+	else
+	    DROTR32(r0, r1, i0 - 32);
+#endif
+    }
+    else
+	fallback_lroti(r0, r1, i0);
+}
 
 static void
 _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)

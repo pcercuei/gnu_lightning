@@ -1431,6 +1431,14 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsh,);
 		case_rrr(rsh, _u);
 		case_rrw(rsh, _u);
+#define lrotr(r0,r1,r2)	fallback_lrotr(r0,r1,r2)
+#define lroti(r0,r1,i0)	fallback_lroti(r0,r1,i0)
+#define rrotr(r0,r1,r2)	fallback_rrotr(r0,r1,r2)
+#define rroti(r0,r1,i0)	fallback_rroti(r0,r1,i0)
+		case_rrr(lrot,);
+		case_rrw(lrot,);
+		case_rrr(rrot,);
+		case_rrw(rrot,);
 		case_rr(trunc, _f_i);
 		case_rr(trunc, _d_i);
 #if __WORDSIZE == 64

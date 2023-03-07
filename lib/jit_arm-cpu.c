@@ -224,6 +224,9 @@ extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define THUMB_ASRI			    0x1000
 #  define THUMB2_ASRI			0xea4f0020
 #  define ARM_ROR			0x00000060
+#  define THUMB_ROR			    0x41c0
+#  define THUMB2_ROR			0xfa60f000
+#  define THUMB2_RORI			0xea4f0030
 #  define ARM_CMP			0x01500000
 #  define THUMB_CMP			    0x4280
 #  define THUMB_CMPX			    0x4500
@@ -637,6 +640,13 @@ static void _tdmb(jit_state_t *_jit, int im);
 #  define ASRI(rd,rn,im)		CC_ASRI(ARM_CC_AL,rd,rn,im)
 #  define T1_ASRI(rd,rm,im)		is(THUMB_ASRI|(_u5(im)<<6)|(_u3(rm)<<3)|_u3(rd))
 #  define T2_ASRI(rd,rm,im)		tshift(THUMB2_ASRI,rd,rm,im)
+#  define CC_ROR(cc,rd,rn,rm)		CC_SHIFT(cc,ARM_ROR|ARM_R,rd,rm,rn,0)
+#  define ROR(rd,rn,rm)			CC_ROR(ARM_CC_AL,rd,rn,rm)
+#  define T1_ROR(rdn,rm)		is(THUMB_ROR|(_u3(rm)<<3)|_u3(rdn))
+#  define T2_ROR(rd,rn,rm)		torrr(THUMB2_ROR,rn,rd,rm)
+#  define CC_RORI(cc,rd,rn,im)		CC_SHIFT(cc,ARM_ROR,rd,0,rn,im)
+#  define RORI(rd,rn,im)		CC_RORI(ARM_CC_AL,rd,rn,im)
+#  define T2_RORI(rd,rm,im)		tshift(THUMB2_RORI,rd,rm,im)
 #  define CC_CMP(cc,rn,rm)		corrr(cc,ARM_CMP,rn,0,rm)
 #  define CMP(rn,rm)			CC_CMP(ARM_CC_AL,rn,rm)
 #  define T1_CMP(rn,rm)			is(THUMB_CMP|(_u3(rm)<<3)|_u3(rn))
@@ -1010,6 +1020,13 @@ static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _rshr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define lrotr(r0,r1,r2)		_lrotr(_jit,r0,r1,r2)
+static void _lrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define lroti(r0,r1,i0)		rroti(r0,r1,32-i0)
+#  define rrotr(r0,r1,r2)		_rrotr(_jit,r0,r1,r2)
+static void _rrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define rroti(r0,r1,i0)		_rroti(_jit,r0,r1,i0)
+static void _rroti(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ccr(ct,cf,r0,r1,r2)		_ccr(_jit,ct,cf,r0,r1,r2)
 static void _ccr(jit_state_t*,int,int,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define cci(ct,cf,r0,r1,i0)		_cci(_jit,ct,cf,r0,r1,i0)
@@ -2719,6 +2736,47 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     }
     else
 	LSRI(r0, r1, i0);
+}
+
+static void
+_lrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (r0 != r1 && r0 != r2) {
+	rsbi(r0, r2, 64);
+	rrotr(r0, r1, r0);
+    }
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	rsbi(rn(reg), r2, 64);
+	rrotr(r0, r1, rn(reg));
+	jit_unget_reg(reg);
+    }
+}
+
+static void
+_rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    if (jit_thumb_p()) {
+	if (!jit_no_set_flags() && (r0|r1|r2) < 8 && r0 == r1)
+	    T1_ROR(r0, r2);
+	else
+	    T2_ROR(r0, r1, r2);
+    }
+    else
+	ROR(r0, r1, r2);
+}
+
+static void
+_rroti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    assert(i0 >= 0 && i0 <= 31);
+    if (i0 == 0)
+	movr(r0, r1);
+    else if (jit_thumb_p())
+	T2_RORI(r0, r1, i0);
+    else
+	RORI(r0, r1, i0);
 }
 
 static void

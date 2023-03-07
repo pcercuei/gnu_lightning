@@ -420,6 +420,11 @@ static void _remi_u(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 # define rshi(r0, r1, i0)		SRAI_D(r0, r1, i0)
 # define rshr_u(r0, r1, r2)		SRL_D(r0, r1, r2)
 # define rshi_u(r0, r1, i0)		SRLI_D(r0, r1, i0)
+# define lrotr(r0, r1, r2)		_lrotr(_jit, r0, r1, r2)
+static void _lrotr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
+# define lroti(r0, r1, i0)		rroti(r0, r1, __WORDSIZE - i0)
+# define rrotr(r0, r1, r2)		ROTR_D(r0, r1, r2)
+# define rroti(r0, r1, i0)		ROTRI_D(r0, r1, i0)
 # define andr(r0, r1, r2)		AND(r0, r1, r2)
 # define andi(r0, r1, i0)		_andi(_jit, r0, r1, i0)
 static void _andi(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
@@ -1328,6 +1333,22 @@ _remi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     movi(rn(reg), i0);
     remr_u(r0, r1, rn(reg));
     jit_unget_reg(reg);
+}
+
+static void
+_lrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (r0 != r1 && r0 != r2) {
+	rsbi(r0, r2, __WORDSIZE);
+	rrotr(r0, r1, r0);
+    }
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	rsbi(rn(reg), r2, __WORDSIZE);
+	rrotr(r0, r1, rn(reg));
+	jit_unget_reg(reg);
+    }
 }
 
 static void

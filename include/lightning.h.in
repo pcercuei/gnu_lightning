@@ -1062,6 +1062,13 @@ typedef enum {
 #define jit_popcntr(u,v)	jit_new_node_ww(jit_code_popcntr,u,v)
     jit_code_popcntr,
 
+#define jit_lrotr(u,v,w)	jit_new_node_www(jit_code_lrotr,u,v,w)
+#define jit_lroti(u,v,w)	jit_new_node_www(jit_code_lroti,u,v,w)
+    jit_code_lrotr,		jit_code_lroti,
+#define jit_rrotr(u,v,w)	jit_new_node_www(jit_code_rrotr,u,v,w)
+#define jit_rroti(u,v,w)	jit_new_node_www(jit_code_rroti,u,v,w)
+    jit_code_rrotr,		jit_code_rroti,
+
     jit_code_last_code
 } jit_code_t;
 

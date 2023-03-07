@@ -1,3 +1,32 @@
+2023-03-07 Paulo Andrade <pcpa@gnu.org>
+
+	* check/alu_rot.tst, check/alu_rot.ok: New test files for the new
+	lrotr, lroti, rrotr and rroti instructions.
+	* check/Makefile.am, check/lightning.c, include/lightning.h.in,
+	lib/jit_names.c: lib/lightning.c, doc/body.texi: Update for the
+	new instructions.
+	* lib/jit_aarch64-cpu.c, lib/jit_aarch64.c, lib/jit_arm-cpu.c,
+	lib/jit_arm.c: Implement optimized rrotr and rroti. lrotr and
+	lroti just adjust parameters for a left shift rotate.
+	* lib/jit_alpha-cpu.c, lib/jit_alpha.c, lib/jit_ia64-cpu,
+	lib/jit_ia64.c, lib/jit_riscv-cpu.c, lib/jit_riscv.c,
+	jit_sparc-cpu.c, jit_sparc.c: Implement calls to fallback lrotr,
+	lroti, rrotr and rroti.
+	* lib/jit_hppa-cpu.c, lib/jit_hppa.c: Implement optimized rroti.
+	Other instructions use fallbacks.
+	* lib/jit_loongarch-cpu.c, lib/jit_loongarch.c: Implement optimized
+	rrotr and rroti. lrotr and lroti just adapt arguments and use a
+	right shift.
+	* lib/jit_mips-cpu.c, lib/jit_mips.c: If mips2, Implement optimized
+	rrotr and rroti. lrotr and lroti just adapt arguments and use a
+	right shift. If mips1 use fallbacks.
+	* lib/jit_ppc-cpu.c, lib/jit_ppc.c, jit_s390-cpu.c, jit_s390.c,
+	lib/jit_x86-cpu.c, lib/jit_x86.c: Implement optimized lrotr,
+	lroti, rrotr, rroti.
+	* lib/jit_fallback.c: Implement fallbacks for lrotr, lroti,
+	rrotr and rroti. Also add extra macro to avoid segfaults in s390,
+	that cannot use register zero for some addressing instructions.
+
 2023-03-02 Paulo Andrade <pcpa@gnu.org>
 
 	* check/popcnt.tst, check/popcnt.ok: New test files for the new

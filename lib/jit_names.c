@@ -257,4 +257,6 @@ static char *code_name[] = {
     "ctor",		"ctzr",
     "rbitr",
     "popcntr",
+    "lrotr",		"lroti",
+    "rrotr",		"rroti",
 };

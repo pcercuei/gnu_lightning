@@ -289,6 +289,10 @@ static void _lshi(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 #  define rshi(r0, r1, i0)		rotshi(X86_SAR, r0, r1, i0)
 #  define rshr_u(r0, r1, r2)		rotshr(X86_SHR, r0, r1, r2)
 #  define rshi_u(r0, r1, i0)		rotshi(X86_SHR, r0, r1, i0)
+#  define lrotr(r0, r1, r2)		rotshr(X86_ROL, r0, r1, r2)
+#  define lroti(r0, r1, i0)		rotshi(X86_ROL, r0, r1, i0)
+#  define rrotr(r0, r1, r2)		rotshr(X86_ROR, r0, r1, r2)
+#  define rroti(r0, r1, i0)		rotshi(X86_ROR, r0, r1, i0)
 #  define unr(code, r0)			_unr(_jit, code, r0)
 static void _unr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define inegr(r0)			unr(X86_NEG, r0)

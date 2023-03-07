@@ -1038,6 +1038,10 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsh,);
 		case_rrr(rsh, _u);
 		case_rrw(rsh, _u);
+		case_rrr(lrot,);
+		case_rrw(lrot,);
+		case_rrr(rrot,);
+		case_rrw(rrot,);
 		case_rrr(movn,);
 		case_rrr(movz,);
 	    case jit_code_casr:
@@ -1073,7 +1077,7 @@ _emit_code(jit_state_t *_jit)
 #define ctor(r0, r1)	fallback_cto(r0, r1)
 #define ctzr(r0, r1)	fallback_ctz(r0, r1)
 #define rbitr(r0, r1)	fallback_bitswap(r0, r1)
-#define popcntr(r0, r1)	fallback_popcntr(r0, r1)
+#define popcntr(r0, r1)	fallback_popcnt(r0, r1)
 		case_rr(clo,);
 		case_rr(clz,);
 		case_rr(cto,);

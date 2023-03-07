@@ -756,6 +756,13 @@ static void _rshr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define rshr_u(r0,r1,r2)	_rshr_u(_jit,r0,r1,r2)
 static void _rshr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define rshi_u(r0,r1,i0)	SHRWI_U(r1,i0,r0)
+#define lrotr(r0,r1,r2)		_lrotr(_jit,r0,r1,r2)
+static void _lrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#define lroti(r0,r1,i0)		rroti(r0,r1,32-i0)
+#define rrotr(r0,r1,r2)		_rrotr(_jit,r0,r1,r2)
+static void _rrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#define rroti(r0,r1,i0)		_rroti(_jit,r0,r1,i0)
+static void _rroti(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #define cmpr(c,r0,r1,r2)	_cmpr(_jit,c,r0,r1,r2)
 static void _cmpr(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #define cmpi(c,ci,r0,r1,i0)	_cmpi(_jit,c,ci,r0,r1,i0)
@@ -2127,6 +2134,25 @@ _rshr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
     SUBI(0x1f, r2, _R1_REGNO);
     MTSAR(_R1_REGNO);
     EXTRW_U(r1, 32, r0);
+}
+
+static void
+_lrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
+{
+    fallback_lrotr(r0, r1, r2);
+}
+
+static void
+_rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_int32_t r2)
+{
+    fallback_rrotr(r0, r1, r2);
+}
+
+static void
+_rroti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1 ,jit_word_t i0)
+{
+    movr(r0, r1);
+    SHRPWI(r0, r0, i0, r0);
 }
 
 static void

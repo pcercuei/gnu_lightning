@@ -1078,9 +1078,16 @@ static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  endif
 #  if __WORDSIZE == 32
 #    define negr(r0,r1)			LCR(r0,r1)
+#    define lrotr(r0,r1,r2)		RLL(r0,r1,0,r2)
+#    define lroti(r0,r1,i0)		RLL(r0,r1,i0,0)
 #  else
 #    define negr(r0,r1)			LCGR(r0,r1)
+#    define lrotr(r0,r1,r2)		RLLG(r0,r1,0,r2)
+#    define lroti(r0,r1,i0)		RLLG(r0,r1,i0,0)
 #  endif
+#  define rrotr(r0,r1,r2)		_rrotr(_jit,r0,r1,r2)
+static void _rrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define rroti(r0,r1,i0)		lroti(r0,r1,__WORDSIZE-i0)
 #  define clor(r0, r1)			_clor(_jit, r0, r1)
 static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define clzr(r0, r1)			_clzr(_jit, r0, r1)
@@ -2990,6 +2997,22 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     SRL(r0, i0, 0);
 }
 #endif
+
+static void
+_rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_int32_t		reg;
+    if (r0 != r1 && r0 != r2) {
+	rsbi(r0, r2, __WORDSIZE);
+	lrotr(r0, r1, r0);
+    }
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	rsbi(rn(reg), r2, __WORDSIZE);
+	lrotr(r0, r1, rn(reg));
+	jit_unget_reg(reg);
+    }
+}
 
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)

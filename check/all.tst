@@ -88,6 +88,11 @@
 	clzr %r0 %r1
 	ctor %r0 %r1
 	ctzr %r0 %r1
+	popcntr %r0 %r1
+	lrotr %r0 %r1 %r2
+	lroti %r0 %r1 0x1f
+	rrotr %r0 %r1 %r2
+	rroti %r0 %r1 0x1f
 	ltr %r0 %r1 %r2
 	lti %r0 %r1 2
 	ltr_u %r0 %r1 %r2
