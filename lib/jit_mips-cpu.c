@@ -1636,41 +1636,35 @@ _insr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 static void
 _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    if (jit_mips2_p()) {
-#if __WORDSIZE == 32
-	if (jit_mips6_p())
-	    CLO_R6(r0, r1);
-	else
-	    CLO(r0, r1);
-#else
-	if (jit_mips6_p())
-	    DCLO_R6(r0, r1);
-	else
-	    DCLO(r0, r1);
-#endif
+    if (__WORDSIZE == 32) {
+        if (jit_mips6_p())
+            CLO_R6(r0, r1);
+        else
+            CLO(r0, r1);
     }
-    else
-	fallback_clo(r0, r1);
+    else {
+        if (jit_mips6_p())
+            DCLO_R6(r0, r1);
+        else
+            DCLO(r0, r1);
+    }
 }
 
 static void
 _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    if (jit_mips2_p()) {
-#if __WORDSIZE == 32
-	if (jit_mips6_p())
-	    CLZ_R6(r0, r1);
-	else
-	    CLZ(r0, r1);
-#else
-	if (jit_mips6_p())
-	    DCLZ_R6(r0, r1);
-	else
-	    DCLZ(r0, r1);
-#endif
+    if (__WORDSIZE == 32) {
+        if (jit_mips6_p())
+            CLZ_R6(r0, r1);
+        else
+            CLZ(r0, r1);
     }
-    else
-	fallback_clz(r0, r1);
+    else {
+        if (jit_mips6_p())
+            DCLZ_R6(r0, r1);
+        else
+            DCLZ(r0, r1);
+    }
 }
 
 static void
