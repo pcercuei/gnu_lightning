@@ -1670,49 +1670,38 @@ _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    if (jit_mips2_p()) {
-	if (jit_mips6_p()) {
-#if __WORDSIZE == 32
-	    BITSWAP(r0, r1);
-	    bswapr_ui(r0, r0);
-	    CLO_R6(r0, r0);
-#else
-	    DBITSWAP(r0, r1);
-	    bswapr_ul(r0, r0);
-	    DCLO_R6(r0, r0);
-#endif
-	}
-	else {
-	    fallback_bitswap(r0, r1);
-	    clor(r0, r0);
-	}
+    if (jit_mips6_p()) {
+        rbitr(r0, r1);
+        clor(r0, r0);
     }
-    else
-	fallback_cto(r0, r1);
+    else {
+        comr(r0, r1);
+        ctzr(r0, r0);
+    }
 }
 
 static void
 _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-  if (jit_mips2_p()) {
-	if (jit_mips6_p()) {
-#if __WORDSIZE == 32
-	    BITSWAP(r0, r1);
-	    bswapr_ui(r0, r0);
-	    CLZ_R6(r0, r0);
-#else
-	    DBITSWAP(r0, r1);
-	    bswapr_ul(r0, r0);
-	    DCLZ_R6(r0, r0);
-#endif
-	}
-	else {
-	    fallback_bitswap(r0, r1);
-	    clzr(r0, r0);
-	}
+    if (jit_mips6_p()) {
+        rbitr(r0, r1);
+        clzr(r0, r0);
     }
-    else
-	fallback_ctz(r0, r1);
+    else {
+        jit_int32_t     t0, t1;
+
+        t0 = jit_get_reg(jit_class_gpr);
+        t1 = jit_get_reg(jit_class_gpr);
+
+        negr(rn(t0), r1);
+        andr(rn(t0), rn(t0), r1);
+        clzr(r0, rn(t0));
+        xori(rn(t1), r0, __WORDSIZE - 1);
+        movnr(r0, rn(t1), rn(t0));
+
+        jit_unget_reg(t0);
+        jit_unget_reg(t1);
+    }
 }
 
 static void
