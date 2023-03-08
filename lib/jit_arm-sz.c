@@ -11,7 +11,7 @@
     2,	/* #name */
     0,	/* #note */
     0,	/* label */
-    34,	/* prolog */
+    26,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
@@ -447,16 +447,22 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    12,	/* cto */
-    8,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    12,	/* ctor */
+    8,	/* ctzr */
+    4,	/* rbitr */
+    40,	/* popcntr */
+    12,	/* lrotr */
+    4,	/* lroti */
+    4,	/* rrotr */
+    4,	/* rroti */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 32
 #if !defined(__ARM_PCS_VFP)
-#define JIT_INSTR_MAX 50
+#define JIT_INSTR_MAX 76
     0,	/* data */
     0,	/* live */
     18,	/* align */
@@ -902,9 +908,15 @@
     12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    12,	/* cto */
-    8,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    12,	/* ctor */
+    8,	/* ctzr */
+    4,	/* rbitr */
+    40,	/* popcntr */
+    12,	/* lrotr */
+    4,	/* lroti */
+    4,	/* rrotr */
+    4,	/* rroti */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */

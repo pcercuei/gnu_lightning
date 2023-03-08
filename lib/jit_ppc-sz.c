@@ -448,10 +448,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    136,	/* cto */
-    132,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    64,	/* ctor */
+    60,	/* ctzr */
+    56,	/* rbitr */
+    20,	/* popcntr */
+    4,	/* lrotr */
+    4,	/* lroti */
+    12,	/* rrotr */
+    4,	/* rroti */
 #endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -907,10 +913,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    136,	/* cto */
-    132,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    64,	/* ctor */
+    60,	/* ctzr */
+    56,	/* rbitr */
+    20,	/* popcntr */
+    4,	/* lrotr */
+    4,	/* lroti */
+    12,	/* rrotr */
+    4,	/* rroti */
 #endif /* _CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -919,7 +931,7 @@
 #if __WORDSIZE == 64
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
-#define JIT_INSTR_MAX 236
+#define JIT_INSTR_MAX 148
     0,	/* data */
     0,	/* live */
     28,	/* align */
@@ -1365,10 +1377,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    236,	/* cto */
-    232,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    76,	/* ctor */
+    72,	/* ctzr */
+    68,	/* rbitr */
+    36,	/* popcntr */
+    4,	/* lrotr */
+    4,	/* lroti */
+    12,	/* rrotr */
+    4,	/* rroti */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -1376,7 +1394,7 @@
 #if __WORDSIZE == 64
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-#define JIT_INSTR_MAX 236
+#define JIT_INSTR_MAX 124
     0,	/* data */
     0,	/* live */
     20,	/* align */
@@ -1822,10 +1840,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    236,	/* cto */
-    232,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    76,	/* ctor */
+    72,	/* ctzr */
+    68,	/* rbitr */
+    36,	/* popcntr */
+    4,	/* lrotr */
+    4,	/* lroti */
+    12,	/* rrotr */
+    4,	/* rroti */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */

@@ -446,10 +446,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    21,	/* clo */
-    17,	/* clz */
-    15,	/* cto */
-    11,	/* ctz */
+    21,	/* clor */
+    17,	/* clzr */
+    15,	/* ctor */
+    11,	/* ctzr */
+    61, /* rbitr */
+    58, /* popcntr */
+    16, /* lrotr */
+    5,  /* lroti */
+    16, /* rrotr */
+    5,  /* rroti */
 #endif /* __X32 */
 
 #if __X64
@@ -900,10 +906,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    27,	/* clo */
-    21,	/* clz */
-    20,	/* cto */
-    14,	/* ctz */
+    27,	/* clor */
+    21,	/* clzr */
+    20,	/* ctor */
+    14,	/* ctzr */
+    61,	/* rbitr */
+    57,	/* popcntr */
+    9,	/* lrotr */
+    7,	/* lroti */
+    9,	/* rrotr */
+    7,	/* rroti */
 #else
 
 #  if __X64_32
@@ -1353,10 +1365,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    11,	/* clo */
-    5,	/* clz */
-    11,	/* cto */
-    5,	/* ctz */
+    11,	/* clor */
+    5,	/* clzr */
+    11,	/* ctor */
+    5,	/* ctzr */
+    61,	/* rbitr */
+    5,	/* popcntr */
+    9,	/* lrotr */
+    7,	/* lroti */
+    9,	/* rrotr */
+    7,	/* rroti */
 #else
 
 #define JIT_INSTR_MAX 112
@@ -1805,10 +1823,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    11,	/* clo */
-    5,	/* clz */
-    11,	/* cto */
-    5,	/* ctz */
+    11,	/* clor */
+    5,	/* clzr */
+    11,	/* ctor */
+    5,	/* ctzr */
+    56, /* rbitr */
+    5,	/* popcntr */
+    9,	/* lrotr */
+    7,	/* lroti */
+    9,	/* rrotr */
+    7,	/* rroti */
 #endif /* __CYGWIN__ || _WIN32 */
 #  endif /* __X64_32 */
 #endif /* __X64 */

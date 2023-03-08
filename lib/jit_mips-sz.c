@@ -446,10 +446,16 @@
     8,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    8,	/* clz */
-    76,	/* cto */
-    76,	/* ctz */
+    8,	/* clor */
+    8,	/* clzr */
+    28,	/* ctor */
+    20,	/* ctzr */
+    68,	/* rbitr */
+    64,	/* popcntr */
+    12,	/* lrotr */
+    4,	/* lroti */
+    4,	/* rrotr */
+    4,	/* rroti */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
@@ -899,8 +905,13 @@
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
     24,	/* movi_d_w */
-    4,	/* clo */
-    4,	/* clz */
-    72,	/* cto */
-    72,	/* ctz */
+    4,	/* clor */
+    4,	/* clzr */
+    28,	/* ctor */
+    20,	/* ctzr */
+    76,	/* popcntr */
+    12,	/* lrotr */
+    4,	/* lroti */
+    4,	/* rrotr */
+    4,	/* rroti */
 #endif /* __WORDSIZE */

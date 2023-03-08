@@ -447,10 +447,16 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    12, /* cto */
-    8,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    12, /* ctor */
+    8,	/* ctzr */
+    4,	/* rbitr */
+    16,	/* popcntr */
+    12,	/* lrotr */
+    4,	/* lroti */
+    4,	/* rrotr */
+    4,	/* rroti */
 
 #  else	/* PACKED_STACK */
 #define JIT_INSTR_MAX 120
@@ -899,9 +905,15 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clo */
-    4,	/* clz */
-    12, /* cto */
-    8,	/* ctz */
+    8,	/* clor */
+    4,	/* clzr */
+    12, /* ctor */
+    8,	/* ctzr */
+    4,  /* rbitr */
+    16, /* popcntr */
+    12,	/* lrotr */
+    4,	/* lroti */
+    4,	/* rrotr */
+    4,	/* rroti */
 #  endif
 #endif /* __WORDSIZE */

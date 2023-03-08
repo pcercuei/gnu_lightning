@@ -446,8 +446,14 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    160,	/* clo */
-    140,	/* clz */
-    164,	/* cto */
-    144,	/* ctz */
+    80,	/* clor */
+    60,	/* clzr */
+    76,	/* ctor */
+    56,	/* ctzr */
+    68,	/* rbitr */
+    0,	/* popcntr */
+    32,	/* lrotr */
+    8,	/* lroti */
+    32,	/* rrotr */
+    8,	/* rroti */
 #endif /* __WORDSIZE */
