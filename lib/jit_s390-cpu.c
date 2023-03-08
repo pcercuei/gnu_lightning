@@ -3007,7 +3007,7 @@ _rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	lrotr(r0, r1, r0);
     }
     else {
-	reg = jit_get_reg(jit_class_gpr);
+	reg = jit_get_reg_but_zero(0);
 	rsbi(rn(reg), r2, __WORDSIZE);
 	lrotr(r0, r1, rn(reg));
 	jit_unget_reg(reg);
