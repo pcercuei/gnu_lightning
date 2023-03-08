@@ -2,6 +2,7 @@
 nodata
 *.log
 *.trs
+*.x87
 
 3to2
 bswap
@@ -18,12 +19,14 @@ alu_mul
 alu_neg
 alu_or
 alu_rem
+alu_rot
 alu_rsb
 alu_rsh
 alu_sub
 alu_xor
 alux_add
 alux_sub
+bit
 bp
 branch
 call
@@ -52,11 +55,15 @@ ldstxr-c
 lightning
 live
 movzr
+popcnt
+protect
 put
 qalu_div
 qalu_mul
 range
 ranger
+rbit
+riprel
 ret
 rpn
 self
