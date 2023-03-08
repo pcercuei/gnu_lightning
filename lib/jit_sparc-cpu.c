@@ -99,7 +99,7 @@ _f2bp(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,
 #  define f3r(op, rd, op3, rs1, rs2)	_f3r(_jit, op, rd, op3, rs1, rs2)
 static void _f3r(jit_state_t*,
 		 jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
-#  if __WORDSIZE == 64
+#  if __WORDSIZE == 64 || CHECK_LZCNT
 #  define f3ri(op, rd, op3, rs1, rs2)	_f3ri(_jit, op, rd, op3, rs1, rs2)
 static void _f3ri(jit_state_t*,
 		  jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
@@ -243,7 +243,7 @@ _f2c1(jit_state_t*,jit_int32_t, jit_int32_t,
 #  define SRLI(rs1, imm, rd)		f3i(2, rd, 38, rs1, imm)
 #  define SRA(rs1, rs2, rd)		f3r(2, rd, 39, rs1, rs2)
 #  define SRAI(rs1, imm, rd)		f3i(2, rd, 39, rs1, imm)
-#  if __WORDSIZE == 64
+#  if __WORDSIZE == 64 || CHECK_LZCNT
 #    define SLLX(rs1, rs2, rd)		f3rx(2, rd, 37, rs1, rs2)
 #    define SLLXI(rs1, imm, rd)		f3s(2, rd, 37, rs1, imm)
 #    define SRLX(rs1, rs2, rd)		f3rx(2, rd, 38, rs1, rs2)
@@ -1344,20 +1344,21 @@ _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+#  if CHECK_LZCNT
     if (jit_cpu.lzcnt) {
-#if __WORDSIZE == 32
+#    if __WORDSIZE == 32
 	jit_word_t		w;
 	SLLXI(r1, 32, r0);
 	LZCNT(r0, r0);
-#if __WORDSIZE == 32
 	w = blei(_jit->pc.w, r0, 31);
 	rshi(r0, r0, 1);	/* r0 is 64 */
 	patch_at(w, _jit->pc.w);
-#endif
-#else
+#    else
 	LZCNT(r1, r0);
+#    endif
     }
     else
+#  endif
 	fallback_clz(r0, r1);
 }
 
