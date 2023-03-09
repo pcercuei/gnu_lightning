@@ -1242,15 +1242,23 @@ _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    fallback_bitswap(r0, r1);
-    clor(r0, r0);
+    comr(r0, r1);
+    ctzr(r0, r0);
 }
 
 static void
 _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    fallback_bitswap(r0, r1);
-    clzr(r0, r0);
+    jit_int32_t		t0, t1;
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    negr(rn(t0), r1);
+    andr(rn(t0), rn(t0), r1);
+    clzr(r0, rn(t0));
+    xori(rn(t1), r0, __WORDSIZE - 1);
+    movnr(r0, rn(t1), rn(t0));
+    jit_unget_reg(t0);
+    jit_unget_reg(t1);
 }
 
 static void
