@@ -23,8 +23,8 @@ static void _fallback_clz(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _fallback_cto(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_ctz(r0,r1)		_fallback_ctz(_jit,r0,r1)
 static void _fallback_ctz(jit_state_t*, jit_int32_t, jit_int32_t);
-#define fallback_bitswap(r0,r1)		_fallback_bitswap(_jit, r0, r1)
-static void _fallback_bitswap(jit_state_t*, jit_int32_t, jit_int32_t);
+#define fallback_rbit(r0,r1)		_fallback_rbit(_jit, r0, r1)
+static void _fallback_rbit(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_popcnt(r0,r1)		_fallback_popcnt(_jit, r0, r1)
 static void _fallback_popcnt(jit_state_t*, jit_int32_t, jit_int32_t);
 #define fallback_lrotr(r0, r1, r2)	_fallback_lrotr(_jit, r0, r1, r2)
@@ -385,7 +385,7 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     /* Adapted from http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightModLookup
      * Table for 64 bits was recomputed choosing 67 as next prime number.
      * The cost of the modulo might not compensate and could be better to
-     * use the alternate version (or bitswap and use clz).
+     * use the alternate version (or rbit and use clz).
      */
     jit_int32_t		t0;
 #    if __WORDSIZE == 32
@@ -483,7 +483,7 @@ _fallback_ctz(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_fallback_bitswap(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_fallback_rbit(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
 #  if USE_BIT_TABLES
     /*		t0 = r1;

@@ -1076,7 +1076,7 @@ _emit_code(jit_state_t *_jit)
 #define clzr(r0, r1)	fallback_clz(r0, r1)
 #define ctor(r0, r1)	fallback_cto(r0, r1)
 #define ctzr(r0, r1)	fallback_ctz(r0, r1)
-#define rbitr(r0, r1)	fallback_bitswap(r0, r1)
+#define rbitr(r0, r1)	fallback_rbit(r0, r1)
 #define popcntr(r0, r1)	fallback_popcnt(r0, r1)
 		case_rr(clo,);
 		case_rr(clz,);

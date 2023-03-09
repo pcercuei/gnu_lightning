@@ -1846,7 +1846,7 @@ _rbitr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	    RBIT(r0, r1);
     }
     else
-	fallback_bitswap(r0, r1);
+	fallback_rbit(r0, r1);
 }
 
 static void
