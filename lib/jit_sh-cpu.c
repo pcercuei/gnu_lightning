@@ -331,6 +331,13 @@ static void _bswapr_ui(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define extr_s(r0,r1)		EXTSW(r0,r1)
 #    define extr_uc(r0,r1)		EXTUB(r0,r1)
 #    define extr_us(r0,r1)		EXTUW(r0,r1)
+static void _lrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#    define lrotr(r0,r1,r2)		_lrotr(_jit,r0,r1,r2)
+static void _rrotr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#    define rrotr(r0,r1,r2)		_rrotr(_jit,r0,r1,r2)
+static void _rroti(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#    define rroti(r0,r1,i0)		_rroti(_jit,r0,r1,i0)
+#    define lroti(r0,r1,i0)		rroti(r0,r1,__WORDSIZE-i0)
 static void _andr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
 #    define andr(r0,r1,r2)		_andr(_jit,r0,r1,r2)
 static void _andi(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
@@ -353,6 +360,10 @@ static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define ctor(r0,r1)			_ctor(_jit,r0,r1)
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define ctzr(r0,r1)			_ctzr(_jit,r0,r1)
+static void _rbitr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define rbitr(r0, r1)			_rbitr(_jit, r0, r1)
+static void _popcntr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define popcntr(r0, r1)		_popcntr(_jit, r0, r1)
 static void _gtr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
 #    define gtr(r0,r1,r2)		_gtr(_jit,r0,r1,r2)
 static void _ger(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
@@ -1191,6 +1202,60 @@ _bswapr_ui(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 }
 
 static void
+_lrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+	assert(r0 != _R0 && r1 != _R0);
+
+	movr(_R0, r2);
+	movr(r0, r1);
+
+	ROTL(r0);
+	TST(_R0, _R0);
+	BFS(-4);
+	ADDI(_R0, -1);
+
+	ROTR(r0);
+}
+
+static void
+_rrotr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+	assert(r0 != _R0 && r1 != _R0);
+
+	movr(_R0, r2);
+	movr(r0, r1);
+
+	ROTR(r0);
+	TST(_R0, _R0);
+	BFS(-4);
+	ADDI(_R0, -1);
+
+	ROTL(r0);
+}
+
+static void
+_rroti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+	unsigned int i;
+
+	assert(i0 >= 0 && i0 <= __WORDSIZE - 1);
+	assert(r0 != _R0);
+
+	movr(r0, r1);
+
+	if (i0 < 6) {
+		for (i = 0; i < i0; i++)
+			ROTR(r0);
+	} else if (__WORDSIZE - i0 < 6) {
+		for (i = 0; i < __WORDSIZE - i0; i++)
+			ROTL(r0);
+	} else {
+		movi(_R0, i0);
+		rrotr(r0, r0, _R0);
+	}
+}
+
+static void
 _andr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	if (r0 == r2) {
@@ -1299,6 +1364,33 @@ static void _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	ROTCR(_R0);
 	BFS(-3);
 	ADDI(r0, 1);
+}
+
+static void
+_rbitr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+	movr(_R0, r1);
+
+	SETT();
+	ROTCR(_R0);
+	ROTCL(r0);
+	CMPEQI(1);
+	emit_branch_opcode(_jit, -6, 0, 0);
+}
+
+static void
+_popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+	assert(r0 != _R0);
+
+	movr(_R0, r1);
+	movi(r0, 0);
+
+	SHLR(_R0);
+	NEGC(r0, r0);
+	TST(_R0, _R0);
+	BFS(-5);
+	NEG(r0, r0);
 }
 
 static void

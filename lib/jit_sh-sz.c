@@ -448,3 +448,9 @@
     12,	/* clzr */
     10,	/* ctor */
     12,	/* ctzr */
+    14,	/* rbitr */
+    14,	/* popcntr */
+    14,	/* lrotr */
+    14,	/* lroti */
+    14,	/* rrotr */
+    14,	/* rroti */

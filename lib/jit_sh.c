@@ -47,6 +47,7 @@ static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 #  include "jit_rewind.c"
 #  include "jit_sh-cpu.c"
 #  include "jit_sh-fpu.c"
+#  include "jit_fallback.c"
 #undef PROTO
 
 jit_register_t _rvs[] = {
@@ -478,6 +479,12 @@ _emit_code(jit_state_t *_jit)
 		case_rr(clz,);
 		case_rr(cto,);
 		case_rr(ctz,);
+		case_rr(rbit,);
+		case_rr(popcnt,);
+		case_rrr(lrot,);
+		case_rrw(lrot,);
+		case_rrr(rrot,);
+		case_rrw(rrot,);
 		case_rrr(and,);
 		case_rrw(and,);
 		case_rrr(or,);
@@ -946,6 +953,7 @@ _emit_code(jit_state_t *_jit)
 #  include "jit_rewind.c"
 #  include "jit_sh-cpu.c"
 #  include "jit_sh-fpu.c"
+#  include "jit_fallback.c"
 #undef CODE
 
 void
