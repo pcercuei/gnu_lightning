@@ -335,12 +335,9 @@ _bunordi_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
 #  define bunordi_d(i0, r0, i1)		_bunordi_d(_jit,i0,r0,i1)
 #endif /* PROTO */
 
-#define FLOAT_ONLY 1
-
 #if CODE
 static inline void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 {
-#if !FLOAT_ONLY
 	jit_uint16_t reg;
 
 	if (_jitc->mode_d ^ is_double) {
@@ -357,7 +354,6 @@ static inline void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 
 		jit_unget_reg(reg);
 	}
-#endif
 }
 
 static void _extr_f(jit_state_t *_jit, jit_int16_t r0,
@@ -380,29 +376,20 @@ static void _truncr_f_i(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1,
 
 static void _movr_f(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
-	if (r0 != r1) {
+	if (r0 != r1)
 		FMOV(r0, r1);
-#ifdef __SH_FPU_DOUBLE__
-		FMOV(r0 + 1, r1 + 1);
-#endif
-	}
 }
 
 static void _movr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
 	if (r0 != r1) {
 		FMOV(r0, r1);
-#ifdef __SH_FPU_DOUBLE__
 		FMOV(r0 + 1, r1 + 1);
-#endif
 	}
 }
 
 static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 {
-#if defined(__SH_FPU_DOUBLE__)
-	movi_d(r0, (jit_float64_t)i0);
-#else
 	union fl32 {
 		jit_uint32_t i;
 		jit_float32_t f;
@@ -425,14 +412,10 @@ static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 		LDS(_R0);
 		FSTS(r0);
 	}
-#endif
 }
 
 static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 {
-#if !defined(__SH_FPU_DOUBLE__)
-	movi_f(r0, (jit_float32_t)i0);
-#else
 	union fl64 {
 		struct {
 			jit_uint32_t hi;
@@ -449,7 +432,6 @@ static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 	movi(_R0, ((union fl64)i0).lo);
 	LDS(_R0);
 	FSTS(r0);
-#endif
 }
 
 static void _ltr_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1,
@@ -480,8 +462,8 @@ _lti_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float64_t i0)
 	jit_uint16_t reg;
 
 	reg = jit_get_reg(jit_class_fpr);
-
 	movi_d(rn(reg), i0);
+
 	ltr_d(r0, r1, rn(reg));
 
 	jit_unget_reg(reg);
@@ -676,8 +658,8 @@ _unlti_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float32_t i0)
 	jit_uint16_t reg;
 
 	reg = jit_get_reg(jit_class_fpr);
-
 	movi_f(rn(reg), i0);
+
 	unltr_f(r0, r1, rn(reg));
 
 	jit_unget_reg(reg);
@@ -760,8 +742,8 @@ _ungti_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float32_t i0)
 	jit_uint16_t reg;
 
 	reg = jit_get_reg(jit_class_fpr);
-
 	movi_f(rn(reg), i0);
+
 	ungtr_f(r0, r1, rn(reg));
 
 	jit_unget_reg(reg);
@@ -802,8 +784,8 @@ _ungei_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float32_t i0)
 	jit_uint16_t reg;
 
 	reg = jit_get_reg(jit_class_fpr);
-
 	movi_f(rn(reg), i0);
+
 	unger_f(r0, r1, rn(reg));
 
 	jit_unget_reg(reg);
@@ -825,29 +807,17 @@ _ungei_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float64_t i0)
 static void
 _uneqr_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	unger_f(rn(reg), r1, r2);
+	unger_f(_R0, r1, r2);
 	unler_f(r0, r1, r2);
-	andr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	andr(r0, r0, _R0);
 }
 
 static void
 _uneqr_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	unger_d(rn(reg), r1, r2);
+	unger_d(_R0, r1, r2);
 	unler_d(r0, r1, r2);
-	andr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	andr(r0, r0, _R0);
 }
 
 static void
@@ -879,29 +849,17 @@ _uneqi_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float64_t i0)
 static void
 _ltgtr_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	ungtr_f(rn(reg), r1, r2);
+	ungtr_f(_R0, r1, r2);
 	unltr_f(r0, r1, r2);
-	orr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	orr(r0, r0, _R0);
 }
 
 static void
 _ltgtr_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	ungtr_d(rn(reg), r1, r2);
+	ungtr_d(_R0, r1, r2);
 	unltr_d(r0, r1, r2);
-	orr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	orr(r0, r0, _R0);
 }
 
 static void
@@ -933,29 +891,17 @@ _ltgti_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float64_t i0)
 static void
 _ordr_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	eqr_f(rn(reg), r1, r1);
+	eqr_f(_R0, r1, r1);
 	eqr_f(r0, r2, r2);
-	andr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	andr(r0, r0, _R0);
 }
 
 static void
 _ordr_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	eqr_d(rn(reg), r1, r1);
+	eqr_d(_R0, r1, r1);
 	eqr_d(r0, r2, r2);
-	andr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	andr(r0, r0, _R0);
 }
 
 static void
@@ -987,29 +933,17 @@ _ordi_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_float64_t i0)
 static void
 _unordr_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	ner_f(rn(reg), r1, r1);
+	ner_f(_R0, r1, r1);
 	ner_f(r0, r2, r2);
-	orr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	orr(r0, r0, _R0);
 }
 
 static void
 _unordr_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
-	jit_uint16_t reg;
-
-	reg = jit_get_reg(jit_class_fpr);
-
-	ner_d(rn(reg), r1, r1);
+	ner_d(_R0, r1, r1);
 	ner_d(r0, r2, r2);
-	orr(r0, r0, rn(reg));
-
-	jit_unget_reg(reg);
+	orr(r0, r0, _R0);
 }
 
 static void
@@ -1391,32 +1325,18 @@ static void _negr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 
 static void _extr_d_f(jit_state_t *_jit,jit_uint16_t r0, jit_uint16_t r1)
 {
-#if !defined(__SH_FPU_DOUBLE__)
-	movr_f(r0, r1);
-#else
-	movr_d(r0, r1);
-	/*
 	set_fmode(_jit, 1);
 	FCNVDS(r1);
 	set_fmode(_jit, 0);
 	FSTS(r0);
-	*/
-#endif
 }
 
 static void _extr_f_d(jit_state_t *_jit,jit_uint16_t r0, jit_uint16_t r1)
 {
-#if !defined(__SH_FPU_DOUBLE__)
-	movr_f(r0, r1);
-#else
-	movr_d(r0, r1);
-	/*
 	set_fmode(_jit, 0);
 	FLDS(r1);
 	set_fmode(_jit, 1);
 	FCNVSD(r0);
-	*/
-#endif
 }
 
 static void _ldr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
