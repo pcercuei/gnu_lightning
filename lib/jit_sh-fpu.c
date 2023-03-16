@@ -19,125 +19,125 @@
 
 #if PROTO
 static void _extr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define extr_f(r0, r1)		_extr_f(_jit, r0, r1,0)
-#  define extr_d(r0, r1)		_extr_f(_jit, r0, r1,1)
+#  define extr_f(r0,r1)			_extr_f(_jit,r0,r1,0)
+#  define extr_d(r0,r1)			_extr_f(_jit,r0,r1,1)
 static void _truncr_f_i(jit_state_t*,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define truncr_f_i(r0, r1)		_truncr_f_i(_jit, r0, r1, 0)
-#  define truncr_d_i(r0, r1)		_truncr_f_i(_jit, r0, r1, 1)
+#  define truncr_f_i(r0,r1)		_truncr_f_i(_jit,r0,r1,0)
+#  define truncr_d_i(r0,r1)		_truncr_f_i(_jit,r0,r1,1)
 static void _movr_f(jit_state_t*,jit_uint16_t,jit_uint16_t);
-#  define movr_f(r0, r1)		_movr_f(_jit, r0, r1)
+#  define movr_f(r0,r1)			_movr_f(_jit,r0,r1)
 static void _movr_d(jit_state_t*,jit_uint16_t,jit_uint16_t);
-#  define movr_d(r0, r1)		_movr_d(_jit, r0, r1)
+#  define movr_d(r0,r1)			_movr_d(_jit,r0,r1)
 static void _movi_f(jit_state_t*,jit_uint16_t,jit_float32_t);
-#  define movi_f(r0, i0)		_movi_f(_jit, r0, i0)
+#  define movi_f(r0,i0)			_movi_f(_jit,r0,i0)
 static void _movi_d(jit_state_t*,jit_uint16_t,jit_float64_t);
-#  define movi_d(r0, i0)		_movi_d(_jit, r0, i0)
+#  define movi_d(r0,i0)			_movi_d(_jit,r0,i0)
 static void _ltr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define ltr_f(r0, r1, r2)		_ltr_f(_jit,r0,r1,r2,0)
-#  define ltr_d(r0, r1, r2)		_ltr_f(_jit,r0,r1,r2,1)
+#  define ltr_f(r0,r1,r2)		_ltr_f(_jit,r0,r1,r2,0)
+#  define ltr_d(r0,r1,r2)		_ltr_f(_jit,r0,r1,r2,1)
 static void _lti_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define lti_f(r0, r1, i0)		_lti_f(_jit,r0,r1,i0)
+#  define lti_f(r0,r1,i0)		_lti_f(_jit,r0,r1,i0)
 static void _lti_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define lti_d(r0, r1, i0)		_lti_d(_jit,r0,r1,i0)
+#  define lti_d(r0,r1,i0)		_lti_d(_jit,r0,r1,i0)
 static void _ler_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define ler_f(r0, r1, r2)		_ler_f(_jit,r0,r1,r2,0)
-#  define ler_d(r0, r1, r2)		_ler_f(_jit,r0,r1,r2,1)
+#  define ler_f(r0,r1,r2)		_ler_f(_jit,r0,r1,r2,0)
+#  define ler_d(r0,r1,r2)		_ler_f(_jit,r0,r1,r2,1)
 static void _lei_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define lei_f(r0, r1, i0)		_lei_f(_jit,r0,r1,i0)
+#  define lei_f(r0,r1,i0)		_lei_f(_jit,r0,r1,i0)
 static void _lei_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define lei_d(r0, r1, i0)		_lei_d(_jit,r0,r1,i0)
+#  define lei_d(r0,r1,i0)		_lei_d(_jit,r0,r1,i0)
 static void _eqr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define eqr_f(r0, r1, r2)		_eqr_f(_jit,r0,r1,r2,0)
-#  define eqr_d(r0, r1, r2)		_eqr_f(_jit,r0,r1,r2,1)
+#  define eqr_f(r0,r1,r2)		_eqr_f(_jit,r0,r1,r2,0)
+#  define eqr_d(r0,r1,r2)		_eqr_f(_jit,r0,r1,r2,1)
 static void _eqi_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define eqi_f(r0, r1, i0)		_eqi_f(_jit,r0,r1,i0)
+#  define eqi_f(r0,r1,i0)		_eqi_f(_jit,r0,r1,i0)
 static void _eqi_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define eqi_d(r0, r1, i0)		_eqi_d(_jit,r0,r1,i0)
-#  define ger_f(r0, r1, r2)		ler_f(r0,r2,r1)
-#  define ger_d(r0, r1, r2)		ler_d(r0,r2,r1)
+#  define eqi_d(r0,r1,i0)		_eqi_d(_jit,r0,r1,i0)
+#  define ger_f(r0,r1,r2)		ler_f(r0,r2,r1)
+#  define ger_d(r0,r1,r2)		ler_d(r0,r2,r1)
 static void _gei_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define gei_f(r0, r1, i0)		_gei_f(_jit,r0,r1,i0)
+#  define gei_f(r0,r1,i0)		_gei_f(_jit,r0,r1,i0)
 static void _gei_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define gei_d(r0, r1, i0)		_gei_f(_jit,r0,r1,i0)
+#  define gei_d(r0,r1,i0)		_gei_f(_jit,r0,r1,i0)
 static void _gtr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define gtr_f(r0, r1, r2)		ltr_f(r0,r2,r1)
-#  define gtr_d(r0, r1, r2)		ltr_d(r0,r2,r1)
+#  define gtr_f(r0,r1,r2)		ltr_f(r0,r2,r1)
+#  define gtr_d(r0,r1,r2)		ltr_d(r0,r2,r1)
 static void _gti_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define gti_f(r0, r1, i0)		_gti_f(_jit,r0,r1,i0)
+#  define gti_f(r0,r1,i0)		_gti_f(_jit,r0,r1,i0)
 static void _gti_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define gti_d(r0, r1, i0)		_gti_d(_jit,r0,r1,i0)
+#  define gti_d(r0,r1,i0)		_gti_d(_jit,r0,r1,i0)
 static void _ner_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ner_f(r0, r1, r2)		_ner_f(_jit,r0,r1,r2)
+#  define ner_f(r0,r1,r2)		_ner_f(_jit,r0,r1,r2)
 static void _ner_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ner_d(r0, r1, r2)		_ner_d(_jit,r0,r1,r2)
+#  define ner_d(r0,r1,r2)		_ner_d(_jit,r0,r1,r2)
 static void _nei_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define nei_f(r0, r1, i0)		_nei_f(_jit,r0,r1,i0)
+#  define nei_f(r0,r1,i0)		_nei_f(_jit,r0,r1,i0)
 static void _nei_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define nei_d(r0, r1, i0)		_nei_d(_jit,r0,r1,i0)
+#  define nei_d(r0,r1,i0)		_nei_d(_jit,r0,r1,i0)
 static void _unltr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unltr_f(r0, r1, r2)		_unltr_f(_jit,r0,r1,r2)
+#  define unltr_f(r0,r1,r2)		_unltr_f(_jit,r0,r1,r2)
 static void _unltr_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unltr_d(r0, r1, r2)		_unltr_d(_jit,r0,r1,r2)
+#  define unltr_d(r0,r1,r2)		_unltr_d(_jit,r0,r1,r2)
 static void _unlti_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define unlti_f(r0, r1, i0)		_unlti_f(_jit,r0,r1,i0)
+#  define unlti_f(r0,r1,i0)		_unlti_f(_jit,r0,r1,i0)
 static void _unlti_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define unlti_d(r0, r1, i0)		_unlti_d(_jit,r0,r1,i0)
+#  define unlti_d(r0,r1,i0)		_unlti_d(_jit,r0,r1,i0)
 static void _unler_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unler_f(r0, r1, r2)		_unler_f(_jit,r0,r1,r2)
+#  define unler_f(r0,r1,r2)		_unler_f(_jit,r0,r1,r2)
 static void _unler_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unler_d(r0, r1, r2)		_unler_d(_jit,r0,r1,r2)
+#  define unler_d(r0,r1,r2)		_unler_d(_jit,r0,r1,r2)
 static void _unlei_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define unlei_f(r0, r1, i0)		_unlei_f(_jit,r0,r1,i0)
+#  define unlei_f(r0,r1,i0)		_unlei_f(_jit,r0,r1,i0)
 static void _unlei_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define unlei_d(r0, r1, i0)		_unlei_d(_jit,r0,r1,i0)
+#  define unlei_d(r0,r1,i0)		_unlei_d(_jit,r0,r1,i0)
 static void _ungtr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ungtr_f(r0, r1, r2)		_ungtr_f(_jit,r0,r1,r2)
+#  define ungtr_f(r0,r1,r2)		_ungtr_f(_jit,r0,r1,r2)
 static void _ungtr_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ungtr_d(r0, r1, r2)		_ungtr_d(_jit,r0,r1,r2)
+#  define ungtr_d(r0,r1,r2)		_ungtr_d(_jit,r0,r1,r2)
 static void _ungti_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define ungti_f(r0, r1, i0)		_ungti_f(_jit,r0,r1,i0)
+#  define ungti_f(r0,r1,i0)		_ungti_f(_jit,r0,r1,i0)
 static void _ungti_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define ungti_d(r0, r1, i0)		_ungti_d(_jit,r0,r1,i0)
+#  define ungti_d(r0,r1,i0)		_ungti_d(_jit,r0,r1,i0)
 static void _unger_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unger_f(r0, r1, r2)		_unger_f(_jit,r0,r1,r2)
+#  define unger_f(r0,r1,r2)		_unger_f(_jit,r0,r1,r2)
 static void _unger_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unger_d(r0, r1, r2)		_unger_d(_jit,r0,r1,r2)
+#  define unger_d(r0,r1,r2)		_unger_d(_jit,r0,r1,r2)
 static void _ungei_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define ungei_f(r0, r1, i0)		_ungei_f(_jit,r0,r1,i0)
+#  define ungei_f(r0,r1,i0)		_ungei_f(_jit,r0,r1,i0)
 static void _ungei_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define ungei_d(r0, r1, i0)		_ungei_d(_jit,r0,r1,i0)
+#  define ungei_d(r0,r1,i0)		_ungei_d(_jit,r0,r1,i0)
 static void _uneqr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define uneqr_f(r0, r1, r2)		_uneqr_f(_jit,r0,r1,r2)
+#  define uneqr_f(r0,r1,r2)		_uneqr_f(_jit,r0,r1,r2)
 static void _uneqr_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define uneqr_d(r0, r1, r2)		_uneqr_d(_jit,r0,r1,r2)
+#  define uneqr_d(r0,r1,r2)		_uneqr_d(_jit,r0,r1,r2)
 static void _uneqi_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define uneqi_f(r0, r1, i0)		_uneqi_f(_jit,r0,r1,i0)
+#  define uneqi_f(r0,r1,i0)		_uneqi_f(_jit,r0,r1,i0)
 static void _uneqi_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define uneqi_d(r0, r1, i0)		_uneqi_d(_jit,r0,r1,i0)
+#  define uneqi_d(r0,r1,i0)		_uneqi_d(_jit,r0,r1,i0)
 static void _ltgtr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ltgtr_f(r0, r1, r2)		_ltgtr_f(_jit,r0,r1,r2)
+#  define ltgtr_f(r0,r1,r2)		_ltgtr_f(_jit,r0,r1,r2)
 static void _ltgtr_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ltgtr_d(r0, r1, r2)		_ltgtr_d(_jit,r0,r1,r2)
+#  define ltgtr_d(r0,r1,r2)		_ltgtr_d(_jit,r0,r1,r2)
 static void _ltgti_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define ltgti_f(r0, r1, i0)		_ltgti_f(_jit,r0,r1,i0)
+#  define ltgti_f(r0,r1,i0)		_ltgti_f(_jit,r0,r1,i0)
 static void _ltgti_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define ltgti_d(r0, r1, i0)		_ltgti_d(_jit,r0,r1,i0)
+#  define ltgti_d(r0,r1,i0)		_ltgti_d(_jit,r0,r1,i0)
 static void _ordr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ordr_f(r0, r1, r2)		_ordr_f(_jit,r0,r1,r2)
+#  define ordr_f(r0,r1,r2)		_ordr_f(_jit,r0,r1,r2)
 static void _ordr_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define ordr_d(r0, r1, r2)		_ordr_d(_jit,r0,r1,r2)
+#  define ordr_d(r0,r1,r2)		_ordr_d(_jit,r0,r1,r2)
 static void _ordi_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define ordi_f(r0, r1, i0)		_ordi_f(_jit,r0,r1,i0)
+#  define ordi_f(r0,r1,i0)		_ordi_f(_jit,r0,r1,i0)
 static void _ordi_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define ordi_d(r0, r1, i0)		_ordi_d(_jit,r0,r1,i0)
+#  define ordi_d(r0,r1,i0)		_ordi_d(_jit,r0,r1,i0)
 static void _unordr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unordr_f(r0, r1, r2)		_unordr_f(_jit,r0,r1,r2)
+#  define unordr_f(r0,r1,r2)		_unordr_f(_jit,r0,r1,r2)
 static void _unordr_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
-#  define unordr_d(r0, r1, r2)		_unordr_d(_jit,r0,r1,r2)
+#  define unordr_d(r0,r1,r2)		_unordr_d(_jit,r0,r1,r2)
 static void _unordi_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
-#  define unordi_f(r0, r1, i0)		_unordi_f(_jit,r0,r1,i0)
+#  define unordi_f(r0,r1,i0)		_unordi_f(_jit,r0,r1,i0)
 static void _unordi_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
-#  define unordi_d(r0, r1, i0)		_unordi_d(_jit,r0,r1,i0)
+#  define unordi_d(r0,r1,i0)		_unordi_d(_jit,r0,r1,i0)
 static void _addr_f(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t,jit_bool_t);
 #  define addr_f(r0,r1,r2)		_addr_f(_jit,r0,r1,r2,0)
 #  define addr_d(r0,r1,r2)		_addr_f(_jit,r0,r1,r2,1)
@@ -221,118 +221,182 @@ static void _stxi_f(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #  define stxi_f(i0,r0,r1)		_stxi_f(_jit,i0,r0,r1)
 static void _stxi_d(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #  define stxi_d(i0,r0,r1)		_stxi_d(_jit,i0,r0,r1)
-static jit_word_t _beqr_f(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t,jit_bool_t,jit_bool_t);
-#  define beqr_f(i0,r0,r1)		_beqr_f(_jit,i0,r0,r1,0,1)
-#  define beqr_d(i0,r0,r1)		_beqr_f(_jit,i0,r0,r1,1,1)
-static jit_word_t _beqi_f(jit_state_t*,jit_word_t,jit_uint16_t,jit_float32_t,jit_bool_t);
-#  define beqi_f(i0,r0,i1)		_beqi_f(_jit,i0,r0,i1,1)
-static jit_word_t _beqi_d(jit_state_t*,jit_word_t,jit_uint16_t,jit_float64_t,jit_bool_t);
-#  define beqi_d(i0,r0,i1)		_beqi_d(_jit,i0,r0,i1,1)
-#  define bner_f(i0,r0,r1)		_beqr_f(_jit,i0,r0,r1,0,0)
-#  define bner_d(i0,r0,r1)		_beqr_f(_jit,i0,r0,r1,1,0)
-#  define bnei_f(i0,r0,i1)		_beqi_f(_jit,i0,r0,i1,0)
-#  define bnei_d(i0,r0,i1)		_beqi_d(_jit,i0,r0,i1,0)
-#  define bltr_f(i0, r0, r1)		bgtr_f(i0,r1,r0)
-#  define bltr_d(i0, r0, r1)		bgtr_d(i0,r1,r0)
+static jit_word_t _beqr_f(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t,
+			  jit_bool_t,jit_bool_t,jit_bool_t);
+#  define beqr_f(i0,r0,r1)		beqr_f_p(i0,r0,r1,0)
+#  define bner_f(i0,r0,r1)		bner_f_p(i0,r0,r1,0)
+#  define beqr_d(i0,r0,r1)		beqr_f_p(i0,r0,r1,0)
+#  define bner_d(i0,r0,r1)		bner_f_p(i0,r0,r1,0)
+#  define beqr_f_p(i0,r0,r1,p)		_beqr_f(_jit,i0,r0,r1,0,1,p)
+#  define bner_f_p(i0,r0,r1,p)		_beqr_f(_jit,i0,r0,r1,0,0,p)
+#  define beqr_d_p(i0,r0,r1,p)		_beqr_f(_jit,i0,r0,r1,1,1,p)
+#  define bner_d_p(i0,r0,r1,p)		_beqr_f(_jit,i0,r0,r1,1,0,p)
+static jit_word_t _beqi_f(jit_state_t*,jit_word_t,jit_uint16_t,
+			  jit_float32_t,jit_bool_t,jit_bool_t);
+#  define beqi_f(i0,r0,i1)		beqi_f_p(i0,r0,i1,0)
+#  define bnei_f(i0,r0,i1)		bnei_f_p(i0,r0,i1,0)
+#  define beqi_f_p(i0,r0,i1,p)		_beqi_f(_jit,i0,r0,i1,1,p)
+#  define bnei_f_p(i0,r0,i1,p)		_beqi_f(_jit,i0,r0,i1,0,p)
+static jit_word_t _beqi_d(jit_state_t*,jit_word_t,jit_uint16_t,
+			  jit_float64_t,jit_bool_t,jit_bool_t);
+#  define beqi_d(i0,r0,i1)		beqi_d_p(i0,r0,i1,0)
+#  define bnei_d(i0,r0,i1)		bnei_d_p(i0,r0,i1,0)
+#  define beqi_d_p(i0,r0,i1,p)		_beqi_d(_jit,i0,r0,i1,1,p)
+#  define bnei_d_p(i0,r0,i1,p)		_beqi_d(_jit,i0,r0,i1,0,p)
 static jit_word_t
-_blti_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define blti_f(i0, r0, i1)		_blti_f(_jit,i0,r0,i1)
+_blti_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define blti_f(i0,r0,i1)		blti_f_p(i0,r0,i1,0)
+#  define blti_f_p(i0,r0,i1,p)		_blti_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_blti_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define blti_d(i0, r0, i1)		_blti_d(_jit,i0,r0,i1)
-static jit_word_t _bgtr_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,jit_bool_t,jit_bool_t);
-#  define bgtr_f(i0, r0, r1)		_bgtr_f(_jit,i0,r0,r1,0,1)
-#  define bgtr_d(i0, r0, r1)		_bgtr_f(_jit,i0,r0,r1,1,1)
+_blti_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define blti_d(i0,r0,i1)		blti_d_p(i0,r0,i1,0)
+#  define blti_d_p(i0,r0,i1,p)		_blti_d(_jit,i0,r0,i1,p)
+static jit_word_t _bgtr_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,
+			  jit_bool_t,jit_bool_t,jit_bool_t);
+#  define bgtr_f(i0,r0,r1)		bgtr_f_p(i0,r0,r1,0)
+#  define bgtr_d(i0,r0,r1)		bgtr_d_p(i0,r0,r1,0)
+#  define bltr_f(i0,r0,r1)		bltr_f_p(i0,r1,r0,0)
+#  define bltr_d(i0,r0,r1)		bltr_d_p(i0,r1,r0,0)
+#  define bgtr_f_p(i0,r0,r1,p)		_bgtr_f(_jit,i0,r0,r1,0,1,p)
+#  define bgtr_d_p(i0,r0,r1,p)		_bgtr_f(_jit,i0,r0,r1,1,1,p)
+#  define bltr_f_p(i0,r0,r1,p)		_bgtr_f(_jit,i0,r1,r0,0,1,p)
+#  define bltr_d_p(i0,r0,r1,p)		_bgtr_f(_jit,i0,r1,r0,1,1,p)
 static jit_word_t
-_bgti_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bgti_f(i0, r0, i1)		_bgti_f(_jit,i0,r0,i1)
+_bgti_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bgti_f(i0,r0,i1)		bgti_f_p(i0,r0,i1,0)
+#  define bgti_f_p(i0,r0,i1,p)		_bgti_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bgti_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bgti_d(i0, r0, i1)		_bgti_d(_jit,i0,r0,i1)
-static jit_word_t _bler_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,jit_bool_t,jit_bool_t);
-#  define bler_f(i0, r0, r1)		_bler_f(_jit,i0,r0,r1,0,0)
-#  define bler_d(i0, r0, r1)		_bler_f(_jit,i0,r0,r1,1,0)
+_bgti_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bgti_d(i0,r0,i1)		bgti_d_p(i0,r0,i1,0)
+#  define bgti_d_p(i0,r0,i1,p)		_bgti_d(_jit,i0,r0,i1,p)
+static jit_word_t _bler_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,
+			  jit_bool_t,jit_bool_t,jit_bool_t);
+#  define bler_f(i0,r0,r1)		bler_f_p(i0,r0,r1,0)
+#  define bler_d(i0,r0,r1)		bler_d_p(i0,r0,r1,0)
+#  define bler_f_p(i0,r0,r1,p)		_bler_f(_jit,i0,r0,r1,0,0,p)
+#  define bler_d_p(i0,r0,r1,p)		_bler_f(_jit,i0,r0,r1,1,0,p)
 static jit_word_t
-_blei_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define blei_f(i0, r0, i1)		_blei_f(_jit,i0,r0,i1)
+_blei_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define blei_f(i0,r0,i1)		blei_f_p(i0,r0,i1,0)
+#  define blei_f_p(i0,r0,i1,p)		_blei_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_blei_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define blei_d(i0, r0, i1)		_blei_d(_jit,i0,r0,i1)
-#  define bger_f(i0, r0, r1)		bler_f(i0,r1,r0)
-#  define bger_d(i0, r0, r1)		bler_d(i0,r1,r0)
+_blei_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define blei_d(i0,r0,i1)		blei_d_p(i0,r0,i1,0)
+#  define blei_d_p(i0,r0,i1,p)		_blei_d(_jit,i0,r0,i1,p)
+#  define bger_f(i0,r0,r1)		bger_f_p(i0,r1,r0,0)
+#  define bger_d(i0,r0,r1)		bger_d_p(i0,r1,r0,0)
+#  define bger_f_p(i0,r0,r1,p)		bler_f_p(i0,r1,r0,p)
+#  define bger_d_p(i0,r0,r1,p)		bler_d_p(i0,r1,r0,p)
 static jit_word_t
-_bgei_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bgei_f(i0, r0, i1)		_bgei_f(_jit,i0,r0,i1)
+_bgei_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bgei_f(i0,r0,i1)		bgei_f_p(i0,r0,i1,0)
+#  define bgei_f_p(i0,r0,i1,p)		_bgei_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bgei_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bgei_d(i0, r0, i1)		_bgei_d(_jit,i0,r0,i1)
-#  define bunltr_f(i0, r0, r1)		_bler_f(_jit,i0,r1,r0,0,1)
-#  define bunltr_d(i0, r0, r1)		_bler_f(_jit,i0,r1,r0,1,1)
+_bgei_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bgei_d(i0,r0,i1)		bgei_d_p(i0,r0,i1,0)
+#  define bgei_d_p(i0,r0,i1,p)		_bgei_d(_jit,i0,r0,i1,p)
+#  define bunltr_f(i0,r0,r1)		bunltr_f_p(i0,r1,r0,0)
+#  define bunltr_d(i0,r0,r1)		bunltr_d_p(i0,r1,r0,0)
+#  define bunltr_f_p(i0,r0,r1,p)	_bler_f(_jit,i0,r1,r0,0,1,p)
+#  define bunltr_d_p(i0,r0,r1,p)	_bler_f(_jit,i0,r1,r0,1,1,p)
 static jit_word_t
-_bunlti_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bunlti_f(i0, r0, i1)		_bunlti_f(_jit,i0,r0,i1)
+_bunlti_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bunlti_f(i0,r0,i1)		bunlti_f_p(i0,r0,i1,0)
+#  define bunlti_f_p(i0,r0,i1,p)	_bunlti_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bunlti_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bunlti_d(i0, r0, i1)		_bunlti_d(_jit,i0,r0,i1)
-#  define bunler_f(i0, r0, r1)		_bgtr_f(_jit,i0,r0,r1,0,0)
-#  define bunler_d(i0, r0, r1)		_bgtr_f(_jit,i0,r0,r1,1,0)
+_bunlti_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bunlti_d(i0,r0,i1)		bunlti_d_p(i0,r0,i1,0)
+#  define bunlti_d_p(i0,r0,i1,p)	_bunlti_d(_jit,i0,r0,i1,p)
+#  define bunler_f(i0,r0,r1)		bunler_f_p(i0,r0,r1,0)
+#  define bunler_d(i0,r0,r1)		bunler_d_p(i0,r0,r1,0)
+#  define bunler_f_p(i0,r0,r1,p)	_bgtr_f(_jit,i0,r0,r1,0,0,p)
+#  define bunler_d_p(i0,r0,r1,p)	_bgtr_f(_jit,i0,r0,r1,1,0,p)
 static jit_word_t
-_bunlei_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bunlei_f(i0, r0, i1)		_bunlei_f(_jit,i0,r0,i1)
+_bunlei_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bunlei_f(i0,r0,i1)		bunlei_f_p(i0,r0,i1,0)
+#  define bunlei_f_p(i0,r0,i1,p)	_bunlei_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bunlei_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bunlei_d(i0, r0, i1)		_bunlei_d(_jit,i0,r0,i1)
-#  define bungtr_f(i0, r0, r1)		_bler_f(_jit,i0,r0,r1,0,1)
-#  define bungtr_d(i0, r0, r1)		_bler_f(_jit,i0,r0,r1,1,1)
+_bunlei_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bunlei_d(i0,r0,i1)		bunlei_d_p(i0,r0,i1,0)
+#  define bunlei_d_p(i0,r0,i1,p)	_bunlei_d(_jit,i0,r0,i1,p)
+#  define bungtr_f(i0,r0,r1)		bungtr_f_p(i0,r0,r1,0)
+#  define bungtr_d(i0,r0,r1)		bungtr_d_p(i0,r0,r1,0)
+#  define bungtr_f_p(i0,r0,r1,p)	_bler_f(_jit,i0,r0,r1,0,1,p)
+#  define bungtr_d_p(i0,r0,r1,p)	_bler_f(_jit,i0,r0,r1,1,1,p)
 static jit_word_t
-_bungti_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bungti_f(i0, r0, i1)		_bungti_f(_jit,i0,r0,i1)
+_bungti_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bungti_f(i0,r0,i1)		bungti_f_p(i0,r0,i1,0)
+#  define bungti_f_p(i0,r0,i1,p)	_bungti_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bungti_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bungti_d(i0, r0, i1)		_bungti_d(_jit,i0,r0,i1)
-#  define bunger_f(i0, r0, r1)		_bgtr_f(_jit,i0,r1,r0,0,0)
-#  define bunger_d(i0, r0, r1)		_bgtr_f(_jit,i0,r1,r0,1,0)
+_bungti_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bungti_d(i0,r0,i1)		bungti_d_p(i0,r0,i1,0)
+#  define bungti_d_p(i0,r0,i1,p)	_bungti_d(_jit,i0,r0,i1,p)
+#  define bunger_f(i0,r0,r1)		bunger_f_p(i0,r1,r0,0)
+#  define bunger_d(i0,r0,r1)		bunger_d_p(i0,r1,r0,0)
+#  define bunger_f_p(i0,r0,r1,p)	_bgtr_f(_jit,i0,r1,r0,0,0,p)
+#  define bunger_d_p(i0,r0,r1,p)	_bgtr_f(_jit,i0,r1,r0,1,0,p)
 static jit_word_t
-_bungei_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bungei_f(i0, r0, i1)		_bungei_f(_jit,i0,r0,i1)
+_bungei_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bungei_f(i0,r0,i1)		bungei_f_p(i0,r0,i1,0)
+#  define bungei_f_p(i0,r0,i1,p)	_bungei_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bungei_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bungei_d(i0, r0, i1)		_bungei_d(_jit,i0,r0,i1)
-static jit_word_t _buneqr_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define buneqr_f(i0, r0, r1)		_buneqr_f(_jit,i0,r1,r0,0)
-#  define buneqr_d(i0, r0, r1)		_buneqr_f(_jit,i0,r1,r0,1)
+_bungei_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bungei_d(i0,r0,i1)		bungei_d_p(i0,r0,i1,0)
+#  define bungei_d_p(i0,r0,i1,p)	_bungei_d(_jit,i0,r0,i1,p)
+static jit_word_t _buneqr_f(jit_state_t*,jit_word_t,jit_int16_t,
+			    jit_int16_t,jit_bool_t,jit_bool_t);
+#  define buneqr_f(i0,r0,r1)		buneqr_f_p(i0,r1,r0,0)
+#  define buneqr_d(i0,r0,r1)		buneqr_d_p(i0,r1,r0,0)
+#  define buneqr_f_p(i0,r0,r1,p)	_buneqr_f(_jit,i0,r1,r0,0,p)
+#  define buneqr_d_p(i0,r0,r1,p)	_buneqr_f(_jit,i0,r1,r0,1,p)
 static jit_word_t
-_buneqi_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define buneqi_f(i0, r0, i1)		_buneqi_f(_jit,i0,r0,i1)
+_buneqi_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define buneqi_f(i0,r0,i1)		buneqi_f_p(i0,r0,i1,0)
+#  define buneqi_f_p(i0,r0,i1,p)	_buneqi_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_buneqi_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define buneqi_d(i0, r0, i1)		_buneqi_d(_jit,i0,r0,i1)
-static jit_word_t _bltgtr_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,jit_bool_t);
-#  define bltgtr_f(i0, r0, r1)		_bltgtr_f(_jit,i0,r1,r0,0)
-#  define bltgtr_d(i0, r0, r1)		_bltgtr_f(_jit,i0,r1,r0,1)
+_buneqi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define buneqi_d(i0,r0,i1)		buneqi_d_p(i0,r0,i1,0)
+#  define buneqi_d_p(i0,r0,i1,p)	_buneqi_d(_jit,i0,r0,i1,p)
+static jit_word_t _bltgtr_f(jit_state_t*,jit_word_t,jit_int16_t,
+			    jit_int16_t,jit_bool_t,jit_bool_t);
+#  define bltgtr_f(i0,r0,r1)		bltgtr_f_p(i0,r1,r0,0)
+#  define bltgtr_d(i0,r0,r1)		bltgtr_d_p(i0,r1,r0,0)
+#  define bltgtr_f_p(i0,r0,r1,p)	_bltgtr_f(_jit,i0,r1,r0,0,p)
+#  define bltgtr_d_p(i0,r0,r1,p)	_bltgtr_f(_jit,i0,r1,r0,1,p)
 static jit_word_t
-_bltgti_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bltgti_f(i0, r0, i1)		_bltgti_f(_jit,i0,r0,i1)
+_bltgti_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bltgti_f(i0,r0,i1)		bltgti_f_p(i0,r0,i1,0)
+#  define bltgti_f_p(i0,r0,i1,p)	_bltgti_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bltgti_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bltgti_d(i0, r0, i1)		_bltgti_d(_jit,i0,r0,i1)
-static jit_word_t _bordr_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,jit_bool_t,jit_bool_t);
-#  define bordr_f(i0, r0, r1)		_bordr_f(_jit,i0,r0,r1,0,1)
-#  define bordr_d(i0, r0, r1)		_bordr_f(_jit,i0,r0,r1,1,1)
+_bltgti_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bltgti_d(i0,r0,i1)		bltgti_d_p(i0,r0,i1,0)
+#  define bltgti_d_p(i0,r0,i1,p)	_bltgti_d(_jit,i0,r0,i1,p)
+static jit_word_t _bordr_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t,
+			   jit_bool_t,jit_bool_t,jit_bool_t);
+#  define bordr_f(i0,r0,r1)		bordr_f_p(i0,r0,r1,0)
+#  define bordr_d(i0,r0,r1)		bordr_d_p(i0,r0,r1,0)
+#  define bordr_f_p(i0,r0,r1,p)		_bordr_f(_jit,i0,r0,r1,0,1,p)
+#  define bordr_d_p(i0,r0,r1,p)		_bordr_f(_jit,i0,r0,r1,1,1,p)
 static jit_word_t
-_bordi_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bordi_f(i0, r0, i1)		_bordi_f(_jit,i0,r0,i1)
+_bordi_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bordi_f(i0,r0,i1)		bordi_f_p(i0,r0,i1,0)
+#  define bordi_f_p(i0,r0,i1,p)		_bordi_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bordi_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bordi_d(i0, r0, i1)		_bordi_d(_jit,i0,r0,i1)
-#  define bunordr_f(i0, r0, r1)		_bordr_f(_jit,i0,r0,r1,0,0)
-#  define bunordr_d(i0, r0, r1)		_bordr_f(_jit,i0,r0,r1,1,0)
+_bordi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bordi_d(i0,r0,i1)		bordi_d_p(i0,r0,i1,0)
+#  define bordi_d_p(i0,r0,i1,p)		_bordi_d(_jit,i0,r0,i1,p)
+#  define bunordr_f(i0,r0,r1)		bunordr_f_p(i0,r0,r1,0)
+#  define bunordr_d(i0,r0,r1)		bunordr_d_p(i0,r0,r1,0)
+#  define bunordr_f_p(i0,r0,r1,p)	_bordr_f(_jit,i0,r0,r1,0,0,p)
+#  define bunordr_d_p(i0,r0,r1,p)	_bordr_f(_jit,i0,r0,r1,1,0,p)
 static jit_word_t
-_bunordi_f(jit_state_t*, jit_word_t, jit_int16_t, jit_float32_t);
-#  define bunordi_f(i0, r0, i1)		_bunordi_f(_jit,i0,r0,i1)
+_bunordi_f(jit_state_t*,jit_word_t,jit_int16_t,jit_float32_t,jit_bool_t);
+#  define bunordi_f(i0,r0,i1)		bunordi_f_p(i0,r0,i1,0)
+#  define bunordi_f_p(i0,r0,i1,p)	_bunordi_f(_jit,i0,r0,i1,p)
 static jit_word_t
-_bunordi_d(jit_state_t*, jit_word_t, jit_int16_t, jit_float64_t);
-#  define bunordi_d(i0, r0, i1)		_bunordi_d(_jit,i0,r0,i1)
+_bunordi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
+#  define bunordi_d(i0,r0,i1)		bunordi_d_p(i0,r0,i1,0)
+#  define bunordi_d_p(i0,r0,i1,p)	_bunordi_d(_jit,i0,r0,i1,p)
 #endif /* PROTO */
 
 #if CODE
@@ -1437,7 +1501,8 @@ static void _stxi_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 }
 
 static jit_word_t _beqr_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
-			  jit_uint16_t r1, jit_bool_t is_double, jit_bool_t set)
+			  jit_uint16_t r1, jit_bool_t is_double,
+			  jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
 
@@ -1445,13 +1510,13 @@ static jit_word_t _beqr_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	FCMPEQ(r0, r1);
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, set);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
 
 static jit_word_t _beqi_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
-			  jit_float32_t i1, jit_bool_t set)
+			  jit_float32_t i1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
 	jit_uint16_t reg;
@@ -1465,13 +1530,13 @@ static jit_word_t _beqi_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_unget_reg(reg);
 
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, set);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
 
 static jit_word_t _beqi_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
-			  jit_float64_t i1, jit_bool_t set)
+			  jit_float64_t i1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
 	jit_uint16_t reg;
@@ -1485,13 +1550,14 @@ static jit_word_t _beqi_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_unget_reg(reg);
 
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, set);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
 
 static jit_word_t _bgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
-			  jit_int16_t r1, jit_bool_t is_double, jit_bool_t set)
+			  jit_int16_t r1, jit_bool_t is_double,
+			  jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
 
@@ -1499,13 +1565,14 @@ static jit_word_t _bgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	FCMPGT(r0, r1);
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, set);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
 
 static jit_word_t
-_blti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_blti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1513,7 +1580,7 @@ _blti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bltr_f(i0, r0, rn(reg));
+	w = bltr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1521,7 +1588,8 @@ _blti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_blti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_blti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1529,7 +1597,7 @@ _blti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bltr_d(i0, r0, rn(reg));
+	w = bltr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1537,7 +1605,8 @@ _blti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1545,7 +1614,7 @@ _bgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bgtr_f(i0, r0, rn(reg));
+	w = bgtr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1553,7 +1622,8 @@ _bgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1561,7 +1631,7 @@ _bgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bgtr_d(i0, r0, rn(reg));
+	w = bgtr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1569,7 +1639,8 @@ _bgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t _bler_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
-			  jit_int16_t r1, jit_bool_t is_double, jit_bool_t set)
+			  jit_int16_t r1, jit_bool_t is_double,
+			  jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
 
@@ -1582,13 +1653,14 @@ static jit_word_t _bler_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	TSTI(3);
 
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, set);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
 
 static jit_word_t
-_blei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_blei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1596,7 +1668,7 @@ _blei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bler_f(i0, r0, rn(reg));
+	w = bler_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1604,7 +1676,8 @@ _blei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_blei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_blei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1612,7 +1685,7 @@ _blei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bler_d(i0, r0, rn(reg));
+	w = bler_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1620,7 +1693,8 @@ _blei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bgei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bgei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1628,7 +1702,7 @@ _bgei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bger_f(i0, r0, rn(reg));
+	w = bger_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1636,7 +1710,8 @@ _bgei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bgei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bgei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1644,7 +1719,7 @@ _bgei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bger_d(i0, r0, rn(reg));
+	w = bger_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1652,7 +1727,7 @@ _bgei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t _buneqr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
-			    jit_int16_t r1, jit_bool_t is_double)
+			    jit_int16_t r1, jit_bool_t is_double, jit_bool_t p)
 {
 	jit_word_t w;
 
@@ -1665,13 +1740,13 @@ static jit_word_t _buneqr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	TSTI(3);
 
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, 1);
+	emit_branch_opcode(_jit, i0, w, 1, p);
 
 	return (w);
 }
 
 static jit_word_t _bltgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
-			    jit_int16_t r1, jit_bool_t is_double)
+			    jit_int16_t r1, jit_bool_t is_double, jit_bool_t p)
 {
 	jit_word_t w;
 
@@ -1689,13 +1764,14 @@ static jit_word_t _bltgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	TSTI(3);
 
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, 0);
+	emit_branch_opcode(_jit, i0, w, 0, p);
 
 	return (w);
 }
 
 static jit_word_t _bordr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
-			   jit_int16_t r1, jit_bool_t is_double, jit_bool_t set)
+			   jit_int16_t r1, jit_bool_t is_double,
+			   jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
 
@@ -1709,13 +1785,14 @@ static jit_word_t _bordr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	TSTI(3);
 
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, set);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
 
 static jit_word_t
-_bunlti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bunlti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1723,7 +1800,7 @@ _bunlti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bunltr_f(i0, r0, rn(reg));
+	w = bunltr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1731,7 +1808,8 @@ _bunlti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bunlti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bunlti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1739,7 +1817,7 @@ _bunlti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bunltr_d(i0, r0, rn(reg));
+	w = bunltr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1747,7 +1825,8 @@ _bunlti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bunlei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bunlei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1755,7 +1834,7 @@ _bunlei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bunler_f(i0, r0, rn(reg));
+	w = bunler_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1763,7 +1842,8 @@ _bunlei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bunlei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bunlei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1771,7 +1851,7 @@ _bunlei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bunler_d(i0, r0, rn(reg));
+	w = bunler_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1779,7 +1859,8 @@ _bunlei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bungti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bungti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1787,7 +1868,7 @@ _bungti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bungtr_f(i0, r0, rn(reg));
+	w = bungtr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1795,7 +1876,8 @@ _bungti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bungti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bungti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1803,7 +1885,7 @@ _bungti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bungtr_d(i0, r0, rn(reg));
+	w = bungtr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1811,7 +1893,8 @@ _bungti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bungei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bungei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1819,7 +1902,7 @@ _bungei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bunger_f(i0, r0, rn(reg));
+	w = bunger_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1827,7 +1910,8 @@ _bungei_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bungei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bungei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1835,7 +1919,7 @@ _bungei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bunger_d(i0, r0, rn(reg));
+	w = bunger_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1843,7 +1927,8 @@ _bungei_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_buneqi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_buneqi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1851,7 +1936,7 @@ _buneqi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = buneqr_f(i0, r0, rn(reg));
+	w = buneqr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1859,7 +1944,8 @@ _buneqi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_buneqi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_buneqi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1867,7 +1953,7 @@ _buneqi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = buneqr_d(i0, r0, rn(reg));
+	w = buneqr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1875,7 +1961,8 @@ _buneqi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bltgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bltgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1883,7 +1970,7 @@ _bltgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bltgtr_f(i0, r0, rn(reg));
+	w = bltgtr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1891,7 +1978,8 @@ _bltgti_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bltgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bltgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	  jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1899,7 +1987,7 @@ _bltgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bltgtr_d(i0, r0, rn(reg));
+	w = bltgtr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1907,7 +1995,8 @@ _bltgti_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	 jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1915,7 +2004,7 @@ _bordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bordr_f(i0, r0, rn(reg));
+	w = bordr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1923,7 +2012,8 @@ _bordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	 jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1931,7 +2021,7 @@ _bordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bordr_d(i0, r0, rn(reg));
+	w = bordr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1939,7 +2029,8 @@ _bordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 }
 
 static jit_word_t
-_bunordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
+_bunordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	   jit_float32_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1947,7 +2038,7 @@ _bunordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_f(rn(reg), i1);
-	w = bunordr_f(i0, r0, rn(reg));
+	w = bunordr_f_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 
@@ -1955,7 +2046,8 @@ _bunordi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float32_t i1)
 }
 
 static jit_word_t
-_bunordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
+_bunordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
+	   jit_float64_t i1, jit_bool_t p)
 {
 	jit_uint16_t reg;
 	jit_word_t w;
@@ -1963,7 +2055,7 @@ _bunordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_float64_t i1)
 	reg = jit_get_reg(jit_class_fpr);
 
 	movi_d(rn(reg), i1);
-	w = bunordr_d(i0, r0, rn(reg));
+	w = bunordr_d_p(i0, r0, rn(reg), p);
 
 	jit_unget_reg(reg);
 

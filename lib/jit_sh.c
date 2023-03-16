@@ -362,8 +362,9 @@ _emit_code(jit_state_t *_jit)
 		    name##r##type(temp->u.w, rn(node->v.w),		\
 				  rn(node->w.w));			\
 		else {							\
-		    word = name##r##type(_jit->pc.w,			\
-					 rn(node->v.w), rn(node->w.w));	\
+		    word = name##r##type##_p(_jit->pc.w,		\
+					     rn(node->v.w),		\
+					     rn(node->w.w), 1);		\
 		    patch(word, node);					\
 		}							\
 		break
@@ -376,8 +377,9 @@ _emit_code(jit_state_t *_jit)
 		    name##i##type(temp->u.w,				\
 				  rn(node->v.w), node->w.w);		\
 		else {							\
-		    word = name##i##type(_jit->pc.w,			\
-					 rn(node->v.w), node->w.w);	\
+		    word = name##i##type##_p(_jit->pc.w,		\
+					   rn(node->v.w),		\
+					   node->w.w, 1);		\
 		    patch(word, node);					\
 		}							\
 		break;
@@ -389,8 +391,8 @@ _emit_code(jit_state_t *_jit)
 		if (temp->flag & jit_flag_patch)			\
 		    name##i_f(temp->u.w, rn(node->v.w), node->w.f);	\
 		else {							\
-		    word = name##i_f(_jit->pc.w, rn(node->v.w),		\
-				node->w.f);				\
+		    word = name##i_f_p(_jit->pc.w, rn(node->v.w),	\
+				       node->w.f, 1);			\
 		    patch(word, node);					\
 		}							\
 		break
@@ -402,8 +404,8 @@ _emit_code(jit_state_t *_jit)
 		if (temp->flag & jit_flag_patch)			\
 		    name##i_d(temp->u.w, rn(node->v.w), node->w.d);	\
 		else {							\
-		    word = name##i_d(_jit->pc.w, rn(node->v.w),		\
-				node->w.d);				\
+		    word = name##i_d_p(_jit->pc.w, rn(node->v.w),	\
+				       node->w.d, 1);			\
 		    patch(word, node);					\
 		}							\
 		break
