@@ -22,10 +22,12 @@
 
 #if __WORDSIZE == 32
 #  define MININT                0x80000000
+#  define INT_FMT		"%d"
 #  define DEC_FMT		"%d"
 #  define HEX_FMT		"0x%x"
 #else
 #  define MININT                0x8000000000000000
+#  define INT_FMT		"%d"
 #  define DEC_FMT		"%ld"
 #  define HEX_FMT		"0x%lx"
 #endif
@@ -40,6 +42,7 @@
 	    fprintf(print_stream, HEX_FMT, (jit_uword_t)value);		\
     } while (0)
 #define print_dec(value)		fprintf(print_stream, DEC_FMT, value)
+#define print_int(value)		fprintf(print_stream, INT_FMT, value)
 #define print_flt(value)		fprintf(print_stream, "%g", value)
 #define print_str(value)		fprintf(print_stream, "%s", value)
 #define print_ptr(value)		fprintf(print_stream, "%p", value)
@@ -246,6 +249,12 @@ _jit_print_node(jit_state_t *_jit, jit_node_t *node)
 	    print_str(" (");	print_reg(node->w.q.l);
 	    print_chr(' ');	print_reg(node->w.q.h);
 	    print_str(") ");	return;
+	r_r_iq:
+	    print_chr(' ');	print_reg(node->u.w);
+	    print_chr(' ');	print_reg(node->v.w);
+	    print_str(" (");	print_int(node->w.q.l);
+	    print_chr(' ');	print_int(node->w.q.h);
+	    print_str(") ");	return;
 	r_r_f:
 	    print_chr(' ');	print_reg(node->u.w);
 	    print_chr(' ');	print_reg(node->v.w);
@@ -392,6 +401,8 @@ _jit_print_node(jit_state_t *_jit, jit_node_t *node)
 		case jit_cc_a0_reg|jit_cc_a1_int|
 		    jit_cc_a2_reg|jit_cc_a2_rlh:
 		    goto r_w_q;
+		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_rlh:
+		    goto r_r_iq;
 		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_flt:
 		    goto r_r_f;
 		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_dbl:

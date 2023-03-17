@@ -259,4 +259,6 @@ static char *code_name[] = {
     "popcntr",
     "lrotr",		"lroti",
     "rrotr",		"rroti",
+    "ext",		"ext_u",
+    "dep",
 };

@@ -35,6 +35,15 @@ static void _fallback_lroti(jit_state_t*, jit_int32_t,jit_int32_t,jit_word_t);
 static void _fallback_rrotr(jit_state_t*, jit_int32_t,jit_int32_t,jit_int32_t);
 #define fallback_rroti(r0, r1, i0)	_fallback_rroti(_jit, r0, r1, i0)
 static void _fallback_rroti(jit_state_t*, jit_int32_t,jit_int32_t,jit_word_t);
+#define fallback_ext(r0,r1,i0,i1)	_fallback_ext(_jit,r0,r1,i0,i1)
+static void _fallback_ext(jit_state_t*,
+			  jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define fallback_ext_u(r0,r1,i0,i1)	_fallback_ext_u(_jit,r0,r1,i0,i1)
+static void _fallback_ext_u(jit_state_t*,
+			    jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define fallback_dep(r0,r1,i0,i1)	_fallback_dep(_jit,r0,r1,i0,i1)
+static void _fallback_dep(jit_state_t*,
+			  jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  if defined(__s390__) || defined(__s390x__)
 #    define fallback_jit_get_reg(flags)	jit_get_reg_but_zero(flags)
 #  else
@@ -804,5 +813,64 @@ _fallback_rroti(jit_state_t *_jit,
     lshi(r0, r1, __WORDSIZE - i0);
     orr(r0, r0, rn(t0));
     jit_unget_reg(t0);
+}
+
+static void
+_fallback_ext(jit_state_t *_jit,
+	      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	rshi(r0, r0, __WORDSIZE - i1);
+    }
+}
+
+static void
+_fallback_ext_u(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	if (i0)
+	    rshi_u(r0, r1, i0);
+	andi(r0, r0, (1L << i1) - 1);
+    }
+}
+
+static void
+_fallback_dep(jit_state_t *_jit,
+	      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0;
+    jit_word_t		mask;
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	mask = (1L << i1) - 1;
+	t0 = jit_get_reg(jit_class_gpr);
+	andi(rn(t0), r1, mask);
+	if (i0) {
+	    lshi(rn(t0), rn(t0), i0);
+	    mask <<= i0;
+	}
+	andi(r0, r0, ~mask);
+	orr(r0, r0, rn(t0));
+	jit_unget_reg(t0);
+    }
 }
 #endif

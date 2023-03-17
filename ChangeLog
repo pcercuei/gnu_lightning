@@ -1,3 +1,15 @@
+2023-03-17 Paulo Andrade <pcpa@gnu.org>
+
+	* lib/jit_fallback.c: Implement fallbacks for new instructions
+	ext, ext_u and dep.
+	* lib/lightning.c: Add code to understand the new instructions
+	and update regsets as appropriate.
+	* lib/jit_names.c, lib/jit_print.c: Update for debug information
+	of ext, ext_u and dep.
+	* include/lightning.h.in: Define jit_code_t for ext, ext_u and dep.
+	* check/lightning.c: Handle the new instructions.
+	* check/all.tst: Add new instructions for the full disassembly.
+
 2023-03-07 Paulo Andrade <pcpa@gnu.org>
 
 	* check/alu_rot.tst, check/alu_rot.ok: New test files for the new

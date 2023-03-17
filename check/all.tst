@@ -115,6 +115,9 @@
 	nei %r0 %r1 2
 	movr %r0 %r1
 	movi %r0 1
+	ext %r0 %r1 4 3
+	ext_u %r0 %r1 4 3
+	dep %r0 %r1 4 3
 	extr_c %r0 %r1
 	extr_uc %r0 %r1
 	extr_s %r0 %r1
