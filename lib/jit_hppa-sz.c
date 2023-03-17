@@ -451,9 +451,12 @@
     76,	/* ctor */
     56,	/* ctzr */
     68,	/* rbitr */
-    0,	/* popcntr */
+    64,	/* popcntr */
     32,	/* lrotr */
     8,	/* lroti */
     32,	/* rrotr */
     8,	/* rroti */
+    4,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __WORDSIZE */
