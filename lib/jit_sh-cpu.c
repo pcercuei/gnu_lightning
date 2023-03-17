@@ -744,7 +744,7 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 {
 	jit_int32_t disp = (i0 - w >> 1) - 2;
 
-	if (!force_patchable && disp >= -256 && disp <= 254) {
+	if (!force_patchable && disp >= -128 && disp <= 127) {
 #if defined(__SH3__) || defined(__SH4__)
 		if (t_set)
 			BT(disp);
@@ -2463,7 +2463,7 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 		break;
 	case 0xa:
 		disp = ((label - instr) >> 1) - 2;
-		assert(disp >= -256 && disp < 254);
+		assert(disp >= -2048 && disp <= 2046);
 		ptr->d.d = disp;
 		break;
 	case 0x8:
@@ -2473,7 +2473,7 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 		case 0xd:
 		case 0xf:
 			disp = ((label - instr) >> 1) - 2;
-			assert(disp >= -256 && disp < 254);
+			assert(disp >= -128 && disp <= 127);
 			ptr->ni.i = disp;
 			break;
 		default:
