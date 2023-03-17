@@ -747,6 +747,12 @@ static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ul(r0,r1)		_bswapr_ul(_jit,r0,r1)
 static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #  endif
+#define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
+static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
+static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
+static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0,r1)		ANDI(r0,r1,0xff)
@@ -2936,6 +2942,82 @@ _bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	generic_bswapr_ul(_jit, r0, r1);
 }
 #endif
+
+static void
+_ext(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if ( i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	rshi(r0, r0, __WORDSIZE - i1);
+    }
+}
+
+static void
+_ext_u(jit_state_t *_jit,
+       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (jit_mips2_p()) {
+	if (i1 == __WORDSIZE)
+	    movr(r0, r1);
+	else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	    i0 = __WORDSIZE - (i0 + i1);
+#  endif
+#if __WORDSIZE == 32
+	    EXT(r0, r1, i0, i1);
+#else
+	    if (i0 < 32 && i1 <= 32)
+		DEXT(r0, r1, i0, i1);
+	    else if (i0 < 32 && i1 > 32)
+		DEXTM(r0, r1, i0, i1);
+	    else {
+		assert(i0 >= 32 && i1 <= 32);
+		DEXTU(r0, r1, i0, i1);
+	    }
+	}
+#endif
+    }
+    else
+	fallback_ext_u(r0, r1, i0, i1);
+}
+
+static void
+_dep(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (jit_mips2_p()) {
+	if (i1 == __WORDSIZE)
+	    movr(r0, r1);
+	else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	    i0 = __WORDSIZE - (i0 + i1);
+#  endif
+#if __WORDSIZE == 32
+	    INS(r0, r1, i0, i1);
+#else
+	    if (i0 < 32 && i1 <= 32 && (i0 + i1) <= 32)
+		DINS(r0, r1, i0, i1);
+	    else if (i0 < 32 && i1 >= 2 && (i0 + i1) > 32)
+		DINSM(r0, r1, i0, i1);
+	    else {
+		assert(i0 >= 32 && i1 >= 1 && i1 <= 32 && (i0 + i1) > 32);
+		DINSU(r0, r1, i0, i1);
+	    }
+	}
+#endif
+    }
+    else
+	fallback_dep(r0, r1, i0, i1);
+}
 
 static void
 _extr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)

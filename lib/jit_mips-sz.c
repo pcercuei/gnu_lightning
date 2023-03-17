@@ -3,7 +3,7 @@
 #define JIT_INSTR_MAX 116
     0,	/* data */
     0,	/* live */
-    20,	/* align */
+    12,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -212,7 +212,7 @@
     16,	/* bxsubr_u */
     20,	/* bxsubi_u */
     8,	/* jmpr */
-    8,	/* jmpi */
+    16,	/* jmpi */
     8,	/* callr */
     16,	/* calli */
     0,	/* prepare */
@@ -446,8 +446,8 @@
     8,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
-    8,	/* clor */
-    8,	/* clzr */
+    4,	/* clor */
+    4,	/* clzr */
     28,	/* ctor */
     20,	/* ctzr */
     68,	/* rbitr */
@@ -456,13 +456,16 @@
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 76
+#define JIT_INSTR_MAX 80
     0,	/* data */
     0,	/* live */
-    24,	/* align */
+    8,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -582,7 +585,7 @@
     4,	/* extr_ui */
     8,	/* bswapr_us */
     16,	/* bswapr_ui */
-    44,	/* bswapr_ul */
+    8,	/* bswapr_ul */
     4,	/* htonr_us */
     4,	/* htonr_ui */
     4,	/* htonr_ul */
@@ -649,7 +652,7 @@
     12,	/* bgtr_u */
     16,	/* bgti_u */
     8,	/* bner */
-    28,	/* bnei */
+    32,	/* bnei */
     12,	/* bmsr */
     12,	/* bmsi */
     12,	/* bmcr */
@@ -671,7 +674,7 @@
     16,	/* bxsubr_u */
     20,	/* bxsubi_u */
     8,	/* jmpr */
-    8,	/* jmpi */
+    32,	/* jmpi */
     8,	/* callr */
     32,	/* calli */
     0,	/* prepare */
@@ -909,9 +912,13 @@
     4,	/* clzr */
     28,	/* ctor */
     20,	/* ctzr */
+    80,	/* rbitr */
     76,	/* popcntr */
     12,	/* lrotr */
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __WORDSIZE */

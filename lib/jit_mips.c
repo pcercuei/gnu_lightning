@@ -1638,6 +1638,15 @@ _emit_code(jit_state_t *_jit)
 #if __WORDSIZE == 64
 		case_rr(bswap, _ul);
 #endif
+	    case jit_code_ext:
+		ext(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_ext_u:
+		ext_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_dep:
+		dep(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
 		case_rr(ext, _s);
