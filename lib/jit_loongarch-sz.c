@@ -2,7 +2,7 @@
 #define JIT_INSTR_MAX 88
     0,	/* data */
     0,	/* live */
-    28,	/* align */
+    12,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -127,17 +127,17 @@
     8,	/* htonr_ui */
     4,	/* htonr_ul */
     4,	/* ldr_c */
-    20,	/* ldi_c */
+    16,	/* ldi_c */
     4,	/* ldr_uc */
-    20,	/* ldi_uc */
+    16,	/* ldi_uc */
     4,	/* ldr_s */
-    20,	/* ldi_s */
+    16,	/* ldi_s */
     4,	/* ldr_us */
-    20,	/* ldi_us */
+    16,	/* ldi_us */
     4,	/* ldr_i */
-    20,	/* ldi_i */
+    16,	/* ldi_i */
     4,	/* ldr_ui */
-    20,	/* ldi_ui */
+    16,	/* ldi_ui */
     4,	/* ldr_l */
     20,	/* ldi_l */
     4,	/* ldxr_c */
@@ -155,11 +155,11 @@
     4,	/* ldxr_l */
     16,	/* ldxi_l */
     4,	/* str_c */
-    20,	/* sti_c */
+    16,	/* sti_c */
     4,	/* str_s */
-    20,	/* sti_s */
+    16,	/* sti_s */
     4,	/* str_i */
-    20,	/* sti_i */
+    16,	/* sti_i */
     4,	/* str_l */
     20,	/* sti_l */
     4,	/* stxr_c */
@@ -305,11 +305,11 @@
     4,	/* movr_f */
     8,	/* movi_f */
     4,	/* ldr_f */
-    20,	/* ldi_f */
+    16,	/* ldi_f */
     4,	/* ldxr_f */
     16,	/* ldxi_f */
     4,	/* str_f */
-    20,	/* sti_f */
+    16,	/* sti_f */
     4,	/* stxr_f */
     16,	/* stxi_f */
     8,	/* bltr_f */
@@ -396,11 +396,11 @@
     4,	/* movr_d */
     16,	/* movi_d */
     4,	/* ldr_d */
-    20,	/* ldi_d */
+    16,	/* ldi_d */
     4,	/* ldxr_d */
     16,	/* ldxi_d */
     4,	/* str_d */
-    20,	/* sti_d */
+    16,	/* sti_d */
     4,	/* stxr_d */
     16,	/* stxi_d */
     8,	/* bltr_d */
@@ -439,7 +439,7 @@
     4,	/* movr_w_f */
     0,	/* movr_ww_d */
     4,	/* movr_w_d */
-    0,	/* movr_f_w */
+    4,	/* movr_f_w */
     4,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
@@ -449,10 +449,13 @@
     4,	/* clzr */
     4,	/* ctor */
     4,	/* ctzr */
-    4,  /* rbitr */
+    4,	/* rbitr */
     52,	/* popcntr */
     12,	/* lrotr */
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __WORDSIZE */
