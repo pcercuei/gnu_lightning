@@ -449,7 +449,8 @@ jit_get_cpu(void)
 		      : "=a" (eax), "=b" (ebx.cpuid), "=c" (ecx), "=d" (edx)
 		      : "a" (7), "c" (0));
 #endif
-    jit_cpu.adx = ebx.bits.adx;
+    jit_cpu.adx		= ebx.bits.adx;
+    jit_cpu.bmi2	= ebx.bits.bmi2;
 
 
     /* query %eax = 0x80000001 function */
@@ -1880,6 +1881,15 @@ _emit_code(jit_state_t *_jit)
 #if __X64 && !__X64_32
 		case_rr(bswap, _ul);
 #endif
+	    case jit_code_ext:
+		ext(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_ext_u:
+		ext_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_dep:
+		dep(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
 		case_rr(ext, _s);

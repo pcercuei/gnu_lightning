@@ -193,6 +193,8 @@ typedef struct {
     jit_uint32_t abm		: 1;
     /* adcx and adox instructions available? */
     jit_uint32_t adx		: 1;
+    /* pdep and pext instructions available? */
+    jit_uint32_t bmi2		: 1;
 } jit_cpu_t;
 
 /*

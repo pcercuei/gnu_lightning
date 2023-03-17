@@ -21,6 +21,11 @@
 #define USE_INC_DEC			0
 
 #if PROTO
+#  if __WORDSIZE == 64 && _WIN32
+#    define ONE				1LL
+#  else
+#    define ONE				1L
+#  endif
 #  if __X32 || __X64_32
 #    define WIDE			0
 #    define ldi(u, v)			ldi_i(u, v)
@@ -142,6 +147,40 @@ _rex(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define rx(rd, md, rb, ri, ms)	_rx(_jit, rd, md, rb, ri, ms)
 static void
 _rx(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+/*
+ *	prefix	8 bits	0xc4	Three byte VEX
+ *			0xc5	Two byte VEX
+ *			0x8f	Three byte XOP
+ *	~R	1 bit	Inverted REX.R
+ *	~X	1 bit	Inverted REX.X
+ *	~B	1 bit	Inverted REX.B
+ *	map	5 bits	Opcode map to use
+ *	W	1 bit	REX.W for integer, otherwise opcode extension
+ *	~vvvv	4 bits	Inverted XMM or YMM registers
+ *	L	1 bit	128 bit vector if 0, 256 otherwise
+ *	pp	2 bits	Mandatory prefix
+ *			00	none
+ *			01	0x66
+ *			10	0xf3
+ *			11	0xf2
+ *
+ *	Three byte VEX:
+ *	+---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+
+ *	| 1   1   0   0   0   1   0   0 | |~R |~X |~B |        map        | | W |     ~vvvv     | L |   pp  |
+ *	+---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+
+ *	Three byte XOP:
+ *	+---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+
+ *	| 1   0   0   0   1   1   1   1 | |~R |~X |~B |        map        | | W |     ~vvvv     | L |   pp  |
+ *	+---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+
+ *	Two byte VEX:
+ *	+---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+
+ *	| 1   1   0   0   0   1   0   1 | |~R |     ~vvvv     | L |   pp  |
+ *	+---+---+---+---+---+---+---+---+ +---+---+---+---+---+---+---+---+
+ */
+#  define vex(r,x,b,map,w,vvvv,l,pp)	_vex(_jit,r,x,b,map,w,vvvv,l,pp)
+static void
+_vex(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,
+     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define nop(n)			_nop(_jit, n)
 static void _nop(jit_state_t*, jit_int32_t);
 #  define emms()			is(0x770f)
@@ -409,6 +448,12 @@ static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #define bswapr_ul(r0, r1)		_bswapr_ul(_jit, r0, r1)
 static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #endif
+#  define ext(r0, r1, i0, i1)		_ext(_jit, r0, r1, i0, i1)
+static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define ext_u(r0, r1, i0, i1)		_ext_u(_jit, r0, r1, i0, i1)
+static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define dep(r0, r1, i0, i1)		_dep(_jit, r0, r1, i0, i1)
+static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0, r1)		_extr_c(_jit, r0, r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0, r1)		_extr_uc(_jit, r0, r1)
@@ -821,6 +866,48 @@ _rx(jit_state_t *_jit, jit_int32_t rd, jit_int32_t md,
 	fprintf(stderr, "illegal index register");
 	abort();
     }
+}
+
+static void
+_vex(jit_state_t *_jit, jit_int32_t r, jit_int32_t x, jit_int32_t b,
+     jit_int32_t map, jit_int32_t w, jit_int32_t vvvv, jit_int32_t l,
+     jit_int32_t pp)
+{
+    jit_int32_t		v;
+    if (r == _NOREG)	r = 0;
+    if (x == _NOREG)	x = 0;
+    if (b == _NOREG)	b = 0;
+    if (map == 1 && w == 0 && ((x|b) & 8) == 0) {
+	/* Two byte prefix */
+	ic(0xc5);
+	/* ~R */
+	v = (r & 8) ?	0 : 0x80;
+    }
+    else {
+	/* Three byte prefix */
+	if (map >= 8)
+	    ic(0x8f);
+	else
+	    ic(0xc4);
+	/* map_select */
+	v = map;
+	/* ~R */
+	if (!(r & 8))	v |= 0x80;
+	/* ~X */
+	if (!(x & 8))	v |= 0x40;
+	/* ~B */
+	if (!(b & 8))	v |= 0x20;
+	ic(v);
+	/* W */
+	v = w ? 0x80 : 0;
+    }
+    /* ~vvvv */
+    v |= (~vvvv & 0x0f) << 3;
+    /* L */
+    if (l)		v |= 0x04;
+    /* pp */
+    v |= pp;
+    ic(v);
 }
 
 static void
@@ -2725,6 +2812,89 @@ _bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     ic(0xc8 | r7(r0));
 }
 #endif
+
+static void
+_ext(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_word_t		mask;
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    /* Pointless to use PEXT as would still need to sign extend */
+    else {
+	lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	rshi(r0, r0, __WORDSIZE - i1);
+    }
+}
+
+static void
+_ext_u(jit_state_t *_jit,
+       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0;
+    jit_word_t		mask;
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    /* Only cheaper in code size or number of instructions if i0 is not zero */
+    /* Number of cpu cicles not tested */
+    else if (i0 && jit_cpu.bmi2) {
+	mask = ((ONE << i1) - 1) << i0;
+	t0 = jit_get_reg(jit_class_gpr);
+	movi(rn(t0), mask);
+	/* PEXT */
+	vex(r0, _NOREG, rn(t0), 2, WIDE, r1, 0, 2);
+	ic(0xf5);
+	mrm(0x03, r7(r0), r7(rn(t0)));
+	jit_unget_reg(t0);
+    }
+    else {
+	if (i0)
+	    rshi_u(r0, r1, i0);
+	andi(r0, r0, (ONE << i1) - 1);
+    }
+}
+
+static void
+_dep(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_word_t		mask;
+    jit_int32_t		t0, t1;
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    /* Only cheaper in code size or number of instructions if i0 is not zero */
+    /* Number of cpu cicles not tested */
+    else if (i0 && jit_cpu.bmi2) {
+	mask = ((ONE << i1) - 1) << i0;
+	t0 = jit_get_reg(jit_class_gpr);
+	t1 = jit_get_reg(jit_class_gpr);
+	movi(rn(t0), mask);
+	movr(rn(t1), r0);
+	/* PDEP */
+	vex(r0, _NOREG, rn(t0), 2, WIDE, r1, 0, 3);
+	ic(0xf5);
+	mrm(0x03, r7(r0), r7(rn(t0)));
+	andi(rn(t1), rn(t1), ~mask);
+	orr(r0, r0, rn(t1));
+	jit_unget_reg(t1);
+	jit_unget_reg(t0);
+    }
+    else {
+	mask = (ONE << i1) - 1;
+	t0 = jit_get_reg(jit_class_gpr);
+	andi(rn(t0), r1, mask);
+	if (i0) {
+	    lshi(rn(t0), rn(t0), i0);
+	    mask <<= i0;
+	}
+	andi(r0, r0, ~mask);
+	orr(r0, r0, rn(t0));
+	jit_unget_reg(t0);
+    }
+}
 
 static void
 _extr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)

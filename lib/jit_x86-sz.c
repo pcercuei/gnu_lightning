@@ -1,9 +1,9 @@
 
 #if __X32
-#define JIT_INSTR_MAX 42
+#define JIT_INSTR_MAX 61
     0,	/* data */
     0,	/* live */
-    11,	/* align */
+    3,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -450,12 +450,15 @@
     17,	/* clzr */
     15,	/* ctor */
     11,	/* ctzr */
-    61, /* rbitr */
-    58, /* popcntr */
-    16, /* lrotr */
-    5,  /* lroti */
-    16, /* rrotr */
-    5,  /* rroti */
+    61,	/* rbitr */
+    58,	/* popcntr */
+    16,	/* lrotr */
+    5,	/* lroti */
+    16,	/* rrotr */
+    5,	/* rroti */
+    10,	/* ext */
+    11,	/* ext_u */
+    22,	/* dep */
 #endif /* __X32 */
 
 #if __X64
@@ -916,6 +919,9 @@
     7,	/* lroti */
     9,	/* rrotr */
     7,	/* rroti */
+    12,	/* ext */
+    20,	/* ext_u */
+    37,	/* dep */
 #else
 
 #  if __X64_32
@@ -1047,15 +1053,15 @@
     6,	/* htonr_ui */
     0,	/* htonr_ul */
     5,	/* ldr_c */
-    9,	/* ldi_c */
+    10,	/* ldi_c */
     5,	/* ldr_uc */
-    9,	/* ldi_uc */
+    10,	/* ldi_uc */
     5,	/* ldr_s */
-    9,	/* ldi_s */
+    10,	/* ldi_s */
     5,	/* ldr_us */
-    9,	/* ldi_us */
+    10,	/* ldi_us */
     4,	/* ldr_i */
-    8,	/* ldi_i */
+    9,	/* ldi_i */
     0,	/* ldr_ui */
     0,	/* ldi_ui */
     0,	/* ldr_l */
@@ -1069,7 +1075,7 @@
     9,	/* ldxr_us */
     7,	/* ldxi_us */
     8,	/* ldxr_i */
-    7,	/* ldxi_i */
+    6,	/* ldxi_i */
     0,	/* ldxr_ui */
     0,	/* ldxi_ui */
     0,	/* ldxr_l */
@@ -1077,9 +1083,9 @@
     7,	/* str_c */
     11,	/* sti_c */
     5,	/* str_s */
-    9,	/* sti_s */
+    10,	/* sti_s */
     4,	/* str_i */
-    8,	/* sti_i */
+    9,	/* sti_i */
     0,	/* str_l */
     0,	/* sti_l */
     11,	/* stxr_c */
@@ -1229,7 +1235,7 @@
     10,	/* ldxr_f */
     9,	/* ldxi_f */
     6,	/* str_f */
-    10,	/* sti_f */
+    11,	/* sti_f */
     10,	/* stxr_f */
     9,	/* stxi_f */
     10,	/* bltr_f */
@@ -1314,13 +1320,13 @@
     5,	/* extr_d */
     5,	/* extr_f_d */
     5,	/* movr_d */
-    23,	/* movi_d */
+    28,	/* movi_d */
     6,	/* ldr_d */
     10,	/* ldi_d */
     10,	/* ldxr_d */
     9,	/* ldxi_d */
     6,	/* str_d */
-    10,	/* sti_d */
+    11,	/* sti_d */
     10,	/* stxr_d */
     9,	/* stxi_d */
     11,	/* bltr_d */
@@ -1328,7 +1334,7 @@
     11,	/* bler_d */
     30,	/* blei_d */
     13,	/* beqr_d */
-    36,	/* beqi_d */
+    41,	/* beqi_d */
     11,	/* bger_d */
     30,	/* bgei_d */
     11,	/* bgtr_d */
@@ -1369,12 +1375,15 @@
     5,	/* clzr */
     11,	/* ctor */
     5,	/* ctzr */
-    61,	/* rbitr */
+    64,	/* rbitr */
     5,	/* popcntr */
     9,	/* lrotr */
     7,	/* lroti */
     9,	/* rrotr */
     7,	/* rroti */
+    12,	/* ext */
+    11,	/* ext_u */
+    24,	/* dep */
 #else
 
 #define JIT_INSTR_MAX 112
@@ -1445,9 +1454,9 @@
     23,	/* divr_u */
     30,	/* divi_u */
     25,	/* qdivr */
-    32,	/* qdivi */
+    29,	/* qdivi */
     26,	/* qdivr_u */
-    33,	/* qdivi_u */
+    30,	/* qdivi_u */
     22,	/* remr */
     29,	/* remi */
     23,	/* remr_u */
@@ -1640,7 +1649,7 @@
     20,	/* addi_f */
     15,	/* subr_f */
     20,	/* subi_f */
-    30,	/* rsbi_f */
+    27,	/* rsbi_f */
     10,	/* mulr_f */
     20,	/* muli_f */
     15,	/* divr_f */
@@ -1649,33 +1658,33 @@
     15,	/* absr_f */
     5,	/* sqrtr_f */
     11,	/* ltr_f */
-    26,	/* lti_f */
+    23,	/* lti_f */
     11,	/* ler_f */
-    26,	/* lei_f */
+    23,	/* lei_f */
     13,	/* eqr_f */
-    28,	/* eqi_f */
+    25,	/* eqi_f */
     11,	/* ger_f */
-    26,	/* gei_f */
+    23,	/* gei_f */
     11,	/* gtr_f */
-    26,	/* gti_f */
+    23,	/* gti_f */
     16,	/* ner_f */
-    31,	/* nei_f */
+    28,	/* nei_f */
     11,	/* unltr_f */
-    26,	/* unlti_f */
+    23,	/* unlti_f */
     11,	/* unler_f */
-    26,	/* unlei_f */
+    23,	/* unlei_f */
     11,	/* uneqr_f */
-    26,	/* uneqi_f */
+    23,	/* uneqi_f */
     11,	/* unger_f */
-    26,	/* ungei_f */
+    23,	/* ungei_f */
     11,	/* ungtr_f */
-    26,	/* ungti_f */
+    23,	/* ungti_f */
     11,	/* ltgtr_f */
-    26,	/* ltgti_f */
+    23,	/* ltgti_f */
     11,	/* ordr_f */
-    26,	/* ordi_f */
+    23,	/* ordi_f */
     11,	/* unordr_f */
-    26,	/* unordi_f */
+    23,	/* unordi_f */
     5,	/* truncr_f_i */
     5,	/* truncr_f_l */
     5,	/* extr_f */
@@ -1695,7 +1704,7 @@
     10,	/* bler_f */
     22,	/* blei_f */
     12,	/* beqr_f */
-    22,	/* beqi_f */
+    27,	/* beqi_f */
     10,	/* bger_f */
     22,	/* bgei_f */
     10,	/* bgtr_f */
@@ -1703,13 +1712,13 @@
     13,	/* bner_f */
     25,	/* bnei_f */
     10,	/* bunltr_f */
-    23,	/* bunlti_f */
+    22,	/* bunlti_f */
     10,	/* bunler_f */
-    23,	/* bunlei_f */
+    22,	/* bunlei_f */
     10,	/* buneqr_f */
-    23,	/* buneqi_f */
+    22,	/* buneqi_f */
     10,	/* bunger_f */
-    23,	/* bungei_f */
+    22,	/* bungei_f */
     10,	/* bungtr_f */
     22,	/* bungti_f */
     10,	/* bltgtr_f */
@@ -1827,12 +1836,15 @@
     5,	/* clzr */
     11,	/* ctor */
     5,	/* ctzr */
-    56, /* rbitr */
+    56,	/* rbitr */
     5,	/* popcntr */
     9,	/* lrotr */
     7,	/* lroti */
     9,	/* rrotr */
     7,	/* rroti */
+    12,	/* ext */
+    15,	/* ext_u */
+    34,	/* dep */
 #endif /* __CYGWIN__ || _WIN32 */
 #  endif /* __X64_32 */
 #endif /* __X64 */
