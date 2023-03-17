@@ -278,9 +278,11 @@ typedef union {
 #  define A64_NEG			0x4b0003e0
 #  define A64_SUBS			0x6b000000
 #  define A64_CMP			0x6b00001f
+#  define A64_BFM			0x33400000
 #  define A64_SBFM			0x93400000
+#  define A64_SBFX			0x13400000
 #  define A64_UBFM			0x53400000
-#  define A64_UBFX			0x53000000
+#  define A64_UBFX			0x53400000
 #  define A64_B				0x14000000
 #  define A64_BL			0x94000000
 #  define A64_BR			0xd61f0000
@@ -360,9 +362,11 @@ typedef union {
 #  define A64_MOVN			0x12800000
 #  define A64_MOVZ			0x52800000
 #  define A64_MOVK			0x72800000
+#  define BFM(Rd,Rn,ImmR,ImmS)		oxxrs(A64_BFM|XS,Rd,Rn,ImmR,ImmS)
 #  define SBFM(Rd,Rn,ImmR,ImmS)		oxxrs(A64_SBFM|XS,Rd,Rn,ImmR,ImmS)
 #  define UBFM(Rd,Rn,ImmR,ImmS)		oxxrs(A64_UBFM|XS,Rd,Rn,ImmR,ImmS)
-#  define UBFX(Rd,Rn,ImmR,ImmS)		oxxrs(A64_UBFX,Rd,Rn,ImmR,ImmS)
+#  define SBFX(Rd,Rn,ImmR,ImmS)		oxxrs(A64_SBFX|XS,Rd,Rn,ImmR,ImmS)
+#  define UBFX(Rd,Rn,ImmR,ImmS)		oxxrs(A64_UBFX|XS,Rd,Rn,ImmR,ImmS)
 #  define CMP(Rn,Rm)			oxx_(A64_CMP|XS,Rn,Rm)
 #  define CMPI(Rn,Imm12)		oxxi(A64_SUBSI|XS,XZR_REGNO,Rn,Imm12)
 #  define CMPI_12(Rn,Imm12)		oxxi(A64_SUBSI|XS|LSL_12,XZR_REGNO,Rn,Imm12)
@@ -433,8 +437,8 @@ typedef union {
 #  define SXTB(Rd,Rn)			SBFM(Rd,Rn,0,7)
 #  define SXTH(Rd,Rn)			SBFM(Rd,Rn,0,15)
 #  define SXTW(Rd,Rn)			SBFM(Rd,Rn,0,31)
-#  define UXTB(Rd,Rn)			UBFX(Rd,Rn,0,7)
-#  define UXTH(Rd,Rn)			UBFX(Rd,Rn,0,15)
+#  define UXTB(Rd,Rn)			oxxrs(A64_UBFX & ~DS,Rd,Rn,0,7)
+#  define UXTH(Rd,Rn)			oxxrs(A64_UBFX & ~DS,Rd,Rn,0,15)
 #  define UXTW(Rd,Rm)			ox_x(A64_UXTW,Rd,Rm)
 #  define REV(Rd,Rn)			o_xx(A64_REV,Rd,Rn)
 #  define LDRSB(Rt,Rn,Rm)		oxxx(A64_LDRSB,Rt,Rn,Rm)
@@ -522,7 +526,6 @@ static void _oxxx7(jit_state_t*,jit_int32_t,
 #  define oxxx6(Op,Rm,Imm6,Rn,Rd)	_oxxx6(_jit,Op,Rm,Imm6,Rn,Rd)
 static void _oxxx6(jit_state_t*,jit_int32_t,
 		   jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
-
 #  define nop(i0)			_nop(_jit,i0)
 static void _nop(jit_state_t*,jit_int32_t);
 #  define addr(r0,r1,r2)		ADD(r0,r1,r2)
@@ -701,6 +704,12 @@ static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ul(r0,r1)		REV(r0,r1)
+#define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
+static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
+static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
+static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			SXTB(r0,r1)
 #  define extr_uc(r0,r1)		UXTB(r0,r1)
 #  define extr_s(r0,r1)			SXTH(r0,r1)
@@ -1440,6 +1449,53 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
 	CMPI(r2, 0);
 	CSEL(r0, r0, r1, CC_EQ);
+}
+
+static void
+_ext(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if ( i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	SBFX(r0, r1, i0, (i0 + i1) - 1);
+    }
+}
+
+static void
+_ext_u(jit_state_t *_jit,
+       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	UBFX(r0, r1, i0, (i0 + i1) - 1);
+    }
+}
+
+static void
+_dep(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0;
+    jit_word_t		mask;
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	BFM(r0, r1, -i0 & 63, i1 - 1);
+    }
 }
 
 static void

@@ -4,7 +4,7 @@
 #define JIT_INSTR_MAX 96
     0,	/* data */
     0,	/* live */
-    12,	/* align */
+    4,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -77,11 +77,11 @@
     12,	/* remr_u */
     20,	/* remi_u */
     4,	/* andr */
-    20,	/* andi */
+    4,	/* andi */
     4,	/* orr */
-    20,	/* ori */
+    4,	/* ori */
     4,	/* xorr */
-    20,	/* xori */
+    4,	/* xori */
     4,	/* lshr */
     4,	/* lshi */
     4,	/* rshr */
@@ -115,7 +115,7 @@
     8,	/* movnr */
     8,	/* movzr */
     28,	/* casr */
-    36,	/* casi */
+    40,	/* casi */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
@@ -449,7 +449,7 @@
     0,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
-    12, /* ctor */
+    12,	/* ctor */
     8,	/* ctzr */
     4,	/* rbitr */
     16,	/* popcntr */
@@ -457,6 +457,9 @@
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    4,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 
 #  else	/* PACKED_STACK */
 #define JIT_INSTR_MAX 120
@@ -499,9 +502,9 @@
     0,	/* putargi_ui */
     0,	/* putargr_l */
     0,	/* putargi_l */
-    4,	/* va_start */
-    8,	/* va_arg */
-    12,	/* va_arg_d */
+    44,	/* va_start */
+    48,	/* va_arg */
+    56,	/* va_arg_d */
     0,	/* va_end */
     4,	/* addr */
     20,	/* addi */
@@ -535,11 +538,11 @@
     12,	/* remr_u */
     20,	/* remi_u */
     4,	/* andr */
-    20,	/* andi */
+    4,	/* andi */
     4,	/* orr */
-    20,	/* ori */
+    4,	/* ori */
     4,	/* xorr */
-    20,	/* xori */
+    4,	/* xori */
     4,	/* lshr */
     4,	/* lshi */
     4,	/* rshr */
@@ -587,7 +590,7 @@
     8,	/* htonr_ui */
     4,	/* htonr_ul */
     4,	/* ldr_c */
-    16,	/* ldi_c */
+    12,	/* ldi_c */
     4,	/* ldr_uc */
     16,	/* ldi_uc */
     4,	/* ldr_s */
@@ -673,7 +676,7 @@
     4,	/* jmpr */
     4,	/* jmpi */
     4,	/* callr */
-    16,	/* calli */
+    12,	/* calli */
     0,	/* prepare */
     0,	/* pushargr_c */
     0,	/* pushargi_c */
@@ -907,13 +910,16 @@
     0,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
-    12, /* ctor */
+    12,	/* ctor */
     8,	/* ctzr */
-    4,  /* rbitr */
-    16, /* popcntr */
+    4,	/* rbitr */
+    16,	/* popcntr */
     12,	/* lrotr */
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    4,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #  endif
 #endif /* __WORDSIZE */
