@@ -455,6 +455,9 @@
     12,	/* lroti */
     20,	/* rrotr */
     12,	/* rroti */
+    8,	/* ext */
+    16, /* ext_u */
+    32, /* dep */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
@@ -914,4 +917,7 @@
     12,	/* lroti */
     20,	/* rrotr */
     12,	/* rroti */
+    8,	/* ext */
+    32, /* ext_u */
+    60, /* dep */
 #endif /* __WORDSIZE */
