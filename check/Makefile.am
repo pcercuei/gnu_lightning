@@ -18,7 +18,7 @@ AM_CFLAGS = -I$(top_builddir)/include -I$(top_srcdir)/include \
 	-D_GNU_SOURCE $(LIGHTNING_CFLAGS)
 
 check_PROGRAMS = lightning ccall self setcode nodata ctramp carg cva_list \
-	catomic protect riprel
+	catomic protect riprel cbit
 
 lightning_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 lightning_SOURCES = lightning.c
@@ -53,6 +53,17 @@ protect_SOURCES = protect.c
 riprel_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 riprel_SOURCES = riprel.c
 
+cbit_CFLAGS = $(AM_CFLAGS) -fwrapv -Wno-overflow -Wno-integer-overflow \
+	-Wno-shift-count-overflow
+cbit_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
+cbit_SOURCES = cbit.c
+
+noinst_PROGRAMS = gen_cbit
+gen_cbit_SOURCES = gen_cbit.c
+
+cbit.c:		gen_cbit
+	$(top_builddir)/check/gen_cbit > cbit.c
+
 $(top_builddir)/lib/liblightning.la:
 	cd $(top_builddir)/lib; $(MAKE) $(AM_MAKEFLAGS) liblightning.la
 
@@ -74,6 +85,7 @@ EXTRA_DIST =				\
 	ldstr-c.tst	ldstr-c.ok	\
 	ldstxr-c.tst	ldstxr-c.ok	\
 	ldstxi-c.tst	ldstxi-c.ok	\
+	ext.tst		ext.ok		\
 	cvt.tst		cvt.ok		\
 	hton.tst	hton.ok		\
 	bswap.tst	bswap.ok	\
@@ -127,7 +139,8 @@ EXTRA_DIST =				\
 	check.nodata.sh			\
 	check.x87.nodata.sh		\
 	run-test	all.tst		\
-	collatz.tst	factorial.tst
+	collatz.tst	factorial.tst	\
+	gen_cbit.c
 
 base_TESTS =				\
 	3to2 add align allocai		\
@@ -135,7 +148,7 @@ base_TESTS =				\
 	ldstr ldsti			\
 	ldstxr ldstxi			\
 	ldstr-c ldstxr-c ldstxi-c	\
-	cvt hton bswap branch		\
+	ext cvt hton bswap branch	\
 	alu_add alux_add		\
 	alu_sub alux_sub alu_rsb	\
 	alu_mul alu_div alu_rem		\
@@ -164,7 +177,7 @@ x87_TESTS =					\
 	rpn.x87 ldstr.x87 ldsti.x87		\
 	ldstxr.x87 ldstxi.x87			\
 	ldstr-c.x87 ldstxr-c.x87 ldstxi-c.x87	\
-	cvt.x87 branch.x87			\
+	ext.x87 cvt.x87 branch.x87		\
 	alu_add.x87 alux_add.x87		\
 	alu_sub.x87 alux_sub.x87 alu_rsb.x87	\
 	alu_mul.x87 alu_div.x87 alu_rem.x87	\
@@ -188,7 +201,7 @@ x87_nodata_TESTS =							\
 	rpn.x87.nodata ldstr.x87.nodata ldsti.x87.nodata		\
 	ldstxr.x87.nodata ldstxi.x87.nodata				\
 	ldstr-c.x87.nodata ldstxr-c.x87.nodata ldstxi-c.x87.nodata	\
-	cvt.x87.nodata branch.x87.nodata				\
+	ext.x87.nodata cvt.x87.nodata branch.x87.nodata			\
 	alu_add.x87.nodata alux_add.x87.nodata				\
 	alu_sub.x87.nodata alux_sub.x87.nodata alu_rsb.x87.nodata	\
 	alu_mul.x87.nodata alu_div.x87.nodata alu_rem.x87.nodata	\
@@ -214,8 +227,8 @@ arm_TESTS =					\
 	rpn.arm ldstr.arm ldsti.arm		\
 	ldstxr.arm ldstxi.arm			\
 	ldstr-c.arm ldstxr-c.arm ldstxi-c.arm	\
-	cvt.arm hton.arm bswap.arm branch.arm	\
-	alu_add.arm alux_add.arm		\
+	ext.arm cvt.arm hton.arm bswap.arm	\
+	branch.arm alu_add.arm alux_add.arm	\
 	alu_sub.arm alux_sub.arm alu_rsb.arm	\
 	alu_mul.arm alu_div.arm alu_rem.arm	\
 	alu_and.arm alu_or.arm alu_xor.arm	\
@@ -240,8 +253,8 @@ swf_TESTS =					\
 	rpn.swf ldstr.swf ldsti.swf		\
 	ldstxr.swf ldstxi.swf			\
 	ldstr-c.swf ldstxr-c.swf ldstxi-c.swf	\
-	cvt.swf hton.swf bswap.swf branch.swf	\
-	alu_add.swf alux_add.swf		\
+	ext.swf cvt.swf hton.swf bswap.swf	\
+	branch.swf alu_add.swf alux_add.swf	\
 	alu_sub.swf alux_sub.swf alu_rsb.swf	\
 	alu_mul.swf alu_div.swf alu_rem.swf	\
 	alu_and.swf alu_or.swf alu_xor.swf	\
@@ -264,8 +277,8 @@ arm_swf_TESTS =							\
 	rpn.arm.swf ldstr.arm.swf ldsti.arm.swf			\
 	ldstxr.arm.swf ldstxi.arm.swf				\
 	ldstr-c.arm.swf ldstxr-c.arm.swf ldstxi-c.arm.swf	\
-	cvt.arm.swf hton.arm.swf bswap.arm.swf branch.arm.swf	\
-	alu_add.arm.swf alux_add.arm.swf			\
+	ext.arm.swf cvt.arm.swf hton.arm.swf bswap.arm.swf	\
+	branch.arm.swf alu_add.arm.swf alux_add.arm.swf		\
 	alu_sub.arm.swf alux_sub.arm.swf alu_rsb.arm.swf	\
 	alu_mul.arm.swf alu_div.arm.swf alu_rem.arm.swf		\
 	alu_and.arm.swf alu_or.arm.swf alu_xor.arm.swf		\
@@ -289,7 +302,7 @@ arm4_swf_TESTS =						\
 	rpn.arm4.swf ldstr.arm4.swf ldsti.arm4.swf		\
 	ldstxr.arm4.swf ldstxi.arm4.swf				\
 	ldstr-c.arm4.swf ldstxr-c.arm4.swf ldstxi-c.arm4.swf	\
-	cvt.arm4.swf hton.arm4.swf bswap.arm4.swf		\
+	ext.arm4.swf cvt.arm4.swf hton.arm4.swf bswap.arm4.swf	\
 	branch.arm4.swf	alu_add.arm4.swf alux_add.arm4.swf	\
 	alu_sub.arm4.swf alux_sub.arm4.swf alu_rsb.arm4.swf	\
 	alu_mul.arm4.swf alu_div.arm4.swf alu_rem.arm4.swf	\
@@ -317,7 +330,7 @@ nodata_TESTS =						\
 	rpn.nodata ldstr.nodata ldsti.nodata		\
 	ldstxr.nodata ldstxi.nodata			\
 	ldstr-c.nodata ldstxr-c.nodata ldstxi-c.nodata	\
-	cvt.nodata branch.nodata			\
+	ext.nodata cvt.nodata branch.nodata		\
 	alu_add.nodata alux_add.nodata			\
 	alu_sub.nodata alux_sub.nodata alu_rsb.nodata	\
 	alu_mul.nodata alu_div.nodata alu_rem.nodata	\
@@ -337,8 +350,8 @@ TESTS += $(nodata_TESTS)
 endif
 
 TESTS += ccall self setcode nodata ctramp carg cva_list catomic \
-         protect riprel
-CLEANFILES = $(TESTS)
+         protect riprel cbit
+CLEANFILES = $(TESTS) gen_cbit
 
 #TESTS_ENVIRONMENT=$(srcdir)/run-test;
 

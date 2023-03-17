@@ -33,6 +33,7 @@ call
 carg
 carry
 catomic
+cbit
 ccall
 clobber
 ctramp
@@ -43,6 +44,7 @@ fib
 float
 fop_abs
 fop_sqrt
+gen_cbit
 hton
 jmpr
 ldsti
@@ -72,3 +74,4 @@ stack
 tramp
 va_list
 varargs
+cbit.c
