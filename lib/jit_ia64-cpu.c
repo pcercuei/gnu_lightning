@@ -735,8 +735,8 @@ static void _X5(jit_state_t*,jit_word_t,
 /* dep */
 #define DEP_Z(r1,r2,pos,len)		I12(len,pos,r2,r1)
 #define DEPI_Z(r1,im,pos,len)		I13(len,pos,im,r1)
-#define DEPs(r1,r2,r3,pos,len)		I14(1,len,r3,pos,r1)
-#define DEPu(r1,r2,r3,pos,len)		I14(0,len,r3,pos,r1)
+#define DEPs(r1,r3,pos,len)		I14(1,len,r3,pos,r1)
+#define DEPu(r1,r3,pos,len)		I14(0,len,r3,pos,r1)
 #define DEP(r1,r2,r3,pos,len)		I15(pos,len,r3,r2,r1)
 /* epc */
 #define EPC()				B8(0x10)
@@ -1332,6 +1332,12 @@ static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ul(r0,r1)		MUX1(r0,r1,MUX_REV)
+#define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
+static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
+static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
+static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #define extr_c(r0,r1)			SXT1(r0,r1)
 #define extr_uc(r0,r1)			ZXT1(r0,r1)
 #define extr_s(r0,r1)			SXT2(r0,r1)
@@ -2494,7 +2500,7 @@ _I11(jit_state_t *_jit, jit_word_t _p,
     assert(!(_p  & ~0x3fL));
     assert(!(len & ~0x3fL));
     assert(!(r3  & ~0x7fL));
-    assert(!(pos & ~0x1fL));
+    assert(!(pos & ~0x3fL));
     assert(!(y   &  ~0x1L));
     assert(!(r1  & ~0x7fL));
     TSTREG1(r3);
@@ -3569,6 +3575,63 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     CMP_EQ(PR_6, PR_7, r2, GR_0);
     MOV_p(r0, r1, PR_6);
+}
+
+static void
+_ext(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if ( i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	EXTR(r0, r1, i0, i1 - 1);
+    }
+}
+
+static void
+_ext_u(jit_state_t *_jit,
+       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	EXTR_U(r0, r1, i0, i1 - 1);
+    }
+}
+
+static void
+_dep(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0;
+    jit_word_t		mask;
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	if (i1 <16)
+	    DEP(r0, r1, r0, 63 - i0, i1 - 1);
+	else {
+	    t0 = jit_get_reg(jit_class_gpr);
+	    mask = ((1L << i1) - 1) << i0;
+	    movr(rn(t0), r0);
+	    DEP_Z(r0, r1, 63 - i0, i1 - 1);
+	    andi(rn(t0), rn(t0), ~mask);
+	    orr(r0, r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
 }
 
 static void

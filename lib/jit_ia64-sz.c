@@ -448,11 +448,14 @@
     240,	/* clor */
     176,	/* clzr */
     176,	/* ctor */
-    144,	/* ctzr */
-    144, /* rbitr */
+    112,	/* ctzr */
+    144,	/* rbitr */
     16,	/* popcntr */
     48,	/* lrotr */
     48,	/* lroti */
     48,	/* rrotr */
     48,	/* rroti */
+    16,	/* ext */
+    16,	/* ext_u */
+    48,	/* dep */
 #endif /* __WORDSIZE */
