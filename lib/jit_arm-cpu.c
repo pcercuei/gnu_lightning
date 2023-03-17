@@ -192,6 +192,12 @@ extern unsigned	__aeabi_uidivmod(unsigned, unsigned);
 #  define THUMB2_CLZ			0xfab0f080
 #  define THUMB2_RBIT			0xfa90f0a0
 #  define ARM_RBIT			0x06f00030
+#  define THUMB2_SBFX			0xf3400000
+#  define ARM_SBFX			0x07a00050
+#  define THUMB2_UBFX			0xf3c00000
+#  define ARM_UBFX			0x07e00050
+#  define THUMB2_BFI			0xf3600000
+#  define ARM_BFI			0x07c00010
 /* << ARMv6t2 */
 #  define ARM_CLZ			0x01600010
 /* >> ARMv7 */
@@ -459,6 +465,19 @@ static void _tdmb(jit_state_t *_jit, int im);
 #  define NOT(rd,rm)			CC_NOT(ARM_CC_AL,rd,rm)
 #  define T1_NOT(rd,rm)			T1_MVN(rd,rm)
 #  define T2_NOT(rd,rm)			T2_MVN(rd,rm)
+#  define torrlw(o,rd,rn,lsb,wm1)	_torrlw(_jit,o,rd,rn,lsb,wm1)
+static void _torrlw(jit_state_t*,int,int,int,int,int);
+#  define corrlw(cc,o,rd,rn,lsb,wm1)	_corrlw(_jit,cc,o,rd,rn,lsb,wm1)
+static void _corrlw(jit_state_t*,int,int,int,int,int,int);
+#  define T2_SBFX(rd,rn,lsb,wm1)	torrlw(THUMB2_SBFX,rd,rn,lsb,wm1)
+#  define CC_SBFX(cc,o,rd,rn,lsb,wm1)	corrlw(cc,o,rd,rn,lsb,wm1)
+#  define SBFX(rd,rn,lsb,wm1)		CC_SBFX(ARM_CC_AL,ARM_SBFX,rd,rn,lsb,wm1)
+#  define T2_UBFX(rd,rn,lsb,wm1)	torrlw(THUMB2_UBFX,rd,rn,lsb,wm1)
+#  define CC_UBFX(cc,rd,rn,lsb,wm1)	corrlw(cc,o,rd,rn,lsb,wm1)
+#  define UBFX(rd,rn,lsb,wm1)		CC_SBFX(ARM_CC_AL,ARM_UBFX,rd,rn,lsb,wm1)
+#  define T2_BFI(rd,rn,lsb,wm1)		torrlw(THUMB2_BFI,rd,rn,lsb,wm1)
+#  define CC_BFI(cc,rd,rn,lsb,wm1)	corrlw(cc,o,rd,rn,lsb,wm1)
+#  define BFI(rd,rn,lsb,wm1)		CC_SBFX(ARM_CC_AL,ARM_BFI,rd,rn,lsb,wm1)
 #  define T2_CLZ(rd,rm)			torrr(THUMB2_CLZ,rm,rd,rm)
 #  define CC_CLZ(cc,rd,rm)		corrrr(cc,ARM_CLZ,_R15_REGNO,rd,_R15_REGNO,rm)
 #  define CLZ(rd,rm)			CC_CLZ(ARM_CC_AL,rd,rm)
@@ -1183,6 +1202,12 @@ static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
+static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
+static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
+static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0,r1)		_extr_uc(_jit,r0,r1)
@@ -1608,6 +1633,27 @@ _tdmb(jit_state_t *_jit, int im)
     assert(!(im & 0xfffffff0));
     thumb.i = THUMB2_DMB | im;
     iss(thumb.s[0], thumb.s[1]);
+}
+
+static void
+_torrlw(jit_state_t *_jit, int o, int rd, int rn, int lsb, int wm1)
+{
+    jit_thumb_t	thumb;
+    assert(!(o   & 0x000f0fdf));
+    assert(!(lsb & 0xffffffe0));
+    assert(!(wm1 & 0xffffffe0));
+    thumb.i = o|(_u4(rn)<<16)|((lsb&28)<<10)|(_u4(rd)<<8)|((lsb&3)<<6)|_u5(wm1);
+    iss(thumb.s[0], thumb.s[1]);
+}
+
+static void
+_corrlw(jit_state_t *_jit, int cc, int o, int rd, int rn, int lsb, int wm1)
+{
+    assert(!(cc	 & 0x0fffffff));
+    assert(!(o	 & 0xf000f00f));
+    assert(!(lsb & 0xffffffe0));
+    assert(!(wm1 & 0xffffffe0));
+    ii(cc|o|(_u5(wm1)<<16)|(_u4(rd)<<12)|(_u5(lsb)<<7)|_u4(rn));
 }
 
 static void
@@ -3952,6 +3998,57 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	    jit_unget_reg(reg);
 	}
     }
+}
+
+static void
+_ext(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
+{
+    if (jit_armv7_p()) {	/* armv6t2 actually */
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	if (jit_thumb_p())
+	    T2_SBFX(r0, r1, i0, i1 - 1);
+	else
+	    SBFX(r0, r1, i0, i1 - 1);
+    }
+    else
+	fallback_ext(r0, r1, i0, i1);
+}
+
+static void
+_ext_u(jit_state_t *_jit,
+       jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
+{
+    if (jit_armv7_p()) {	/* armv6t2 actually */
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	if (jit_thumb_p())
+	    T2_UBFX(r0, r1, i0, i1 - 1);
+	else
+	    UBFX(r0, r1, i0, i1 - 1);
+    }
+    else
+	fallback_ext_u(r0, r1, i0, i1);
+}
+
+static void
+_dep(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
+{
+    if (jit_armv7_p()) {	/* armv6t2 actually */
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	if (jit_thumb_p())
+	    T2_BFI(r0, r1, i0, i0 + i1 - 1);
+	else
+	    BFI(r0, r1, i0, i0 + i1 - 1);
+    }
+    else
+	fallback_dep(r0, r1, i0, i1);
 }
 
 static void

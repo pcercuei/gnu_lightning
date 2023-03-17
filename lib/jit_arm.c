@@ -1636,6 +1636,15 @@ _emit_code(jit_state_t *_jit)
 		case_rr(hton, _ui);
 		case_rr(bswap, _us);
 		case_rr(bswap, _ui);
+	    case jit_code_ext:
+		ext(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_ext_u:
+		ext_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_dep:
+		dep(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		break;
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
 		case_rr(ext, _s);

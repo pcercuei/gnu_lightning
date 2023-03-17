@@ -4,7 +4,7 @@
 #define JIT_INSTR_MAX 50
     0,	/* data */
     0,	/* live */
-    14,	/* align */
+    20,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -255,7 +255,7 @@
     0,	/* retval_i */
     0,	/* retval_ui */
     0,	/* retval_l */
-    24,	/* epilog */
+    16,	/* epilog */
     0,	/* arg_f */
     0,	/* getarg_f */
     0,	/* putargr_f */
@@ -457,6 +457,9 @@
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    4,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */
 
@@ -465,7 +468,7 @@
 #define JIT_INSTR_MAX 76
     0,	/* data */
     0,	/* live */
-    18,	/* align */
+    20,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -918,5 +921,8 @@
     4,	/* lroti */
     4,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    12,	/* ext_u */
+    24,	/* dep */
 #endif /* __ARM_PCS_VFP */
 #endif /* __WORDSIZE */
