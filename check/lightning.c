@@ -2462,6 +2462,68 @@ dot(void)
 	error("unknown command .%s", parser.string);
 }
 
+#if _WIN32
+/* Workaround bug in a few patterns in MSYS64 library;
+ * below is liberty implementation slightly modified. */
+jit_uword_t
+liberty_strtoul(const char *nptr, char **endptr, register int base)
+{
+	register const char *s = nptr;
+	register jit_uword_t acc;
+	register int c;
+	register jit_uword_t cutoff;
+	register int neg = 0, any, cutlim;
+
+	/*
+	 * See strtol for comments as to the logic used.
+	 */
+	do {
+		c = *s++;
+	} while (c == ' ' || c == '\t');
+	if (c == '-') {
+		neg = 1;
+		c = *s++;
+	} else if (c == '+')
+		c = *s++;
+	if ((base == 0 || base == 16) &&
+	    c == '0' && (*s == 'x' || *s == 'X')) {
+		c = s[1];
+		s += 2;
+		base = 16;
+	}
+	if (base == 0)
+		base = c == '0' ? 8 : 10;
+	cutoff = (jit_uword_t)~0LL / (jit_uword_t)base;
+	cutlim = (jit_uword_t)~0LL % (jit_uword_t)base;
+	for (acc = 0, any = 0;; c = *s++) {
+		if (c >= '0' && c <= '9')
+			c -= '0';
+		else if ((c >= 'a' && c <= 'z') ||
+			 (c >= 'A' && c <= 'Z'))
+			c -= (c >= 'A' && c <= 'Z') ? 'A' - 10 : 'a' - 10;
+		else
+			break;
+		if (c >= base)
+			break;
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
+			any = -1;
+		else {
+			any = 1;
+			acc *= base;
+			acc += c;
+		}
+	}
+	if (any < 0) {
+		acc = ~0LL;
+		/*errno = ERANGE;*/
+	} else if (neg)
+		acc = -acc;
+	if (endptr != 0)
+		*endptr = (char *) (any ? s - 1 : nptr);
+	return (acc);
+}
+#endif
+
 static token_t
 number(int ch)
 {
@@ -2556,7 +2618,7 @@ done:
     buffer[offset] = '\0';
     if (integer) {
 #if _WIN32
-#  define STRTOUL	strtoull
+#  define STRTOUL	liberty_strtoul
 #else
 #  define STRTOUL	strtoul
 #endif
