@@ -1,8 +1,8 @@
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 92
+#define JIT_INSTR_MAX 88
     0,	/* data */
     0,	/* live */
-    12,	/* align */
+    4,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -114,44 +114,44 @@
     4,	/* movzr */
     32,	/* casr */
     60,	/* casi */
-    8,	/* extr_c */
-    8,	/* extr_uc */
-    8,	/* extr_s */
-    8,	/* extr_us */
+    4,	/* extr_c */
+    4,	/* extr_uc */
+    4,	/* extr_s */
+    4,	/* extr_us */
     8,	/* extr_i */
-    8,	/* extr_ui */
+    4,	/* extr_ui */
     16,	/* bswapr_us */
     36,	/* bswapr_ui */
     36,	/* bswapr_ul */
     16,	/* htonr_us */
     36,	/* htonr_ui */
     36,	/* htonr_ul */
-    12,	/* ldr_c */
-    40,	/* ldi_c */
+    8,	/* ldr_c */
+    36,	/* ldi_c */
     4,	/* ldr_uc */
     32,	/* ldi_uc */
-    12,	/* ldr_s */
-    40,	/* ldi_s */
+    8,	/* ldr_s */
+    36,	/* ldi_s */
     4,	/* ldr_us */
     32,	/* ldi_us */
     4,	/* ldr_i */
     32,	/* ldi_i */
-    12,	/* ldr_ui */
-    40,	/* ldi_ui */
+    8,	/* ldr_ui */
+    36,	/* ldi_ui */
     4,	/* ldr_l */
     32,	/* ldi_l */
-    16,	/* ldxr_c */
-    44,	/* ldxi_c */
+    12,	/* ldxr_c */
+    40,	/* ldxi_c */
     8,	/* ldxr_uc */
     36,	/* ldxi_uc */
-    16,	/* ldxr_s */
-    44,	/* ldxi_s */
+    12,	/* ldxr_s */
+    40,	/* ldxi_s */
     8,	/* ldxr_us */
     36,	/* ldxi_us */
     8,	/* ldxr_i */
     36,	/* ldxi_i */
-    16,	/* ldxr_ui */
-    44,	/* ldxi_ui */
+    12,	/* ldxr_ui */
+    40,	/* ldxi_ui */
     8,	/* ldxr_l */
     36,	/* ldxi_l */
     4,	/* str_c */
@@ -211,7 +211,7 @@
     16,	/* bxsubr_u */
     16,	/* bxsubi_u */
     4,	/* jmpr */
-    4,	/* jmpi */
+    36,	/* jmpi */
     8,	/* callr */
     36,	/* calli */
     0,	/* prepare */
@@ -449,10 +449,13 @@
     4,	/* clzr */
     8,	/* ctor */
     4,	/* ctzr */
-    92,	/* rbitr */
+    84,	/* rbitr */
     4,	/* popcntr */
     20,	/* lrotr */
-    21,	/* lroti */
+    12,	/* lroti */
     20,	/* rrotr */
     12,	/* rroti */
+    8,	/* ext */
+    36,	/* ext_u */
+    72,	/* dep */
 #endif /* __WORDSIZE */
