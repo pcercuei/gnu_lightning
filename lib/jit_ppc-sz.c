@@ -5,7 +5,7 @@
 #define JIT_INSTR_MAX 136
     0,	/* data */
     0,	/* live */
-    20,	/* align */
+    16,	/* align */
     0,	/* save */
     0,	/* load */
     4,	/* skip */
@@ -450,14 +450,17 @@
     0,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
-    64,	/* ctor */
-    60,	/* ctzr */
+    32,	/* ctor */
+    28,	/* ctzr */
     56,	/* rbitr */
     20,	/* popcntr */
     4,	/* lrotr */
     4,	/* lroti */
     12,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -467,7 +470,7 @@
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
 #if _CALL_SYSV
-#define JIT_INSTR_MAX 136
+#define JIT_INSTR_MAX 124
     0,	/* data */
     0,	/* live */
     28,	/* align */
@@ -915,14 +918,17 @@
     0,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
-    64,	/* ctor */
-    60,	/* ctzr */
+    32,	/* ctor */
+    28,	/* ctzr */
     56,	/* rbitr */
     20,	/* popcntr */
     4,	/* lrotr */
     4,	/* lroti */
     12,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* _CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -1379,14 +1385,17 @@
     0,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
-    76,	/* ctor */
-    72,	/* ctzr */
+    32,	/* ctor */
+    28,	/* ctzr */
     68,	/* rbitr */
     36,	/* popcntr */
     4,	/* lrotr */
     4,	/* lroti */
     12,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -1842,14 +1851,17 @@
     0,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
-    76,	/* ctor */
-    72,	/* ctzr */
+    32,	/* ctor */
+    28,	/* ctzr */
     68,	/* rbitr */
     36,	/* popcntr */
     4,	/* lrotr */
     4,	/* lroti */
     12,	/* rrotr */
     4,	/* rroti */
+    8,	/* ext */
+    4,	/* ext_u */
+    4,	/* dep */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */

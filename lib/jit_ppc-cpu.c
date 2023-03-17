@@ -295,7 +295,7 @@ static void _FXS(jit_state_t*,int,int,int,int,int,int,int);
 #  define LWZX(d,a,b)			FX(31,d,a,b,23)
 #  define LD(d,a,s)			FDs(58,d,a,s)
 #  define LDX(d,a,b)			FX(31,d,a,b,21)
-#  define MCRF(d,s)			FXL(19,d<<2,(s)<<2,0)
+#  define MCRF(d,s)			FXL(19,((d)<<2),((s)<<2),0)
 #  if DEBUG
 /* In case instruction is emulated, check the kernel can handle it.
    Will only generate it if DEBUG is enabled.
@@ -327,31 +327,31 @@ instruction will cause the system illegal instruction
 error handler to be invoked
 """
  */
-#    define MCRXR(d)			FX(31,d<<2,0,0,512)
+#    define MCRXR(d)			FX(31,((d)<<2),0,0,512)
 #  else
 #    define MCRXR(cr)			_MCRXR(_jit,cr);
 static void _MCRXR(jit_state_t*, jit_int32_t);
 #  endif
 #  define MFCR(d)			FX(31,d,0,0,19)
 #  define MFMSR(d)			FX(31,d,0,0,83)
-#  define MFSPR(d,s)			FXFX(31,d,s<<5,339)
+#  define MFSPR(d,s)			FXFX(31,d,((s)<<5),339)
 #  define MFXER(d)			MFSPR(d,1)
 #  define MFLR(d)			MFSPR(d,8)
 #  define MFCTR(d)			MFSPR(d,9)
 #  define MFSR(d,s)			FX(31,d,s,0,595)
 #  define MFSRIN(d,b)			FX(31,d,0,b,659)
-#  define MFTB(d,x,y)			FXFX(31,d,(x)|((y)<<5),371)
+#  define MFTB(d,x,y)			FXFX(31,d,((x)|((y)<<5)),371)
 #  define MFTBL(d)			MFTB(d,8,12)
 #  define MFTBU(d)			MFTB(d,8,13)
-#  define MTCRF(c,s)			FXFX(31,s,c<<1,144)
+#  define MTCRF(c,s)			FXFX(31,s,((c)<<1),144)
 #  define MTCR(s)			MTCRF(0xff,s)
 #  define MTMSR(s)			FX(31,s,0,0,146)
-#  define MTSPR(d,s)			FXFX(31,d,s<<5,467)
+#  define MTSPR(d,s)			FXFX(31,d,((s)<<5),467)
 #  define MTXER(d)			MTSPR(d,1)
 #  define MTLR(d)			MTSPR(d,8)
 #  define MTCTR(d)			MTSPR(d,9)
-#  define MTSR(r,s)			FX(31,s<<1,r,0,210)
-#  define MTSRIN(r,b)			FX(31,r<<1,0,b,242)
+#  define MTSR(r,s)			FX(31,((s)<<1),r,0,210)
+#  define MTSRIN(r,b)			FX(31,((r)<<1),0,b,242)
 #  define MULLI(d,a,s)			FDs(07,d,a,s)
 #  define MULHW(d,a,b)			FXO(31,d,a,b,0,75)
 #  define MULHW_(d,a,b)			FXO_(31,d,a,b,0,75)
@@ -390,19 +390,19 @@ static void _MCRXR(jit_state_t*, jit_int32_t);
 #  define RFI()				FXL(19,0,0,50)
 #  define RLWIMI(d,s,h,b,e)		FM(20,s,d,h,b,e,0)
 #  define RLWIMI_(d,s,h,b,e)		FM(20,s,d,h,b,e,1)
-#  define INSLWI(a,s,n,b)		RLWIMI(a,s,32-b,b,b+n-1)
-#  define INSRWI(a,s,n,b)		RLWIMI(a,s,32-(b+n),b,(b+n)-1)
+#  define INSLWI(a,s,n,b)		RLWIMI(a,s,(32-(b)),b,(((b)+(n))-1))
+#  define INSRWI(a,s,n,b)		RLWIMI(a,s,(32-((b)+(n))),b,(((b)+(n))-1))
 #  define RLWINM(a,s,h,b,e)		FM(21,s,a,h,b,e,0)
 #  define RLWINM_(a,s,h,b,e)		FM(21,s,a,h,b,e,1)
-#  define EXTLWI(a,s,n,b)		RLWINM(a,s,b,0,n-1)
-#  define EXTRWI(a,s,n,b)		RLWINM(a,s,b+n,32-n,31)
+#  define EXTLWI(a,s,n,b)		RLWINM(a,s,b,0,((n)-1))
+#  define EXTRWI(a,s,n,b)		RLWINM(a,s,((b)+(n)),(32-(n)),31)
 #  define ROTLWI(a,s,n)			RLWINM(a,s,n,0,31)
-#  define ROTRWI(a,s,n)			RLWINM(a,s,32-n,0,31)
-#  define SLWI(a,s,n)			RLWINM(a,s,n,0,31-n)
-#  define SRWI(a,s,n)			RLWINM(a,s,32-n,n,31)
+#  define ROTRWI(a,s,n)			RLWINM(a,s,(32-(n)),0,31)
+#  define SLWI(a,s,n)			RLWINM(a,s,n,0,(31-(n)))
+#  define SRWI(a,s,n)			RLWINM(a,s,(32-(n)),n,31)
 #  define CLRLWI(a,s,n)			RLWINM(a,s,0,n,31)
-#  define CLRRWI(a,s,n)			RLWINM(a,s,0,0,31-n)
-#  define CLRLSWI(a,s,b,n)		RLWINM(a,s,n,b-n,31-n)
+#  define CLRRWI(a,s,n)			RLWINM(a,s,0,0,(31-(n)))
+#  define CLRLSWI(a,s,b,n)		RLWINM(a,s,n,((b)-(n)),(31-(n)))
 #  define RLWNM(a,s,b,m,e)		FM(23,s,a,b,m,e,0)
 #  define RLWNM_(a,s,b,m,e)		FM(23,s,a,b,m,e,1)
 #  define ROTLW(a,s,b)			RLWNM(a,s,b,0,31)
@@ -416,33 +416,34 @@ static void _MCRXR(jit_state_t*, jit_int32_t);
 #  define SRW(a,s,b)			FX(31,s,a,b,536)
 #  define SRW_(a,s,b)			FX_(31,s,a,b,536)
 #  if __WORDSIZE == 64
-#    define RLDICL(a,s,h,b)		FMD(30,s,a,h&~32,b,0,h>>5)
-#    define RLDICL_(a,s,h,b)		FMD_(30,s,a,h&~32,b,0,h>>5)
-#    define EXTRDI(x,y,n,b)		RLDICL(x,y,(b+n),(64-n))
-#    define SRDI(x,y,n)			RLDICL(x,y,(64-n),n)
+#    define RLDICL(a,s,h,b)		FMD(30,s,a,((h)&~32),b,0,((h)>>5))
+#    define RLDICL_(a,s,h,b)		FMD_(30,s,a,((h)&~32),b,0,((h)>>5))
+#    define EXTRDI(x,y,n,b)		RLDICL(x,y,((b)+(n)),(64-(n)))
+#    define SRDI(x,y,n)			RLDICL(x,y,(64-(n)),n)
 #    define CLRLDI(x,y,n)		RLDICL(x,y,0,n)
-#    define RLDICR(a,s,h,e)		FMD(30,s,a,h&~32,e,1,h>>5)
-#    define RLDICR_(a,s,h,e)		FMD_(30,s,a,h&~32,e,1,h>>5)
-#    define EXTRLI(x,y,n,b)		RLDICR(x,y,b,(n-1))
-#    define SLDI(x,y,n)			RLDICR(x,y,n,(63-n))
-#    define CLRRDI(x,y,n)		RLDICR(x,y,0,(63-n))
-#    define RLDIC(a,s,h,b)		FMD(30,s,a,h&~32,b,2,h>>5)
-#    define RLDIC_(a,s,h,b)		FMD_(30,s,a,h&~32,b,2,h>>5)
-#    define CLRLSLDI(x,y,b,n)		RLDIC(x,y,n,(b-n))
+#    define RLDICR(a,s,h,e)		FMD(30,s,a,((h)&~32),e,1,((h)>>5))
+#    define RLDICR_(a,s,h,e)		FMD_(30,s,a,((h)&~32),e,1,((h)>>5))
+#    define EXTLDI(x,y,n,b)		RLDICR(x,y,b,((n)-1))
+#    define SLDI(x,y,n)			RLDICR(x,y,n,(63-(n)))
+#    define CLRRDI(x,y,n)		RLDICR(x,y,0,(63-(n)))
+#    define RLDIC(a,s,h,b)		FMD(30,s,a,((h)&~32),b,2,((h)>>5))
+#    define RLDIC_(a,s,h,b)		FMD_(30,s,a,((h)&~32),b,2,((h)>>5))
+#    define CLRLSLDI(x,y,b,n)		RLDIC(x,y,n,((b)-(n)))
 #    define RLDCL(a,s,h,b)		FMDS(30,s,a,h,b,8)
 #    define RLDCL_(a,s,h,b)		FMDS_(30,s,a,h,b,8)
 #    define ROTLD(x,y,z)		RLDCL(x,y,z,0)
 #    define RLDCR(a,s,b,e)		FMDS(30,s,a,b,e,0)
 #    define RLDCR_(a,s,b,e)		FMDS_(30,s,a,b,e,0)
-#    define RLDIMI(a,s,h,b)		FMD(30,s,a,h&~32,b,3,h>>5)
-#    define RLDIMI_(a,s,h,b)		FMD_(30,s,a,h&~32,b,3,h>>5)
-#    define INSRDI(x,y,n,b)		RLDIMI(x,y,(64-(b+n)),b)
+#    define RLDIMI(a,s,h,b)		FMD(30,s,a,((h)&~32),b,3,((h)>>5))
+#    define RLDIMI_(a,s,h,b)		FMD_(30,s,a,((h)&~32),b,3,((h)>>5))
+#    define INSLDI(x,y,n,b)		RLDIMI(x,y,(64-(b)),(((b)+(n))-1))
+#    define INSRDI(x,y,n,b)		RLDIMI(x,y,(64-((b)+(n))),b)
 #    define SLD(a,s,b)			FX(31,s,a,b,27)
 #    define SLD_(a,s,b)			FX_(31,s,a,b,27)
 #    define SRD(a,s,b)			FX(31,s,a,b,539)
 #    define SRD_(a,s,b)			FX_(31,s,a,b,539)
-#    define SRADI(a,s,h)		FXS(31,s,a,h&~32,413,h>>5)
-#    define SRADI_(a,s,h)		FXS_(31,s,a,h&~32,413,h>>5)
+#    define SRADI(a,s,h)		FXS(31,s,a,((h)&~32),413,((h)>>5))
+#    define SRADI_(a,s,h)		FXS_(31,s,a,((h)&~32),413,((h)>>5))
 #    define SRAD(a,s,b)			FX(31,s,a,b,794)
 #    define SRAD_(a,s,b)		FX_(31,s,a,b,794)
 #  endif
@@ -467,7 +468,7 @@ static void _MCRXR(jit_state_t*, jit_int32_t);
 #  define STWX(s,a,b)			FX(31,s,a,b,151)
 #  define STD(s,a,d)			FDs(62,s,a,d)
 #  define STDX(s,a,b)			FX(31,s,a,b,149)
-#  define STDU(s,a,d)			FDs(62,s,a,d|1)
+#  define STDU(s,a,d)			FDs(62,s,a,((d)|1))
 #  define STDUX(s,a,b)			FX(31,s,a,b,181)
 #  define SUBF(d,a,b)			FXO(31,d,a,b,0,40)
 #  define SUBF_(d,a,b)			FXO_(31,d,a,b,0,40)
@@ -477,15 +478,15 @@ static void _MCRXR(jit_state_t*, jit_int32_t);
 #  define SUB_(d,a,b)			SUBF_(d,b,a)
 #  define SUBO(d,a,b)			SUBFO(d,b,a)
 #  define SUBO_(d,a,b)			SUBFO_(d,b,a)
-#  define SUBI(d,a,s)			ADDI(d,a,-s)
-#  define SUBIS(d,a,s)			ADDIS(d,a,-s)
+#  define SUBI(d,a,s)			ADDI(d,a,-(s))
+#  define SUBIS(d,a,s)			ADDIS(d,a,-(s))
 #  define SUBFC(d,a,b)			FXO(31,d,a,b,0,8)
 #  define SUBFC_(d,a,b)			FXO_(31,d,a,b,0,8)
 #  define SUBFCO(d,a,b)			FXO(31,d,a,b,1,8)
 #  define SUBFCO_(d,a,b)		FXO_(31,d,a,b,1,8)
 #  define SUBC(d,a,b)			SUBFC(d,b,a)
-#  define SUBIC(d,a,s)			ADDIC(d,a,-s)
-#  define SUBIC_(d,a,s)			ADDIC_(d,a,-s)
+#  define SUBIC(d,a,s)			ADDIC(d,a,-(s))
+#  define SUBIC_(d,a,s)			ADDIC_(d,a,-(s))
 #  define SUBFE(d,a,b)			FXO(31,d,a,b,0,136)
 #  define SUBFE_(d,a,b)			FXO_(31,d,a,b,0,136)
 #  define SUBFEO(d,a,b)			FXO(31,d,a,b,1,136)
@@ -547,6 +548,12 @@ static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define popcntr(r0, r1)		_popcntr(_jit, r0, r1)
 static void _popcntr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
+static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
+static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
+static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			EXTSB(r0,r1)
 #  define extr_uc(r0,r1)		ANDI_(r0,r1,0xff)
 #  define extr_s(r0,r1)			EXTSH(r0,r1)
@@ -1275,6 +1282,60 @@ _popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     mullr(r0, r0, rn(reg));
     rshi_u(r0, r0, __WORDSIZE - 8);
     jit_unget_reg(reg);
+}
+
+static void
+_ext(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0 ,jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if ( i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+	lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	rshi(r0, r0, __WORDSIZE - i1);
+    }
+}
+
+static void
+_ext_u(jit_state_t *_jit,
+       jit_int32_t r0, jit_int32_t r1, jit_word_t i0 ,jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+#  if __WORDSIZE == 32
+	RLWINM(r0, r1, (32 - i0) & 0x1f, 32 - i1, 31);
+#  else
+	RLDICL(r0, r1, (64 - i0) & 0x3f, 64 - i1);
+#  endif
+    }
+}
+
+static void
+_dep(jit_state_t *_jit,
+     jit_int32_t r0, jit_int32_t r1, jit_word_t i0 ,jit_word_t i1)
+{
+    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+#  if __BYTE_ORDER == __BIG_ENDIAN
+	i0 = __WORDSIZE - (i0 + i1);
+#  endif
+#if __WORDSIZE == 32
+	RLWIMI(r0, r1, i0, 32 - (i0 + i1), 31 - i0);
+#else
+	RLDIMI(r0, r1, i0, 64 - (i0 + i1));
+#endif
+    }
 }
 
 static void
