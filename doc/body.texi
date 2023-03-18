@@ -375,6 +375,35 @@ movr                                 _f  _d  O1 = O2
 movi                                 _f  _d  O1 = O2
 extr      _c  _uc  _s  _us  _i  _ui  _f  _d  O1 = O2
 truncr                               _f  _d  O1 = trunc(O2)
+ext                                          O1 = sign_extend(O2[O3:O3+04])
+ext_u                                        O1 = O2[O3:O3+04]
+dep                                          O1[O3:O3+O4] = O2
+@end example
+
+@code{ext}, @code{ext_u} and @code{dep} are useful to access @code{C}
+compatible bit fields, provided that these are contained in a machine
+word. @code{ext} is used to @emph{extract} and signed extend a value
+from a bit field. @code{ext_u} is used to @{emph{extract} and zero
+extend a value from a bit field. @code{dep} is used to @emph{deposit}
+a value into a bit field.
+
+@example
+ext(result, source, offset, length)
+ext_u(result, source, offset, length)
+dep(result, source, offset, length)
+@end example
+
+The usual idiom to declare @code{C} and @lightning{} compatible bit fields is:
+@example
+union @{
+    struct @{
+        jit_word_t  signed_bits: @code<length>;
+        jit_uword_t unsigned_bits: @code<length>;
+        ...
+    @} s;
+    jit_word_t  signed_value;
+    jit_uword_t unsigned_value;
+@} u;
 @end example
 
 In 64-bit architectures it may be required to use @code{truncr_f_i},
