@@ -539,8 +539,8 @@ static void _rbitr(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define mod_r6(rd,rs,rt)		DMOD_R6(rd,rs,rt)
 #    define modu_r6(rd,rs,rt)		DMODU_R6(rd,rs,rt)
 #  endif
-#  define extr(rd,rt,lsb,nb)	_extr(_jit,rd,rt,lsb,nb)
-static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define mips_extr(rd,rt,lsb,nb)	_mips_extr(_jit,rd,rt,lsb,nb)
+static void _mips_extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define insr(rd,rt,lsb,nb)	_insr(_jit,rd,rt,lsb,nb)
 static void _insr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -747,12 +747,12 @@ static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ul(r0,r1)		_bswapr_ul(_jit,r0,r1)
 static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #  endif
-#define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
-static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-#define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
-static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-#define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
-static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define extr(r0,r1,i0,i1)		_extr(_jit,r0,r1,i0,i1)
+static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define extr_u(r0,r1,i0,i1)		_extr_u(_jit,r0,r1,i0,i1)
+static void _extr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define depr(r0,r1,i0,i1)		_depr(_jit,r0,r1,i0,i1)
+static void _depr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0,r1)		ANDI(r0,r1,0xff)
@@ -1608,7 +1608,7 @@ _nop(jit_state_t *_jit, jit_int32_t i0)
 }
 
 static void
-_extr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+_mips_extr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
       jit_int32_t pos, jit_int32_t size)
 {
     assert(size > 0);
@@ -2257,7 +2257,7 @@ _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
         ANDI(r0, r1, i0);
     else if (is_low_mask(i0)) {
         if (jit_mips2_p())
-            extr(r0, r1, 0, masked_bits_count(i0));
+            mips_extr(r0, r1, 0, masked_bits_count(i0));
         else {
             lshi(r0, r1, unmasked_bits_count(i0));
             rshi_u(r0, r0, unmasked_bits_count(i0));
@@ -2270,7 +2270,7 @@ _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
             lshi(r0, r0, unmasked_bits_count(i0));
         }
     } else if (jit_mips2_p() && is_middle_mask(i0)) {
-        extr(r0, r1, __builtin_ctzl(i0), masked_bits_count(i0));
+        mips_extr(r0, r1, __builtin_ctzl(i0), masked_bits_count(i0));
         lshi(r0, r0, __builtin_ctzl(i0));
     } else if (jit_mips2_p() && is_middle_mask(~i0)) {
         if (r0 != r1)
@@ -2920,7 +2920,7 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
             SLL(r0, r1, 0);
             WSBH(r0, r0);
             ROTR(r0, r0, 16);
-            extr(r0, r0, 0, 32);
+            mips_extr(r0, r0, 0, 32);
         } else {
             WSBH(r0, r1);
             ROTR(r0, r0, 16);
@@ -2944,8 +2944,8 @@ _bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #endif
 
 static void
-_ext(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_extr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
     if ( i1 == __WORDSIZE)
@@ -2960,8 +2960,8 @@ _ext(jit_state_t *_jit,
 }
 
 static void
-_ext_u(jit_state_t *_jit,
-       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_extr_u(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
     if (jit_mips2_p()) {
@@ -2990,8 +2990,8 @@ _ext_u(jit_state_t *_jit,
 }
 
 static void
-_dep(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_depr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
     if (jit_mips2_p()) {

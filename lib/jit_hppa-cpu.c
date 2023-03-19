@@ -663,12 +663,12 @@ static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
 #define casi(r0, i0, r1, r2)		casx(r0, _NOREG, r1, r2, i0)
 #define comr(r0,r1)		UADDCM(_R0_REGNO,r1,r0)
 #define negr(r0,r1)		SUB(_R0_REGNO,r1,r0)
-#define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
-static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-#define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
-static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-#define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
-static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define extr(r0,r1,i0,i1)		_extr(_jit,r0,r1,i0,i1)
+static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define extr_u(r0,r1,i0,i1)		_extr_u(_jit,r0,r1,i0,i1)
+static void _extr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define depr(r0,r1,i0,i1)		_depr(_jit,r0,r1,i0,i1)
+static void _depr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #define extr_c(r0,r1)		EXTRWR(r1,31,8,r0)
 #define extr_uc(r0,r1)		EXTRWR_U(r1,31,8,r0)
 #define extr_s(r0,r1)		EXTRWR(r1,31,16,r0)
@@ -1710,8 +1710,8 @@ _movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 }
 
 static void
-_ext(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_extr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
     if ( i1 == __WORDSIZE)
@@ -1725,8 +1725,8 @@ _ext(jit_state_t *_jit,
 }
 
 static void
-_ext_u(jit_state_t *_jit,
-       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_extr_u(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
     if (i1 == __WORDSIZE)
@@ -1740,8 +1740,8 @@ _ext_u(jit_state_t *_jit,
 }
 
 static void
-_dep(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_depr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     jit_int32_t		t0;
     jit_word_t		mask;

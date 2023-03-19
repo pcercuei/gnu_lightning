@@ -1202,12 +1202,12 @@ static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
-static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-#  define ext_u(r0,r1,i0,i1)		_ext_u(_jit,r0,r1,i0,i1)
-static void _ext_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-#  define dep(r0,r1,i0,i1)		_dep(_jit,r0,r1,i0,i1)
-static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define extr(r0,r1,i0,i1)		_extr(_jit,r0,r1,i0,i1)
+static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define extr_u(r0,r1,i0,i1)		_extr_u(_jit,r0,r1,i0,i1)
+static void _extr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#  define depr(r0,r1,i0,i1)		_depr(_jit,r0,r1,i0,i1)
+static void _depr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0,r1)		_extr_uc(_jit,r0,r1)
@@ -4001,8 +4001,8 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_ext(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
+_extr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
 {
     if (jit_armv7_p()) {	/* armv6t2 actually */
 #  if __BYTE_ORDER == __BIG_ENDIAN
@@ -4018,8 +4018,8 @@ _ext(jit_state_t *_jit,
 }
 
 static void
-_ext_u(jit_state_t *_jit,
-       jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
+_extr_u(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
 {
     if (jit_armv7_p()) {	/* armv6t2 actually */
 #  if __BYTE_ORDER == __BIG_ENDIAN
@@ -4035,8 +4035,8 @@ _ext_u(jit_state_t *_jit,
 }
 
 static void
-_dep(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
+_depr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1,jit_word_t i0, jit_word_t i1)
 {
     if (jit_armv7_p()) {	/* armv6t2 actually */
 #  if __BYTE_ORDER == __BIG_ENDIAN

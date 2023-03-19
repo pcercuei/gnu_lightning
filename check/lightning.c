@@ -339,8 +339,8 @@ static void gtr_u(void);	static void gti_u(void);
 static void ner(void);		static void nei(void);
 static void casr(void);		static void casi(void);
 static void movr(void);		static void movi(void);
-static void ext(void);		static void ext_u(void);
-static void dep(void);
+static void extr(void);		static void extr_u(void);
+static void depr(void);
 static void extr_c(void);	static void extr_uc(void);
 static void extr_s(void);	static void extr_us(void);
 #if __WORDSIZE == 64
@@ -705,8 +705,8 @@ static instr_t		  instr_vector[] = {
     entry(ner),		entry(nei),
     entry(casr),	entry(casi),
     entry(movr),	entry(movi),
-    entry(ext),		entry(ext_u),
-    entry(dep),
+    entry(extr),	entry(extr_u),
+    entry(depr),
     entry(extr_c),	entry(extr_uc),
     entry(extr_s),	entry(extr_us),
 #if __WORDSIZE == 64
@@ -1620,8 +1620,8 @@ movi(void)
     jit_movi(r0, (jit_word_t)value);
 }
 
-entry_ir_ir_im_im(ext)		entry_ir_ir_im_im(ext_u)
-entry_ir_ir_im_im(dep)
+entry_ir_ir_im_im(extr)		entry_ir_ir_im_im(extr_u)
+entry_ir_ir_im_im(depr)
 entry_ir_ir(extr_c)		entry_ir_ir(extr_uc)
 entry_ir_ir(extr_s)		entry_ir_ir(extr_us)
 #if __WORDSIZE == 64

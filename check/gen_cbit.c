@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-/*   Test that jit_ext(), jit_ext_u() and jit_dep() work correctly with
+/*   Test that jit_extr(), jit_extr_u() and jit_depr() work correctly with
  * C bitfields.
  *   Note that to be compatible with C bitfields, behavior is different
  * for big endian and little endian. For big endian, the bitfield
@@ -347,8 +347,8 @@ main(int argc, char *argv[])\n\
 	else
 	    printf("jit_movi(JIT_R1, 0);\n");
 	printf("\
-    jit_dep(JIT_R2, JIT_R1, 0, %d);\n\
-    jit_ext(JIT_R1, JIT_R2, 0, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, 0, %d);\n\
+    jit_extr(JIT_R1, JIT_R2, 0, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, i);
@@ -366,8 +366,8 @@ main(int argc, char *argv[])\n\
 	else
 	    printf("jit_movi(JIT_R1, 0);\n");
 	printf("\
-    jit_dep(JIT_R2, JIT_R1, 0, %d);\n\
-    jit_ext(JIT_R1, JIT_R2, 0, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, 0, %d);\n\
+    jit_extr(JIT_R1, JIT_R2, 0, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, i);
@@ -387,8 +387,8 @@ main(int argc, char *argv[])\n\
 	else
 	    printf("jit_movi(JIT_R1, 0);\n");
 	printf("\
-    jit_dep(JIT_R2, JIT_R1, 0, %d);\n\
-    jit_ext_u(JIT_R1, JIT_R2, 0, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, 0, %d);\n\
+    jit_extr_u(JIT_R1, JIT_R2, 0, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, i);
@@ -406,8 +406,8 @@ main(int argc, char *argv[])\n\
 	else
 	    printf("jit_movi(JIT_R1, 0);\n");
 	printf("\
-    jit_dep(JIT_R2, JIT_R1, 0, %d);\n\
-    jit_ext_u(JIT_R1, JIT_R2, 0, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, 0, %d);\n\
+    jit_extr_u(JIT_R1, JIT_R2, 0, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, i);
@@ -424,8 +424,8 @@ main(int argc, char *argv[])\n\
     jit_getarg(JIT_R0, arg);\n\
     jit_ldr(JIT_R2, JIT_R0);\n\
     jit_movi(JIT_R1, ((ONE << %d) - 1) ^ 1);\n\
-    jit_dep(JIT_R2, JIT_R1, %d, %d);\n\
-    jit_ext(JIT_R1, JIT_R2, %d, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, %d, %d);\n\
+    jit_extr(JIT_R1, JIT_R2, %d, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, j, j, i, j, i, j);
@@ -443,8 +443,8 @@ main(int argc, char *argv[])\n\
     jit_getarg(JIT_R0, arg);\n\
     jit_ldr(JIT_R2, JIT_R0);\n\
     jit_movi(JIT_R1, ((ONE << %d) - 1) ^ 1);\n\
-    jit_dep(JIT_R2, JIT_R1, %d, %d);\n\
-    jit_ext(JIT_R1, JIT_R2, %d, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, %d, %d);\n\
+    jit_extr(JIT_R1, JIT_R2, %d, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, j, j, i, j, i, j);
@@ -462,8 +462,8 @@ main(int argc, char *argv[])\n\
     jit_getarg(JIT_R0, arg);\n\
     jit_ldr(JIT_R2, JIT_R0);\n\
     jit_movi(JIT_R1, ((ONE << %d) - 1) ^ 1);\n\
-    jit_dep(JIT_R2, JIT_R1, %d, %d);\n\
-    jit_ext_u(JIT_R1, JIT_R2, %d, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, %d, %d);\n\
+    jit_extr_u(JIT_R1, JIT_R2, %d, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, j, j, i, j, i, j);
@@ -481,8 +481,8 @@ main(int argc, char *argv[])\n\
     jit_getarg(JIT_R0, arg);\n\
     jit_ldr(JIT_R2, JIT_R0);\n\
     jit_movi(JIT_R1, ((ONE << %d) - 1) ^ 1);\n\
-    jit_dep(JIT_R2, JIT_R1, %d, %d);\n\
-    jit_ext_u(JIT_R1, JIT_R2, %d, %d);\n\
+    jit_depr(JIT_R2, JIT_R1, %d, %d);\n\
+    jit_extr_u(JIT_R1, JIT_R2, %d, %d);\n\
     jit_str(JIT_R0, JIT_R2);\n\
     jit_retr(JIT_R1);\n\
     jit_epilog();\n", i, j, j, i, j, i, j);

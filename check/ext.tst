@@ -37,7 +37,7 @@ OP##R0##R1##OFF##LEN##VAL:
 #define DEPOSIT(R0, R1, OFF, LEN, VAL, BIT, RES)			\
 	movi %R1 BIT							\
 	movi %R0 VAL							\
-	dep %R0 %R1 OFF LEN						\
+	depr %R0 %R1 OFF LEN						\
 	beqi dep##R0##R1##OFF##LEN##VAL %R0 RES				\
 	calli @abort							\
 dep##R0##R1##OFF##LEN##VAL:
@@ -79,9 +79,9 @@ dep##R0##R1##OFF##LEN##VAL:
 	OPTIONAL(DEP2(OFF, LEN, VAL, BIT, RES, V2, R0, R1, R2, V0, V1))
 
 #define EXT(VAL, OFF, LEN, RES)						\
-	EXT1(ext, OFF, LEN, VAL, RES, r0, r1, r2, v0, v1, v2)
+	EXT1(extr, OFF, LEN, VAL, RES, r0, r1, r2, v0, v1, v2)
 #define EXTU(VAL, OFF, LEN, RES)					\
-	EXT1(ext_u, OFF, LEN, VAL, RES, r0, r1, r2, v0, v1, v2)
+	EXT1(extr_u, OFF, LEN, VAL, RES, r0, r1, r2, v0, v1, v2)
 #define DEP(VAL, BIT, OFF, LEN, RES)					\
 	DEP1(OFF, LEN, VAL, BIT, RES, r0, r1, r2, v0, v1, v2)
 

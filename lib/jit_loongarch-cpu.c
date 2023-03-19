@@ -505,10 +505,10 @@ static void _bswapr_us(jit_state_t*, jit_int32_t, jit_int32_t);
 # define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*, jit_int32_t, jit_int32_t);
 # define bswapr_ul(r0, r1)		REVB_D(r0, r1)
-# define ext(r0,r1,i0,i1)		_ext(_jit,r0,r1,i0,i1)
-static void _ext(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
-# define ext_u(r0,r1,i0,i1)		BSTRPICK_D(r0, r1, i0 + i1 - 1, i0)
-# define dep(r0,r1,i0,i1)		BSTRINS_D(r0, r1, i0 + i1 - 1, i0)
+# define extr(r0,r1,i0,i1)		_extr(_jit,r0,r1,i0,i1)
+static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+# define extr_u(r0,r1,i0,i1)		BSTRPICK_D(r0, r1, i0 + i1 - 1, i0)
+# define depr(r0,r1,i0,i1)		BSTRINS_D(r0, r1, i0 + i1 - 1, i0)
 # define extr_c(r0, r1)			EXT_W_B(r0, r1)
 # define extr_uc(r0, r1)		BSTRPICK_D(r0, r1, 7, 0)
 # define extr_s(r0, r1)			EXT_W_H(r0, r1)
@@ -1720,8 +1720,8 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_ext(jit_state_t *_jit,
-     jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+_extr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
     lshi(r0, r1, __WORDSIZE - (i0 + i1));

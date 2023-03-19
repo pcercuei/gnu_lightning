@@ -1628,7 +1628,7 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int|
 		   jit_cc_a2_reg|jit_cc_a2_rlh;
 	    break;
-	case jit_code_ext:	case jit_code_ext_u:	case jit_code_dep:
+	case jit_code_extr:	case jit_code_extr_u:	case jit_code_depr:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_reg|jit_cc_a2_rlh;
 	    break;
 	default:

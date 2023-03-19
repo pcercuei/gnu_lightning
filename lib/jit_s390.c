@@ -1219,17 +1219,17 @@ _emit_code(jit_state_t *_jit)
 #if __WORDSIZE == 64
 		case_rr(bswap, _ul);
 #endif
-#define ext(r0, r1, i0, i1)	fallback_ext(r0, r1, i0, i1)
-#define ext_u(r0, r1, i0, i1)	fallback_ext_u(r0, r1, i0, i1)
-#define dep(r0, r1, i0, i1)	fallback_dep(r0, r1, i0, i1)
-	    case jit_code_ext:
-		ext(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+#define extr(r0, r1, i0, i1)	fallback_ext(r0, r1, i0, i1)
+#define extr_u(r0, r1, i0, i1)	fallback_ext_u(r0, r1, i0, i1)
+#define depr(r0, r1, i0, i1)	fallback_dep(r0, r1, i0, i1)
+	    case jit_code_extr:
+		extr(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
 		break;
-	    case jit_code_ext_u:
-		ext_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+	    case jit_code_extr_u:
+		extr_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
 		break;
-	    case jit_code_dep:
-		dep(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+	    case jit_code_depr:
+		depr(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
 		break;
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
