@@ -255,6 +255,12 @@ _jit_print_node(jit_state_t *_jit, jit_node_t *node)
 	    print_str(" (");	print_int(node->w.q.l);
 	    print_chr(' ');	print_int(node->w.q.h);
 	    print_str(") ");	return;
+	r_w_iq:
+	    print_chr(' ');	print_reg(node->u.w);
+	    print_chr(' ');	print_hex(node->v.w);
+	    print_str(" (");	print_int(node->w.q.l);
+	    print_chr(' ');	print_int(node->w.q.h);
+	    print_str(") ");	return;
 	r_r_f:
 	    print_chr(' ');	print_reg(node->u.w);
 	    print_chr(' ');	print_reg(node->v.w);
@@ -403,6 +409,8 @@ _jit_print_node(jit_state_t *_jit, jit_node_t *node)
 		    goto r_w_q;
 		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_rlh:
 		    goto r_r_iq;
+		case jit_cc_a0_reg|jit_cc_a1_int|jit_cc_a2_rlh:
+		    goto r_w_iq;
 		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_flt:
 		    goto r_r_f;
 		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_dbl:

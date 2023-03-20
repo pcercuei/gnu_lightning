@@ -424,32 +424,40 @@ typedef enum {
     jit_code_extr_i,		jit_code_extr_ui,
 
 #define jit_bswapr_us(u,v)	jit_new_node_ww(jit_code_bswapr_us,u,v)
-    jit_code_bswapr_us,
 #define jit_bswapr_ui(u,v)	jit_new_node_ww(jit_code_bswapr_ui,u,v)
-    jit_code_bswapr_ui,
-#define jit_bswapr_ul(u,v)	jit_new_node_ww(jit_code_bswapr_ul,u,v)
+    jit_code_bswapr_us,		jit_code_bswapr_ui,
+
+#if __WORDSIZE == 64
+#  define jit_bswapr_ul(u,v)	jit_new_node_ww(jit_code_bswapr_ul,u,v)
+#endif
     jit_code_bswapr_ul,
+
 #if __WORDSIZE == 32
-#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ui,u,v)
+#  define jit_bswapr(u,v)	jit_bswapr_ui(u,v)
+#  define jit_bswapi(u,v)	jit_bswapi_ui(u,v)
 #else
-#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ul,u,v)
+#  define jit_bswapr(u,v)	jit_bswapr_ul(u,v)
+#  define jit_bswapi(u,v)	jit_bswapi_ul(u,v)
 #endif
 
 #define jit_htonr_us(u,v)	jit_new_node_ww(jit_code_htonr_us,u,v)
-#define jit_ntohr_us(u,v)	jit_new_node_ww(jit_code_htonr_us,u,v)
-    jit_code_htonr_us,
+#define jit_ntohr_us(u,v)	jit_htonr_us(u,v)
 #define jit_htonr_ui(u,v)	jit_new_node_ww(jit_code_htonr_ui,u,v)
-#define jit_ntohr_ui(u,v)	jit_new_node_ww(jit_code_htonr_ui,u,v)
-#if __WORDSIZE == 32
-#  define jit_htonr(u,v)	jit_new_node_ww(jit_code_htonr_ui,u,v)
-#  define jit_ntohr(u,v)	jit_new_node_ww(jit_code_htonr_ui,u,v)
-#else
-#define jit_htonr_ul(u,v)	jit_new_node_ww(jit_code_htonr_ul,u,v)
-#define jit_ntohr_ul(u,v)	jit_new_node_ww(jit_code_htonr_ul,u,v)
-#  define jit_htonr(u,v)	jit_new_node_ww(jit_code_htonr_ul,u,v)
-#  define jit_ntohr(u,v)	jit_new_node_ww(jit_code_htonr_ul,u,v)
+#define jit_ntohr_ui(u,v)	jit_htonr_ui(u,v)
+    jit_code_htonr_us,		jit_code_htonr_ui,
+
+#if __WORDSIZE == 64
+#  define jit_htonr_ul(u,v)	jit_new_node_ww(jit_code_htonr_ul,u,v)
+#  define jit_ntohr_ul(u,v)	jit_htonr_ul(u,v)
 #endif
-    jit_code_htonr_ui,		jit_code_htonr_ul,
+    jit_code_htonr_ul,
+
+#if __WORDSIZE == 32
+#  define jit_htonr(u,v)	jit_htonr_ui(u,v)
+#else
+#  define jit_htonr(u,v)	jit_htonr_ul(u,v)
+#endif
+#define jit_ntohr(u,v)		jit_htonr(u,v)
 
 #define jit_ldr_c(u,v)		jit_new_node_ww(jit_code_ldr_c,u,v)
 #define jit_ldi_c(u,v)		jit_new_node_wp(jit_code_ldi_c,u,v)
@@ -1072,8 +1080,74 @@ typedef enum {
 #define jit_extr(u,v,w,x)	jit_new_node_wwq(jit_code_extr, u, v, w, x)
 #define jit_extr_u(u,v,w,x)	jit_new_node_wwq(jit_code_extr_u, u, v, w, x)
 #define jit_depr(u,v,w,x)	jit_new_node_wwq(jit_code_depr, u, v, w, x)
+#define jit_depi(u,v,w,x)	jit_new_node_wwq(jit_code_depi, u, v, w, x)
     jit_code_extr,		jit_code_extr_u,
-    jit_code_depr,
+    jit_code_depr,		jit_code_depi,
+
+    /* FIXME Reorder in next release/major bump */
+#define jit_negi(u,v)		jit_new_node_ww(jit_code_negi,u,v)
+#define jit_comi(u,v)		jit_new_node_ww(jit_code_comi,u,v)
+    jit_code_negi,		jit_code_comi,
+#define jit_exti_c(u,v)		jit_new_node_ww(jit_code_exti_c,u,v)
+#define jit_exti_uc(u,v)	jit_new_node_ww(jit_code_exti_uc,u,v)
+    jit_code_exti_c,		jit_code_exti_uc,
+#define jit_exti_s(u,v)		jit_new_node_ww(jit_code_exti_s,u,v)
+#define jit_exti_us(u,v)	jit_new_node_ww(jit_code_exti_us,u,v)
+    jit_code_exti_s,		jit_code_exti_us,
+#if __WORDSIZE == 64
+#  define jit_exti_i(u,v)	jit_new_node_ww(jit_code_exti_i,u,v)
+#  define jit_exti_ui(u,v)	jit_new_node_ww(jit_code_exti_ui,u,v)
+#endif
+    jit_code_exti_i,		jit_code_exti_ui,
+#define jit_bswapi_us(u,v)	jit_new_node_ww(jit_code_bswapi_us,u,v)
+#define jit_bswapi_ui(u,v)	jit_new_node_ww(jit_code_bswapi_ui,u,v)
+    jit_code_bswapi_us,		jit_code_bswapi_ui,
+#if __WORDSIZE == 64
+#  define jit_bswapi_ul(u,v)	jit_new_node_ww(jit_code_bswapi_ul,u,v)
+#endif
+    jit_code_bswapi_ul,
+#if __WORDSIZE == 32
+#  define jit_bswapi(u,v)	jit_bswapi_ui(u,v)
+#else
+#  define jit_bswapi(u,v)	jit_bswapi_ul(u,v)
+#endif
+#define jit_htoni_us(u,v)	jit_new_node_ww(jit_code_htoni_us,u,v)
+#define jit_ntohi_us(u,v)	jit_htoni_us(u, v)
+#define jit_htoni_ui(u,v)	jit_new_node_ww(jit_code_htoni_ui,u,v)
+#define jit_ntohi_ui(u,v)	jit_htoni_ui(u, v)
+    jit_code_htoni_us,		jit_code_htoni_ui,
+#if __WORDSIZE == 64
+#  define jit_htoni_ul(u,v)	jit_new_node_ww(jit_code_htoni_ul,u,v)
+#  define jit_ntohi_ul(u,v)	jit_htoni_ul(u, v)
+#endif
+    jit_code_htoni_ul,
+#if __WORDSIZE == 32
+#  define jit_htoni(u,v)	jit_htnoi_ui(u,v)
+#else
+#  define jit_htoni(u,v)	jit_htoni_ul(u,v)
+#endif
+#define jit_ntohi(u,v)		jit_htoni(u,v)
+#define jit_negi_f(u,v)		_jit_negi_f(_jit,u,v)
+#define jit_absi_f(u,v)		_jit_absi_f(_jit,u,v)
+#define jit_sqrti_f(u,v)	_jit_sqrti_f(_jit,u,v)
+    jit_code_negi_f,	jit_code_absi_f,	jit_code_sqrti_f,
+#define jit_negi_d(u,v)		_jit_negi_d(_jit,u,v)
+#define jit_absi_d(u,v)		_jit_absi_d(_jit,u,v)
+#define jit_sqrti_d(u,v)	_jit_sqrti_d(_jit,u,v)
+    jit_code_negi_d,	jit_code_absi_d,	jit_code_sqrti_d,
+#define jit_cloi(u,v)		jit_new_node_ww(jit_code_cloi,u,v)
+#define jit_clzi(u,v)		jit_new_node_ww(jit_code_clzi,u,v)
+    jit_code_cloi,		jit_code_clzi,
+#define jit_ctoi(u,v)		jit_new_node_ww(jit_code_ctoi,u,v)
+#define jit_ctzi(u,v)		jit_new_node_ww(jit_code_ctzi,u,v)
+    jit_code_ctoi,		jit_code_ctzi,
+#define jit_rbiti(u,v)		jit_new_node_ww(jit_code_rbiti,u,v)
+    jit_code_rbiti,
+#define jit_popcnti(u,v)	jit_new_node_ww(jit_code_popcnti,u,v)
+    jit_code_popcnti,
+#define jit_exti(u,v,w,x)	jit_new_node_wwq(jit_code_exti, u, v, w, x)
+#define jit_exti_u(u,v,w,x)	jit_new_node_wwq(jit_code_exti_u, u, v, w, x)
+    jit_code_exti,		jit_code_exti_u,
 
     jit_code_last_code
 } jit_code_t;
@@ -1195,6 +1269,9 @@ extern void _jit_pushargi_f(jit_state_t*, jit_float32_t);
 extern void _jit_retr_f(jit_state_t*, jit_fpr_t);
 extern void _jit_reti_f(jit_state_t*, jit_float32_t);
 extern void _jit_retval_f(jit_state_t*, jit_fpr_t);
+extern void _jit_negi_f(jit_state_t*, jit_int32_t, jit_float32_t);
+extern void _jit_absi_f(jit_state_t*, jit_int32_t, jit_float32_t);
+extern void _jit_sqrti_f(jit_state_t*, jit_int32_t, jit_float32_t);
 
 extern jit_node_t *_jit_arg_d(jit_state_t*);
 extern void _jit_getarg_d(jit_state_t*, jit_fpr_t, jit_node_t*);
@@ -1205,6 +1282,9 @@ extern void _jit_pushargi_d(jit_state_t*, jit_float64_t);
 extern void _jit_retr_d(jit_state_t*, jit_fpr_t);
 extern void _jit_reti_d(jit_state_t*, jit_float64_t);
 extern void _jit_retval_d(jit_state_t*, jit_fpr_t);
+extern void _jit_negi_d(jit_state_t*, jit_int32_t, jit_float64_t);
+extern void _jit_absi_d(jit_state_t*, jit_int32_t, jit_float64_t);
+extern void _jit_sqrti_d(jit_state_t*, jit_int32_t, jit_float64_t);
 
 #define jit_get_reg(s)		_jit_get_reg(_jit,s)
 extern jit_int32_t _jit_get_reg(jit_state_t*, jit_int32_t);
@@ -1293,5 +1373,4 @@ extern void jit_set_memory_functions(jit_alloc_func_ptr,
 extern void jit_get_memory_functions(jit_alloc_func_ptr*,
 				     jit_realloc_func_ptr*,
 				     jit_free_func_ptr*);
-
 #endif /* _lightning_h */

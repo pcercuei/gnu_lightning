@@ -1645,6 +1645,9 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_depr:
 		depr(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
 		break;
+	    case jit_code_depi:
+		depi(rn(node->u.w), node->v.w, node->w.q.l, node->w.q.h);
+		break;
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
 		case_rr(ext, _s);
@@ -2130,6 +2133,63 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_retval_f:		case jit_code_retval_d:
 	    case jit_code_prepare:
 	    case jit_code_finishr:		case jit_code_finishi:
+	    case jit_code_negi_f:		case jit_code_absi_f:
+	    case jit_code_sqrti_f:		case jit_code_negi_d:
+	    case jit_code_absi_d:		case jit_code_sqrti_d:
+		break;
+	    case jit_code_negi:
+		negi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_comi:
+		comi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_c:
+		exti_c(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_uc:
+		exti_uc(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_s:
+		exti_s(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_us:
+		exti_us(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_bswapi_us:
+		bswapi_us(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_bswapi_ui:
+		bswapi_ui(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_htoni_us:
+		htoni_us(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_htoni_ui:
+		htoni_ui(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_cloi:
+		cloi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_clzi:
+		clzi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_ctoi:
+		ctoi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_ctzi:
+		ctzi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_rbiti:
+		rbiti(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_popcnti:
+		popcnti(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti:
+		exti(rn(node->u.w), node->v.w, node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_exti_u:
+		exti_u(rn(node->u.w), node->v.w, node->w.q.l, node->w.q.h);
 		break;
 	    default:
 		abort();

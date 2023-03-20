@@ -250,6 +250,20 @@ extern jit_node_t *_jit_data(jit_state_t*, const void*,
     } while (0)
 #define jit_inc_synth_dp(name, u, v)					\
     jit_code_inc_synth_dp(jit_code_##name, u, v)
+#define jit_inc_synth_wf(name, u, v)					\
+    jit_code_inc_synth_wf(jit_code_##name, u, v)
+#define jit_code_inc_synth_wf(code, u, v)				\
+    do {								\
+	(void)jit_new_node_wf(code, u, v);				\
+	jit_synth_inc();						\
+    } while (0)
+#define jit_inc_synth_wd(name, u, v)					\
+    jit_code_inc_synth_wd(jit_code_##name, u, v)
+#define jit_code_inc_synth_wd(code, u, v)				\
+    do {								\
+	(void)jit_new_node_wd(code, u, v);				\
+	jit_synth_inc();						\
+    } while (0)
 #define jit_dec_synth()		jit_synth_dec()
 
 #define jit_link_alist(node)						\

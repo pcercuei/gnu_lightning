@@ -1443,12 +1443,27 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_ldi_s:	case jit_code_ldi_us:	case jit_code_ldi_i:
 	case jit_code_ldi_ui:	case jit_code_ldi_l:	case jit_code_ldi_f:
 	case jit_code_ldi_d:
+	case jit_code_negi:	case jit_code_comi:
+	case jit_code_exti_c:	case jit_code_exti_uc:
+	case jit_code_exti_s:	case jit_code_exti_us:
+	case jit_code_exti_i:	case jit_code_exti_ui:
+	case jit_code_bswapi_us:case jit_code_bswapi_ui:
+	case jit_code_bswapi_ul:
+	case jit_code_htoni_us:	case jit_code_htoni_ui:
+	case jit_code_htoni_ul:
+	case jit_code_cloi:	case jit_code_clzi:
+	case jit_code_ctoi:	case jit_code_ctzi:
+	case jit_code_rbiti:	case jit_code_popcnti:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int;
 	    break;
 	case jit_code_movi_f:	case jit_code_movi_f_w:
+	case jit_code_negi_f:	case jit_code_absi_f:
+	case jit_code_sqrti_f:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_flt;
 	    break;
 	case jit_code_movi_d:	case jit_code_movi_d_w:
+	case jit_code_negi_d:	case jit_code_absi_d:
+	case jit_code_sqrti_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_dbl;
 	    break;
 	case jit_code_movi_d_ww:
@@ -1630,6 +1645,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    break;
 	case jit_code_extr:	case jit_code_extr_u:	case jit_code_depr:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_reg|jit_cc_a2_rlh;
+	    break;
+	case jit_code_exti:	case jit_code_exti_u:	case jit_code_depi:
+	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int|jit_cc_a2_rlh;
 	    break;
 	default:
 	    abort();
@@ -3988,6 +4006,60 @@ static maybe_unused void
 generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
 #endif
 
+#define depi(r0, i0, i1, i2)		_depi(_jit, r0, i0, i1, i2)
+static void _depi(jit_state_t*,jit_int32_t, jit_word_t, jit_word_t, jit_word_t);
+#define negi(r0, i0)			_negi(_jit, r0, i0)
+static void _negi(jit_state_t*, jit_int32_t, jit_word_t);
+#define comi(r0, i0)			_comi(_jit, r0, i0)
+static void _comi(jit_state_t*, jit_int32_t, jit_word_t);
+#define exti_c(r0, i0)			_exti_c(_jit, r0, i0)
+static void _exti_c(jit_state_t*, jit_int32_t, jit_word_t);
+#define exti_uc(r0, i0)			_exti_uc(_jit, r0, i0)
+static void _exti_uc(jit_state_t*, jit_int32_t, jit_word_t);
+#define exti_s(r0, i0)			_exti_s(_jit, r0, i0)
+static void _exti_s(jit_state_t*, jit_int32_t, jit_word_t);
+#define exti_us(r0, i0)			_exti_us(_jit, r0, i0)
+static void _exti_us(jit_state_t*, jit_int32_t, jit_word_t);
+#if __WORDSIZE == 64
+#define exti_i(r0, i0)			_exti_i(_jit, r0, i0)
+static void _exti_i(jit_state_t*, jit_int32_t, jit_word_t);
+#define exti_ui(r0, i0)			_exti_ui(_jit, r0, i0)
+static void _exti_ui(jit_state_t*, jit_int32_t, jit_word_t);
+#endif
+#define bswapi_us(r0, i0)		_bswapi_us(_jit, r0, i0)
+static void _bswapi_us(jit_state_t*, jit_int32_t, jit_word_t);
+#define bswapi_ui(r0, i0)		_bswapi_ui(_jit, r0, i0)
+static void _bswapi_ui(jit_state_t*, jit_int32_t, jit_word_t);
+#if __WORDSIZE == 64
+#  define bswapi_ul(r0, i0)		_bswapi_ul(_jit, r0, i0)
+static void _bswapi_ul(jit_state_t*, jit_int32_t, jit_word_t);
+#endif
+#define htoni_us(r0, i0)		_htoni_us(_jit, r0, i0)
+static void _htoni_us(jit_state_t*, jit_int32_t, jit_word_t);
+#define htoni_ui(r0, i0)		_htoni_ui(_jit, r0, i0)
+static void _htoni_ui(jit_state_t*, jit_int32_t, jit_word_t);
+#if __WORDSIZE == 64
+#  define htoni_ul(r0, i0)		_htoni_ul(_jit, r0, i0)
+static void _htoni_ul(jit_state_t*, jit_int32_t, jit_word_t);
+#endif
+#define cloi(r0, i0)			_cloi(_jit, r0, i0)
+static void _cloi(jit_state_t*, jit_int32_t, jit_word_t);
+#define clzi(r0, i0)			_clzi(_jit, r0, i0)
+static void _clzi(jit_state_t*, jit_int32_t, jit_word_t);
+#define ctoi(r0, i0)			_ctoi(_jit, r0, i0)
+static void _ctoi(jit_state_t*, jit_int32_t, jit_word_t);
+#define ctzi(r0, i0)			_ctzi(_jit, r0, i0)
+static void _ctzi(jit_state_t*, jit_int32_t, jit_word_t);
+#define rbiti(r0, i0)			_rbiti(_jit, r0, i0)
+static void _rbiti(jit_state_t*, jit_int32_t, jit_word_t);
+#define popcnti(r0, i0)			_popcnti(_jit, r0, i0)
+static void _popcnti(jit_state_t*, jit_int32_t, jit_word_t);
+#define exti(r0, i0, i1, i2)		_exti(_jit, r0, i0, i1, i2)
+static void _exti(jit_state_t*,jit_int32_t, jit_word_t, jit_word_t, jit_word_t);
+#define exti_u(r0, i0, i1, i2)		_exti_u(_jit, r0, i0, i1, i2)
+static void _exti_u(jit_state_t*,
+		    jit_int32_t, jit_word_t, jit_word_t, jit_word_t);
+
 #define patch_alist(revert)		_patch_alist(_jit, revert)
 static maybe_unused void _patch_alist(jit_state_t *_jit, jit_bool_t revert);
 
@@ -4060,6 +4132,324 @@ generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_unget_reg(reg);
 }
 #endif
+
+static void
+_depi(jit_state_t *_jit,
+      jit_int32_t r0, jit_word_t i0, jit_word_t i1, jit_word_t i2)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    depr(r0, rn(reg), i1, i2);
+    jit_unget_reg(reg);
+}
+
+static void
+_negi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, -i0);
+}
+
+static void
+_comi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, ~i0);
+}
+
+static void
+_exti_c(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, (jit_int8_t)i0);
+}
+
+static void
+_exti_uc(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, (jit_uint8_t)i0);
+}
+
+static void
+_exti_s(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, (jit_int16_t)i0);
+}
+
+static void
+_exti_us(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, (jit_uint16_t)i0);
+}
+
+#if __WORDSIZE == 64
+static void
+_exti_i(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, (jit_int32_t)i0);
+}
+
+static void
+_exti_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    movi(r0, (jit_uint32_t)i0);
+}
+#endif
+
+static void
+_bswapi_us(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    union {
+	jit_uint16_t	us;
+	jit_uint8_t	v[2];
+    } l, h;
+    l.us = i0;
+    h.v[0] = l.v[1];
+    h.v[1] = l.v[0];
+    movi(r0,  h.us);
+}
+
+static void
+_bswapi_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    union {
+	jit_uint32_t	ui;
+	jit_uint8_t	v[4];
+    } l, h;
+    l.ui = i0;
+    h.v[0] = l.v[3];
+    h.v[1] = l.v[2];
+    h.v[2] = l.v[1];
+    h.v[3] = l.v[0];
+    movi(r0,  h.ui);
+}
+
+#if __WORDSIZE == 64
+static void
+_bswapi_ul(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    union {
+	jit_uint64_t	ul;
+	jit_uint8_t	v[4];
+    } l, h;
+    l.ul = i0;
+    h.v[0] = l.v[7];
+    h.v[1] = l.v[6];
+    h.v[2] = l.v[5];
+    h.v[3] = l.v[4];
+    h.v[4] = l.v[3];
+    h.v[5] = l.v[2];
+    h.v[6] = l.v[1];
+    h.v[7] = l.v[0];
+    movi(r0,  h.ul);
+}
+#endif
+
+static void
+_htoni_us(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    bswapi_us(r0, i0);
+#else
+    exti_us(r0, i0);
+#endif
+}
+
+static void
+_htoni_ui(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    bswapi_ui(r0, i0);
+#else
+#  if __WORDSIZE == 32
+    movi(r0, i0);
+#  else
+    exti_ui(r0, i0);
+#  endif
+#endif
+}
+
+#if __WORDSIZE == 64
+static void
+_htoni_ul(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+    bswapi_ul(r0, i0);
+#  else
+    movi(r0, i0);
+#  endif
+}
+#endif
+
+ void
+_jit_negi_f(jit_state_t *_jit, jit_int32_t u, jit_float32_t v)
+{
+    jit_inc_synth_wf(negi_f, u, v);
+    jit_movi_f(u, v);
+    jit_negr_f(u, u);
+    jit_dec_synth();
+}
+
+void
+_jit_absi_f(jit_state_t *_jit, jit_int32_t u, jit_float32_t v)
+{
+    jit_inc_synth_wf(absi_f, u, v);
+    jit_movi_f(u, v);
+    jit_absr_f(u, u);
+    jit_dec_synth();
+}
+
+void
+_jit_sqrti_f(jit_state_t *_jit, jit_int32_t u, jit_float32_t v)
+{
+    jit_inc_synth_wf(sqrti_f, u, v);
+    jit_movi_f(u, v);
+    jit_sqrtr_f(u, u);
+    jit_dec_synth();
+}
+
+void
+_jit_negi_d(jit_state_t *_jit, jit_int32_t u, jit_float64_t v)
+{
+    jit_inc_synth_wd(negi_d, u, v);
+    jit_movi_d(u, v);
+    jit_negr_d(u, u);
+    jit_dec_synth();
+}
+
+void
+_jit_absi_d(jit_state_t *_jit, jit_int32_t u, jit_float64_t v)
+{
+    jit_inc_synth_wd(absi_d, u, v);
+    jit_movi_d(u, v);
+    jit_absr_d(u, u);
+    jit_dec_synth();
+}
+
+void
+_jit_sqrti_d(jit_state_t *_jit, jit_int32_t u, jit_float64_t v)
+{
+    jit_inc_synth_wd(sqrti_d, u, v);
+    jit_movi_d(u, v);
+    jit_sqrtr_d(u, u);
+    jit_dec_synth();
+}
+
+static void
+_cloi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    clzi(r0, ~i0);
+}
+
+static void
+_clzi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+#if __WORDSIZE == 64 && _WIN32
+    movi(r0, (i0) ? __builtin_clzll(i0) : __WORDSIZE);
+#else
+    movi(r0, (i0) ? __builtin_clzl(i0) : __WORDSIZE);
+#endif
+}
+
+static void
+_ctoi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    ctzi(r0, ~i0);
+}
+
+static void
+_ctzi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+#if __WORDSIZE == 64 && _WIN32
+    movi(r0, (i0) ? __builtin_ctzll(i0) : __WORDSIZE);
+#else
+    movi(r0, (i0) ? __builtin_ctzl(i0) : __WORDSIZE);
+#endif
+}
+
+static void
+_rbiti(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		i;
+    union {
+	jit_uword_t	w;
+	jit_uint8_t	v[__WORDSIZE >> 3];
+    } u, v;
+    static const unsigned char swap_tab[256] = {
+	 0, 128, 64, 192, 32, 160,  96, 224,
+	16, 144, 80, 208, 48, 176, 112, 240,
+	 8, 136, 72, 200, 40, 168, 104, 232,
+	24, 152, 88, 216 ,56, 184, 120, 248,
+	 4, 132, 68, 196, 36, 164, 100, 228,
+	20, 148, 84, 212, 52, 180, 116, 244,
+	12, 140, 76, 204, 44, 172, 108, 236,
+	28, 156, 92, 220, 60, 188, 124, 252,
+	 2, 130, 66, 194, 34, 162,  98, 226,
+	18, 146, 82, 210, 50, 178, 114, 242,
+	10, 138, 74, 202, 42, 170, 106, 234,
+	26, 154, 90, 218, 58, 186, 122, 250,
+	 6, 134, 70, 198, 38, 166, 102, 230,
+	22, 150, 86, 214, 54, 182, 118, 246,
+	14, 142, 78, 206, 46, 174, 110, 238,
+	30, 158, 94, 222, 62, 190, 126, 254,
+	 1, 129, 65, 193, 33, 161,  97, 225,
+	17, 145, 81, 209, 49, 177, 113, 241,
+	 9, 137, 73, 201, 41, 169, 105, 233,
+	25, 153, 89, 217, 57, 185, 121, 249,
+	 5, 133, 69, 197, 37, 165, 101, 229,
+	21, 149, 85, 213, 53, 181, 117, 245,
+	13, 141, 77, 205, 45, 173, 109, 237,
+	29, 157, 93, 221, 61, 189, 125, 253,
+	 3, 131, 67, 195, 35, 163,  99, 227,
+	19, 147, 83, 211, 51, 179, 115, 243,
+	11, 139, 75, 203, 43, 171, 107, 235,
+	27, 155, 91, 219, 59, 187, 123, 251,
+	 7, 135, 71, 199, 39, 167, 103, 231,
+	23, 151, 87, 215, 55, 183, 119, 247,
+	15, 143, 79, 207, 47, 175, 111, 239,
+	31, 159, 95, 223, 63, 191, 127, 255
+    };
+    u.w = i0;
+    for (i = 0; i < sizeof(jit_word_t); ++i)
+	v.v[i] = swap_tab[u.v[sizeof(jit_word_t) - i - 1]];
+    movi(r0, v.w);
+}
+
+static void
+_popcnti(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+#if __WORDSIZE == 64 && _WIN32
+    movi(r0, (i0) ? __builtin_popcountll(i0) : __WORDSIZE);
+#else
+    movi(r0, (i0) ? __builtin_popcountl(i0) : __WORDSIZE);
+#endif
+}
+
+static void _exti(jit_state_t *_jit,
+		  jit_int32_t r0, jit_word_t i0, jit_word_t i1, jit_word_t i2)
+{
+#if __BYTE_ORDER == __BIG_ENDIAN
+    i1 = __WORDSIZE - (i1 + i2);
+#endif
+    i0 <<= __WORDSIZE - (i1 + i2);
+    i0 >>= __WORDSIZE - i2;
+    movi(r0, i0);
+}
+
+static void _exti_u(jit_state_t *_jit,
+		    jit_int32_t r0, jit_word_t i0, jit_word_t i1, jit_word_t i2)
+{
+    jit_word_t		t;
+#if __BYTE_ORDER == __BIG_ENDIAN
+    i1 = __WORDSIZE - (i1 + i2);
+#endif
+    if (i1)
+	i0 >>= __WORDSIZE - i2;
+#if __WORDSIZE == 64 && _WIN32
+    i0 &= (1L << i2) - 1;
+#else
+    i0 &= (1LL << i2) - 1;
+#endif
+    movi(r0, i0);
+}
 
 #if defined(stack_framesize)
 static maybe_unused void

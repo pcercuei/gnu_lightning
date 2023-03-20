@@ -1,3 +1,28 @@
+2023-03-20 Paulo Andrade <pcpa@gnu.org>
+
+	* check/all.tst: Add missing instructions to debug encoding.
+	* check/lightning.c: Implement calls to the new rich set of
+	instructions, with an immediate argument, mostly which are resolved
+	at code generation time. With the exception of jit_negi_{f,d},
+	jit_absi{f,d} and jit_sqrti_{f,d} that generate code to execute at
+	runtime. This is required because the code generator should create
+	the proper float environment with rounding modes, exceptions, etc.
+	The new jit_depi is just a wrapper to have the second operand as an
+	immediate and call jit_depr.
+	* include/lightning.h.in: Declare new instructions code and function
+	prototypes as appropriate.
+	* include/lightning/jit_private.h: Add 4 new macros to generate
+	synthetic debug for float operations with an immediate argument.
+	* lib/jit_aarch64.c, lib/jit_alpha.c, lib/jit_arm.c, lib/jit_hppa.c,
+	lib/jit_ia64.c, lib/jit_loongarch.c, lib/jit_mips.c, lib/jit_ppc.c,
+	lib/jit_riscv.c, lib/jit_s390.c, lib/jit_sparc.c, lib/jit_x86.c:
+	Add code to call the generic code to implement new instructions
+	with immediate operands.
+	* lib/jit_names.c, lib/jit_print.c: Add debug for the new instructions
+	with immediate operands.
+	* lib/lightning.c: Add code to handle regsets and actually implement
+	the generic new instructions.
+
 2023-03-17 Paulo Andrade <pcpa@gnu.org>
 
 	* lib/jit_fallback.c: Implement fallbacks for new instructions
