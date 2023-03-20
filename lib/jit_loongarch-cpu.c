@@ -1724,8 +1724,12 @@ _extr(jit_state_t *_jit,
       jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
 {
     assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
-    lshi(r0, r1, __WORDSIZE - (i0 + i1));
-    rshi(r0, r0, __WORDSIZE - i1);
+    if (__WORDSIZE - (i0 + i1)) {
+	lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	rshi(r0, r0, __WORDSIZE - i1);
+    }
+    else
+	rshi(r0, r1, __WORDSIZE - i1);
 }
 
 static void

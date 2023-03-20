@@ -1295,8 +1295,12 @@ _extr(jit_state_t *_jit,
 #  if __BYTE_ORDER == __BIG_ENDIAN
 	i0 = __WORDSIZE - (i0 + i1);
 #  endif
-	lshi(r0, r1, __WORDSIZE - (i0 + i1));
-	rshi(r0, r0, __WORDSIZE - i1);
+	if (__WORDSIZE - (i0 + i1)) {
+	    lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	    rshi(r0, r0, __WORDSIZE - i1);
+	}
+	else
+	    rshi(r0, r1, __WORDSIZE - i1);
     }
 }
 
