@@ -1110,6 +1110,12 @@ static void _ori(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _xorr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define xori(r0,r1,i0)		_xori(_jit,r0,r1,i0)
 static void _xori(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#define extr(r0,r1,i0,i1)		_extr(_jit,r0,r1,i0,i1)
+static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define extr_u(r0,r1,i0,i1)		_extr_u(_jit,r0,r1,i0,i1)
+static void _extr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define depr(r0,r1,i0,i1)		_depr(_jit,r0,r1,i0,i1)
+static void _depr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			LGBR(r0,r1)
 #  define extr_uc(r0,r1)		LLGCR(r0,r1)
 #  define extr_s(r0,r1)			LGHR(r0,r1)
@@ -3096,6 +3102,65 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     else
 	fallback_ctz(r0, r1);
 #endif
+}
+
+static void
+_extr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+   assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+     /* Big Endian always */
+    i0 = __WORDSIZE - (i0 + i1);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+	if (__WORDSIZE - (i0 + i1)) {
+	    lshi(r0, r1, __WORDSIZE - (i0 + i1));
+	    rshi(r0, r0, __WORDSIZE - i1);
+	}
+	else
+	    rshi(r0, r1, __WORDSIZE - i1);
+    }
+}
+
+static void
+_extr_u(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+   assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
+     /* Big Endian always */
+    i0 = __WORDSIZE - (i0 + i1);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+	if (i0)
+	    rshi_u(r0, r1, i0);
+	andi(r0, r0, (1L << i1) - 1);
+    }
+}
+
+static void
+_depr(jit_state_t *_jit,
+      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0;
+    jit_word_t		mask;
+    /* Big Endian always */
+    i0 = __WORDSIZE - (i0 + i1);
+    if (i1 == __WORDSIZE)
+	movr(r0, r1);
+    else {
+	mask = (1L << i1) - 1;
+	t0 = jit_get_reg(jit_class_gpr);
+	andi(rn(t0), r1, mask);
+	if (i0) {
+	    lshi(rn(t0), rn(t0), i0);
+	    mask <<= i0;
+	}
+	andi(r0, r0, ~mask);
+	orr(r0, r0, rn(t0));
+	jit_unget_reg(t0);
+    }
 }
 
 static void
