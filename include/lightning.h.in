@@ -1122,7 +1122,7 @@ typedef enum {
 #endif
     jit_code_htoni_ul,
 #if __WORDSIZE == 32
-#  define jit_htoni(u,v)	jit_htnoi_ui(u,v)
+#  define jit_htoni(u,v)	jit_htoni_ui(u,v)
 #else
 #  define jit_htoni(u,v)	jit_htoni_ul(u,v)
 #endif
