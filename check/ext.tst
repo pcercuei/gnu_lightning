@@ -320,14 +320,14 @@ main:
 /*  Simple encoding debug */
 #if 0
 	movi %v0 0x12345678
-	ext %v1 %v0 1 2
+	extr %v1 %v0 1 2
 	prepare
 		pushargi dbg_ext
 		ellipsis
 		pushargr %v0
 		pushargr %v1
 	finishi @printf
-	ext_u %v1 %v0 1 2
+	extr_u %v1 %v0 1 2
 	prepare
 		pushargi dbg_ext_u
 		ellipsis
@@ -335,7 +335,7 @@ main:
 		pushargr %v1
 	finishi @printf
 	movi %v1 1
-	dep %v0 %v1 1 2
+	depr %v0 %v1 1 2
 	prepare
 		pushargi dbg_dep
 		ellipsis

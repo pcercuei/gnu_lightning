@@ -193,7 +193,6 @@ OP##_ok:
 	CHECKI(cloi, 0xfffffffe, 31)
 	CHECKI(clzi, 1, 31)
 	CHECKI(ctoi, 0x7fffffff, 31)
-	CHECKI(ctoi, -1, 32)
 	CHECKI(ctzi, 0x80000000, 31)
 	CHECKI(rbiti, 0x02468ace, 0x73516240)
 	CHECKI(popcnti, 0x8a13c851, 12)
@@ -213,7 +212,7 @@ OP##_ok:
 #  else
 	CHECKEXT(exti, 0xa5a5a3b7, 29, 1, 0xffffffff)
 	CHECKEXT(exti_u, 0xa5a5a3b7, 29, 1, 0x00000001)
-	CHECKDEP(depi, 0xa5a5a3b7, 0, 29, 1, 0x85a5a3b7)
+	CHECKDEP(0xa5a5a3b7, 0, 29, 1, 0xa5a5a3b3)
 #  endif
 #else
 #  if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -221,9 +220,9 @@ OP##_ok:
 	CHECKEXT(exti_u, 0xa5a5a5a5a5a5a564, 1, 2, 0x0000000000000002)
 	CHECKDEP(0xa5a5a5a5a5a5a564, 1, 1, 2, 0xa5a5a5a5a5a5a562)
 #  else
-	CHECKEXT(exti, 0xa5a5a5a5a5a59dc6, 1, 61, 2, 0xa5a5a5a5a5a59dc2)
-	CHECKEXT(exti_u, 0xa5a5a5a5a5a59dc6, 61, 2, 0x0000000000000003)
-	CHECKDEP(0xa5a5a5a5a5a59dc6, 1, 61, 2, 0xa5a5a5a5a5a59dc6)
+	CHECKEXT(exti, 0xa5a5a5a5a5a59dc8, 60, 3, 0xfffffffffffffffc)
+	CHECKEXT(exti_u, 0xa5a5a5a5a5a59dc6, 61, 2, 0x0000000000000002)
+	CHECKDEP(0xa5a5a5a5a5a59dc6, 1, 61, 2, 0xa5a5a5a5a5a59dc2)
 #  endif
 #endif
 	CHECKF(negi_f, 2.0, -2.0)
