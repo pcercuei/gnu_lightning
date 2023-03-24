@@ -1576,10 +1576,26 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rem, _u);
 		case_rrr(lsh,);
 		case_rrw(lsh,);
+#define qlshr(r0, r1, r2, r3)	fallback_qlshr(r0, r1, r2, r3)
+#define qlshi(r0, r1, r2, i0)	fallback_qlshi(r0, r1, r2, i0)
+#define qlshr_u(r0, r1, r2, r3)	fallback_qlshr_u(r0, r1, r2, r3)
+#define qlshi_u(r0, r1, r2, i0)	fallback_qlshi_u(r0, r1, r2, i0)
+		case_rrrr(qlsh,);
+		case_rrrw(qlsh,);
+		case_rrrr(qlsh, _u);
+		case_rrrw(qlsh, _u);
 		case_rrr(rsh,);
 		case_rrw(rsh,);
 		case_rrr(rsh, _u);
 		case_rrw(rsh, _u);
+#define qrshr(r0, r1, r2, r3)	fallback_qrshr(r0, r1, r2, r3)
+#define qrshi(r0, r1, r2, i0)	fallback_qrshi(r0, r1, r2, i0)
+#define qrshr_u(r0, r1, r2, r3)	fallback_qrshr_u(r0, r1, r2, r3)
+#define qrshi_u(r0, r1, r2, i0)	fallback_qrshi_u(r0, r1, r2, i0)
+		case_rrrr(qrsh,);
+		case_rrrw(qrsh,);
+		case_rrrr(qrsh, _u);
+		case_rrrw(qrsh, _u);
 		case_rrr(lrot,);
 		case_rrw(lrot,);
 		case_rrr(rrot,);
