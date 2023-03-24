@@ -455,9 +455,46 @@
     12,	/* lroti */
     20,	/* rrotr */
     12,	/* rroti */
-    8,	/* ext */
-    16, /* ext_u */
-    32, /* dep */
+    8,	/* extr */
+    16, /* extr_u */
+    32, /* depr */
+    20, /* depi */
+    4,	/* negi */
+    4,	/* comi */
+    4,	/* exti_c */
+    4,	/* exti_uc */
+    4,	/* exti_s */
+    8,	/* exti_us */
+    0,	/* exti_i */
+    0,	/* exti_ui */
+    8,	/* bswapi_us */
+    8,	/* bswapi_ui */
+    0,	/* bswapi_ul */
+    8,	/* htoni_us */
+    8,	/* htoni_ui */
+    0,	/* htoni_ul */
+    0,	/* negi_f */
+    0,	/* absi_f */
+    0,	/* sqrti_f */
+    0,	/* negi_d */
+    0,	/* absi_d */
+    0,	/* sqrti_d */
+    4,	/* cloi */
+    4,	/* clzi */
+    4,	/* ctoi */
+    4,	/* ctzi */
+    8,	/* rbiti */
+    4,	/* popcnti */
+    4,	/* exti */
+    4,	/* exti_u */
+    72, /* qlshr */
+    8,	/* qlshi */
+    72, /* qlshr_u */
+    8,	/* qlshi_u */
+    72, /* qrshr */
+    8,	/* qrshi */
+    72, /* qrshr_u */
+    8,	/* qrshi_u */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
@@ -917,7 +954,44 @@
     12,	/* lroti */
     20,	/* rrotr */
     12,	/* rroti */
-    8,	/* ext */
-    32, /* ext_u */
-    60, /* dep */
+    8,	/* extr */
+    32, /* extr_u */
+    60, /* depr */
+    20, /* depi */
+    4,	/* negi */
+    4,	/* comi */
+    4,	/* exti_c */
+    4,	/* exti_uc */
+    4,	/* exti_s */
+    8,	/* exti_us */
+    20, /* exti_i */
+    4,	/* exti_ui */
+    8,	/* bswapi_us */
+    8,	/* bswapi_ui */
+    24, /* bswapi_ul */
+    8,	/* htoni_us */
+    8,	/* htoni_ui */
+    24, /* htoni_ul */
+    0,	/* negi_f */
+    0,	/* absi_f */
+    0,	/* sqrti_f */
+    0,	/* negi_d */
+    0,	/* absi_d */
+    0,	/* sqrti_d */
+    4,	/* cloi */
+    4,	/* clzi */
+    4,	/* ctoi */
+    4,	/* ctzi */
+    24, /* rbiti */
+    4,	/* popcnti */
+    4,	/* exti */
+    4,	/* exti_u */
+    72, /* qlshr */
+    8,	/* qlshi */
+    72, /* qlshr_u */
+    8,	/* qlshi_u */
+    72, /* qrshr */
+    8,	/* qrshi */
+    72, /* qrshr_u */
+    8,	/* qrshi_u */
 #endif /* __WORDSIZE */
