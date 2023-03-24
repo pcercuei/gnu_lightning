@@ -629,7 +629,7 @@ static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_u(r0,r1,i0,i1)		_extr_u(_jit,r0,r1,i0,i1)
 static void _extr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define depr(r0,r1,i0,i1)		_depr(_jit,r0,r1,i0,i1)
-static void _dep(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+static void _depr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #  define extr_c(r0,r1)			SEXTB(r1, r0)
 #  define extr_uc(r0,r1)		EXTBLi(r1, 0, r0)
 #  define extr_s(r0,r1)			SEXTW(r1, r0)
