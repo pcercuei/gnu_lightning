@@ -1518,7 +1518,7 @@ _emit_code(jit_state_t *_jit)
 		extr(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
 		break;
 	    case jit_code_extr_u:
-		ext_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
+		extr_u(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
 		break;
 	    case jit_code_depr:
 		depr(rn(node->u.w), rn(node->v.w), node->w.q.l, node->w.q.h);
