@@ -4228,7 +4228,7 @@ _bswapi_ul(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     union {
 	jit_uint64_t	ul;
-	jit_uint8_t	v[4];
+	jit_uint8_t	v[8];
     } l, h;
     l.ul = i0;
     h.v[0] = l.v[7];
