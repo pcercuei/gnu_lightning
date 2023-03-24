@@ -455,7 +455,44 @@
     12,	/* lroti */
     20,	/* rrotr */
     12,	/* rroti */
-    8,	/* ext */
-    20,	/* ext_u */
-    40,	/* dep */
+    8,	/* extr */
+    20, /* extr_u */
+    40, /* depr */
+    20, /* depi */
+    4,	/* negi */
+    4,	/* comi */
+    4,	/* exti_c */
+    4,	/* exti_uc */
+    4,	/* exti_s */
+    8,	/* exti_us */
+    4,	/* exti_i */
+    12, /* exti_ui */
+    8,	/* bswapi_us */
+    8,	/* bswapi_ui */
+    12, /* bswapi_ul */
+    8,	/* htoni_us */
+    8,	/* htoni_ui */
+    12, /* htoni_ul */
+    0,	/* negi_f */
+    0,	/* absi_f */
+    0,	/* sqrti_f */
+    0,	/* negi_d */
+    0,	/* absi_d */
+    0,	/* sqrti_d */
+    4,	/* cloi */
+    4,	/* clzi */
+    4,	/* ctoi */
+    4,	/* ctzi */
+    12, /* rbiti */
+    4,	/* popcnti */
+    4,	/* exti */
+    4,	/* exti_u */
+    56, /* qlshr */
+    8,	/* qlshi */
+    56, /* qlshr_u */
+    8,	/* qlshi_u */
+    56, /* qrshr */
+    8,	/* qrshi */
+    56, /* qrshr_u */
+    8,	/* qrshi_u */
 #endif /* __WORDSIZE */
