@@ -456,7 +456,16 @@
     8,	/* lroti */
     32,	/* rrotr */
     8,	/* rroti */
-    4,	/* ext */
-    4,	/* ext_u */
-    4,	/* dep */
+    4,	/* extr */
+    4,	/* extr_u */
+    4,	/* depr */
+    /* FIXME values below guessed */
+    56, /* qlshr */
+    8,	/* qlshi */
+    56, /* qlshr_u */
+    8,	/* qlshi_u */
+    56, /* qrshr */
+    8,	/* qrshi */
+    56, /* qrshr_u */
+    8,	/* qrshi_u */
 #endif /* __WORDSIZE */
