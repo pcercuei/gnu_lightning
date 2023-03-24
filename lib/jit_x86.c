@@ -2436,7 +2436,7 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_htoni_ui:
 		htoni_ui(rn(node->u.w), node->v.w);
 		break;
-#if __X64 && !__X32
+#if __X64 && !__X64_32
 	    case jit_code_exti_i:
 		exti_i(rn(node->u.w), node->v.w);
 		break;
