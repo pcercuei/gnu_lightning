@@ -318,8 +318,12 @@ static void andr(void);		static void andi(void);
 static void orr(void);		static void ori(void);
 static void xorr(void);		static void xori(void);
 static void lshr(void);		static void lshi(void);
+static void qlshr(void);	static void qlshi(void);
+static void qlshr_u(void);	static void qlshi_u(void);
 static void rshr(void);		static void rshi(void);
+static void qrshr(void);	static void qrshi(void);
 static void rshr_u(void);	static void rshi_u(void);
+static void qrshr_u(void);	static void qrshi_u(void);
 static void lrotr(void);	static void lroti(void);
 static void rrotr(void);	static void rroti(void);
 static void negr(void);		static void negi(void);
@@ -694,8 +698,12 @@ static instr_t		  instr_vector[] = {
     entry(orr),		entry(ori),
     entry(xorr),	entry(xori),
     entry(lshr),	entry(lshi),
+    entry(qlshr),	entry(qlshi),
+    entry(qlshr_u),	entry(qlshi_u),
     entry(rshr),	entry(rshi),
+    entry(qrshr),	entry(qrshi),
     entry(rshr_u),	entry(rshi_u),
+    entry(qrshr_u),	entry(qrshi_u),
     entry(lrotr),	entry(lroti),
     entry(rrotr),	entry(rroti),
     entry(negr),	entry(negi),
@@ -1583,8 +1591,12 @@ entry_ir_ir_ir(andr)		entry_ir_ir_im(andi)
 entry_ir_ir_ir(orr)		entry_ir_ir_im(ori)
 entry_ir_ir_ir(xorr)		entry_ir_ir_im(xori)
 entry_ir_ir_ir(lshr)		entry_ir_ir_im(lshi)
+entry_ir_ir_ir_ir(qlshr)	entry_ir_ir_ir_im(qlshi)
+entry_ir_ir_ir_ir(qlshr_u)	entry_ir_ir_ir_im(qlshi_u)
 entry_ir_ir_ir(rshr)		entry_ir_ir_im(rshi)
+entry_ir_ir_ir_ir(qrshr)	entry_ir_ir_ir_im(qrshi)
 entry_ir_ir_ir(rshr_u)		entry_ir_ir_im(rshi_u)
+entry_ir_ir_ir_ir(qrshr_u)	entry_ir_ir_ir_im(qrshi_u)
 entry_ir_ir_ir(lrotr)		entry_ir_ir_im(lroti)
 entry_ir_ir_ir(rrotr)		entry_ir_ir_im(rroti)
 entry_ir_ir(negr)		entry_ir_im(negi)

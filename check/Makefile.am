@@ -122,6 +122,7 @@ EXTRA_DIST =				\
 	qalu.inc			\
 	qalu_mul.tst	qalu_mul.ok	\
 	qalu_div.tst	qalu_div.ok	\
+	qalu_shift.tst	qalu_shift.ok	\
 	range.tst	range.ok	\
 	ranger.tst	ranger.ok	\
 	ret.tst		ret.ok		\
@@ -161,7 +162,7 @@ base_TESTS =				\
 	varargs stack			\
 	clobber carry call		\
 	float jmpr live put		\
-	qalu_mul qalu_div		\
+	qalu_mul qalu_div qalu_shift	\
 	range ranger ret skip tramp	\
 	va_list bit rbit popcnt imm
 
