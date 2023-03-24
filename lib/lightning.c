@@ -1514,6 +1514,8 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    break;
 	case jit_code_qmuli:	case jit_code_qmuli_u:
 	case jit_code_qdivi:	case jit_code_qdivi_u:
+	case jit_code_qlshi:	case jit_code_qlshi_u:
+	case jit_code_qrshi:	case jit_code_qrshi_u:
 	    mask = jit_cc_a0_reg|jit_cc_a0_rlh|jit_cc_a0_chg|
 		   jit_cc_a1_reg|jit_cc_a2_int;
 	    break;
@@ -1565,6 +1567,8 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    break;
 	case jit_code_qmulr:	case jit_code_qmulr_u:
 	case jit_code_qdivr:	case jit_code_qdivr_u:
+	case jit_code_qlshr:	case jit_code_qlshr_u:
+	case jit_code_qrshr:	case jit_code_qrshr_u:
 	    mask = jit_cc_a0_reg|jit_cc_a0_rlh|jit_cc_a0_chg|
 		   jit_cc_a1_reg|jit_cc_a2_reg;
 	    break;

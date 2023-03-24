@@ -44,6 +44,33 @@ static void _fallback_ext_u(jit_state_t*,
 #define fallback_dep(r0,r1,i0,i1)	_fallback_dep(_jit,r0,r1,i0,i1)
 static void _fallback_dep(jit_state_t*,
 			  jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+
+#define fallback_qlshr(r0,r1,r2,r3)	_fallback_qlshr(_jit,r0,r1,r2,r3)
+static void _fallback_qlshr(jit_state_t *_jit,
+			    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#define fallback_qlshi(r0,r1,r2,i0)	_fallback_qlshi(_jit,r0,r1,r2,i0)
+static void _fallback_qlshi(jit_state_t *_jit,
+			    jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
+#define fallback_qlshr_u(r0,r1,r2,r3)	_fallback_qlshr_u(_jit,r0,r1,r2,r3)
+static void _fallback_qlshr_u(jit_state_t *_jit,
+			      jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#define fallback_qlshi_u(r0,r1,r2,i0)	_fallback_qlshi_u(_jit,r0,r1,r2,i0)
+static void _fallback_qlshi_u(jit_state_t *_jit,
+			      jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
+#define fallback_qrshr(r0,r1,r2,r3)	_fallback_qrshr(_jit,r0,r1,r2,r3)
+static void _fallback_qrshr(jit_state_t *_jit,
+			    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#define fallback_qrshi(r0,r1,r2,i0)	_fallback_qrshi(_jit,r0,r1,r2,i0)
+static void _fallback_qrshi(jit_state_t *_jit,
+			    jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
+#define fallback_qrshr_u(r0,r1,r2,r3)	_fallback_qrshr_u(_jit,r0,r1,r2,r3)
+static void _fallback_qrshr_u(jit_state_t *_jit,
+			      jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#define fallback_qrshi_u(r0,r1,r2,i0)	_fallback_qrshi_u(_jit,r0,r1,r2,i0)
+static void _fallback_qrshi_u(jit_state_t *_jit,
+			      jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
+
+
 #  if defined(__s390__) || defined(__s390x__)
 #    define fallback_jit_get_reg(flags)	jit_get_reg_but_zero(flags)
 #  else
@@ -66,11 +93,13 @@ static void _fallback_dep(jit_state_t*,
 #    define fallback_jmpi(i0)		jmpi(i0)
 #  endif
 #  if defined(__s390__) || defined(__s390x__)
+#    define fallback_beqi(i0,r0,i1)	beqi_p(i0,r0,i1)
 #    define fallback_bnei(i0,r0,i1)	bnei_p(i0,r0,i1)
 #    define fallback_blei(i0,r0,i1)	blei_p(i0,r0,i1)
 #    define fallback_bmsr(i0,r0,r1)	bmsr_p(i0,r0,r1)
 #    define fallback_bmsi(i0,r0,i1)	bmsi_p(i0,r0,i1)
 #  else
+#    define fallback_beqi(i0,r0,r1)	beqi(i0,r0,r1)
 #    define fallback_bnei(i0,r0,r1)	bnei(i0,r0,r1)
 #    define fallback_blei(i0,r0,r1)	blei(i0,r0,r1)
 #    define fallback_bmsr(i0,r0,r1)	bmsr(i0,r0,r1)
@@ -79,6 +108,8 @@ static void _fallback_dep(jit_state_t*,
 #  if defined(__ia64__)
 #    define fallback_patch_jmpi(inst, lbl)				\
 	patch_at(jit_code_jmpi, inst, lbl)
+#    define fallback_patch_beqi(inst, lbl)				\
+	patch_at(jit_code_beqi, inst, lbl)
 #    define fallback_patch_bnei(inst, lbl)				\
 	patch_at(jit_code_bnei, inst, lbl)
 #    define fallback_patch_blei(inst, lbl)				\
@@ -90,6 +121,8 @@ static void _fallback_dep(jit_state_t*,
 #  elif defined(__arm__)
 #    define fallback_patch_jmpi(inst, lbl)				\
 	patch_at(arm_patch_jump,inst, lbl)
+#    define fallback_patch_beqi(inst, lbl)				\
+	patch_at(arm_patch_jump,inst, lbl)
 #    define fallback_patch_bnei(inst, lbl)				\
 	patch_at(arm_patch_jump,inst, lbl)
 #    define fallback_patch_blei(inst, lbl)				\
@@ -100,6 +133,8 @@ static void _fallback_dep(jit_state_t*,
 	patch_at(arm_patch_jump,inst, lbl)
  #  else
 #    define fallback_patch_jmpi(inst, lbl)				\
+	patch_at(inst, lbl)
+#    define fallback_patch_beqi(inst, lbl)				\
 	patch_at(inst, lbl)
 #    define fallback_patch_bnei(inst, lbl)				\
 	patch_at(inst, lbl)
@@ -875,6 +910,342 @@ _fallback_dep(jit_state_t *_jit,
 	andi(r0, r0, ~mask);
 	orr(r0, r0, rn(t0));
 	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fallback_qlshr(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    /*		r1 = __WORDSIZE - r3;
+     *		if (r1 != __WORDSIZE) {
+     *			r0 = r2 << r3;
+     *			if (r3 != 0)
+     *				r1 = r2 >> r1;
+     *			else
+     *				r1 = 0;
+     *		}
+     *		else {
+     *			r1 = r2;
+     *			r0 = 0;
+     *		}
+     */
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    jit_word_t		over, zero, done, done_over;
+    s0 = jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    lshr(r0, t2, t3);
+    rshr(r1, t2, t0);
+    fallback_flush();
+    zero = fallback_beqi(_jit->pc.w, t3, 0);
+    fallback_flush();
+    over = fallback_beqi(_jit->pc.w, t3, __WORDSIZE);
+    fallback_flush();
+    done = fallback_jmpi(_jit->pc.w);
+    fallback_flush();
+    fallback_patch_jmpi(over, _jit->pc.w);
+    /* overflow */
+    movi(r0, 0);
+    fallback_flush();
+    done_over = fallback_jmpi(_jit->pc.w);
+    /* zero */
+    fallback_patch_beqi(zero, _jit->pc.w);
+    rshi(r1, t2, __WORDSIZE - 1);
+    fallback_flush();
+    fallback_patch_jmpi(done, _jit->pc.w);
+    fallback_patch_jmpi(done_over, _jit->pc.w);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+static void
+_fallback_qlshi(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+    assert((jit_uword_t)i0 <= __WORDSIZE);
+    if (i0 == 0) {
+	if (r0 != r2) {
+	    movr(r0, r2);
+	    rshi(r1, r2, __WORDSIZE - 1);
+	}
+	else
+	    rshi(r1, r2, __WORDSIZE - 1);
+    }
+    else if (i0 != __WORDSIZE) {
+	rshi(r1, r2, __WORDSIZE - i0);
+	lshi(r0, r2, i0);
+    }
+    else {
+	movr(r1, r2);
+	movi(r0, 0);
+    }
+}
+
+static void
+_fallback_qlshr_u(jit_state_t *_jit, jit_int32_t r0,
+		  jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    /*		r1 = __WORDSIZE - r3;
+     *		if (r1 != __WORDSIZE) {
+     *			r0 = r2 << r3;
+     *			if (r3 != 0)
+     *				r1 = (unsigned)r2 >> r1;
+     *			else
+     *				r1 = 0;
+     *		}
+     *		else {
+     *			r1 = r2;
+     *			r0 = 0;
+     *		}
+     */
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    jit_word_t		over, zero, done, done_over;
+    s0 = jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    lshr(r0, t2, t3);
+    rshr_u(r1, t2, t0);
+    fallback_flush();
+    zero = fallback_beqi(_jit->pc.w, t3, 0);
+    fallback_flush();
+    over = fallback_beqi(_jit->pc.w, t3, __WORDSIZE);
+    fallback_flush();
+    done = fallback_jmpi(_jit->pc.w);
+    fallback_flush();
+    fallback_patch_jmpi(over, _jit->pc.w);
+    /* overflow */
+    movi(r0, 0);
+    fallback_flush();
+    done_over = fallback_jmpi(_jit->pc.w);
+    /* zero */
+    fallback_patch_beqi(zero, _jit->pc.w);
+    movi(r1, 0);
+    fallback_flush();
+    fallback_patch_jmpi(done, _jit->pc.w);
+    fallback_patch_jmpi(done_over, _jit->pc.w);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+static void
+_fallback_qlshi_u(jit_state_t *_jit, jit_int32_t r0,
+		  jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+    assert(i0 <= __WORDSIZE);
+    if (i0 == 0) {
+	movr(r0, r2);
+	movi(r1, 0);
+    }
+    else if (i0 != __WORDSIZE) {
+	rshi_u(r1, r2, __WORDSIZE - i0);
+	lshi(r0, r2, i0);
+    }
+    else {
+	movr(r1, r2);
+	movi(r0, 0);
+    }
+}
+
+static void
+_fallback_qrshr(jit_state_t *_jit, jit_int32_t r0,
+		jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    /*		r1 = __WORDSIZE - r3;
+     *		if (r1 != __WORDSIZE) {
+     *			r0 = r2 >> r3;
+     *			if (r3 != 0)
+     *				r1 = r2 << r1;
+     *			else
+     *				r1 = r2 >> (__WORDSIZE - 1);
+     *		}
+     *		else {
+     *			r1 = r2;
+     *			r0 = r2 >> (__WORDSIZE - 1);
+     *		}
+     */
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    jit_word_t		over, zero, done, done_over;
+    s0 = jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    rshr(r0, t2, t3);
+    lshr(r1, t2, t0);
+    fallback_flush();
+    zero = fallback_beqi(_jit->pc.w, t3, 0);
+    fallback_flush();
+    over = fallback_beqi(_jit->pc.w, t3, __WORDSIZE);
+    fallback_flush();
+    done = fallback_jmpi(_jit->pc.w);
+    fallback_flush();
+    fallback_patch_jmpi(over, _jit->pc.w);
+    /* underflow */
+    rshi(r0, t2, __WORDSIZE - 1);
+    fallback_flush();
+    done_over = fallback_jmpi(_jit->pc.w);
+    /* zero */
+    fallback_patch_beqi(zero, _jit->pc.w);
+    rshi(r1, t2, __WORDSIZE - 1);
+    fallback_flush();
+    fallback_patch_jmpi(done, _jit->pc.w);
+    fallback_patch_jmpi(done_over, _jit->pc.w);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+static void
+_fallback_qrshi(jit_state_t *_jit, jit_int32_t r0,
+		jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+    assert((jit_uword_t)i0 <= __WORDSIZE);
+    if (i0 == 0) {
+	if (r0 != r2) {
+	    movr(r0, r2);
+	    rshi(r1, r2, __WORDSIZE - 1);
+	}
+	else
+	    rshi(r1, r2, __WORDSIZE - 1);
+    }
+    else if (i0 != __WORDSIZE) {
+	lshi(r1, r2, __WORDSIZE - i0);
+	rshi(r0, r2, i0);
+    }
+    else {
+	movr(r1, r2);
+	rshi(r0, r2, __WORDSIZE - 1);
+   }
+}
+
+static void
+_fallback_qrshr_u(jit_state_t *_jit, jit_int32_t r0,
+		  jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    /*		r1 = __WORDSIZE - r3;
+     *		if (r1 != __WORDSIZE) {
+     *			r0 = (unsigned)r2 >> r3;
+     *			if (r3 != 0)
+     *				r1 = r2 << r1;
+     *			else
+     *				r1 = 0;
+     *		}
+     *		else {
+     *			r1 = r2;
+     *			r0 = 0;
+     *		}
+     */
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    jit_word_t		over, zero, done, done_over;
+    s0 = jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    rshr_u(r0, t2, t3);
+    lshr(r1, t2, t0);
+    fallback_flush();
+    zero = fallback_beqi(_jit->pc.w, t3, 0);
+    fallback_flush();
+    over = fallback_beqi(_jit->pc.w, t3, __WORDSIZE);
+    fallback_flush();
+    done = fallback_jmpi(_jit->pc.w);
+    fallback_flush();
+    fallback_patch_jmpi(over, _jit->pc.w);
+    /* underflow */
+    movi(r0, 0);
+    fallback_flush();
+    done_over = fallback_jmpi(_jit->pc.w);
+    /* zero */
+    fallback_patch_beqi(zero, _jit->pc.w);
+    movi(r1, 0);
+    fallback_flush();
+    fallback_patch_jmpi(done, _jit->pc.w);
+    fallback_patch_jmpi(done_over, _jit->pc.w);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+static void
+_fallback_qrshi_u(jit_state_t *_jit, jit_int32_t r0,
+		  jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+    assert((jit_uword_t)i0 <= __WORDSIZE);
+    if (i0 == 0) {
+	movr(r0, r2);
+	movi(r1, 0);
+    }
+    else if (i0 != __WORDSIZE) {
+	lshi(r1, r2, __WORDSIZE - i0);
+	rshi_u(r0, r2, i0);
+    }
+    else {
+	movr(r1, r2);
+	movi(r0, 0);
     }
 }
 #endif

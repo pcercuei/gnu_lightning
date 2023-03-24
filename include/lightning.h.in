@@ -1149,6 +1149,19 @@ typedef enum {
 #define jit_exti_u(u,v,w,x)	jit_new_node_wwq(jit_code_exti_u, u, v, w, x)
     jit_code_exti,		jit_code_exti_u,
 
+#define jit_qlshr(l,h,v,w)	jit_new_node_qww(jit_code_qlshr,l,h,v,w)
+#define jit_qlshi(l,h,v,w)	jit_new_node_qww(jit_code_qlshi,l,h,v,w)
+    jit_code_qlshr,		jit_code_qlshi,
+#define jit_qlshr_u(l,h,v,w)	jit_new_node_qww(jit_code_qlshr_u,l,h,v,w)
+#define jit_qlshi_u(l,h,v,w)	jit_new_node_qww(jit_code_qlshi_u,l,h,v,w)
+    jit_code_qlshr_u,		jit_code_qlshi_u,
+#define jit_qrshr(l,h,v,w)	jit_new_node_qww(jit_code_qrshr,l,h,v,w)
+#define jit_qrshi(l,h,v,w)	jit_new_node_qww(jit_code_qrshi,l,h,v,w)
+    jit_code_qrshr,		jit_code_qrshi,
+#define jit_qrshr_u(l,h,v,w)	jit_new_node_qww(jit_code_qrshr_u,l,h,v,w)
+#define jit_qrshi_u(l,h,v,w)	jit_new_node_qww(jit_code_qrshi_u,l,h,v,w)
+    jit_code_qrshr_u,		jit_code_qrshi_u,
+
     jit_code_last_code
 } jit_code_t;
 

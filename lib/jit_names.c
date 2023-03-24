@@ -276,4 +276,8 @@ static char *code_name[] = {
     "ctoi",		"ctzi",
     "rbiti",		"popcnti",
     "exti",		"exti_u",
+    "qlshr",		"qlshi",
+    "qlshr_u",		"qlshi_u",
+    "qrshr",		"qrshi",
+    "qrshr_u",		"qrshi_u",
 };
