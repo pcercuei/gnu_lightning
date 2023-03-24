@@ -2986,8 +2986,8 @@ _extr_u(jit_state_t *_jit,
 		assert(i0 >= 32 && i1 <= 32);
 		DEXTU(r0, r1, i0, i1);
 	    }
-	}
 #endif
+	}
     }
     else
 	fallback_ext_u(r0, r1, i0, i1);
@@ -3016,8 +3016,8 @@ _depr(jit_state_t *_jit,
 		assert(i0 >= 32 && i1 >= 1 && i1 <= 32 && (i0 + i1) > 32);
 		DINSU(r0, r1, i0, i1);
 	    }
-	}
 #endif
+	}
     }
     else
 	fallback_dep(r0, r1, i0, i1);
