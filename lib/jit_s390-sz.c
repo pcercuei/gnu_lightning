@@ -487,6 +487,15 @@
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
+    /* FIXME values below guessed */
+    56, /* qlshr */
+    8,	/* qlshi */
+    56, /* qlshr_u */
+    8,	/* qlshi_u */
+    56, /* qrshr */
+    8,	/* qrshi */
+    56, /* qrshr_u */
+    8,	/* qrshi_u */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
@@ -978,4 +987,13 @@
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
+    /* FIXME values below guessed */
+    56, /* qlshr */
+    8,	/* qlshi */
+    56, /* qlshr_u */
+    8,	/* qlshi_u */
+    56, /* qrshr */
+    8,	/* qrshi */
+    56, /* qrshr_u */
+    8,	/* qrshi_u */
 #endif /* __WORDSIZE */
