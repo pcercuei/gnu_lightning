@@ -660,8 +660,18 @@ static void _xori(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  else
 #    define lshr(r0,r1,r2)		SLD(r0,r1,r2)
 #  endif
+#define qlshr(r0,r1,r2,r3)		xlshr(1,r0,r1,r2,r3)
+#define xlshr(s,r0,r1,r2,r3)		_xlshr(_jit,s,r0,r1,r2,r3)
+static void
+_xlshr(jit_state_t*,jit_bool_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define lshi(r0,r1,i0)		_lshi(_jit,r0,r1,i0)
 static void _lshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define qlshi(r0, r1, r2, i0)		xlshi(1, r0, r1, r2, i0)
+#  define xlshi(s, r0, r1, r2, i0)	_xlshi(_jit, s, r0, r1, r2, i0)
+static void
+_xlshi(jit_state_t*,jit_bool_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
+#  define qlshr_u(r0, r1, r2, r3)	xlshr(0, r0, r1, r2, r3)
+#  define qlshi_u(r0, r1, r2, i0)	xlshi(0, r0, r1, r2, i0)
 #  if __WORDSIZE == 32
 #    define rshr(r0,r1,r2)		SRAW(r0,r1,r2)
 #  else
@@ -676,6 +686,16 @@ static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  endif
 #  define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define qrshr(r0, r1, r2, r3)		xrshr(1, r0, r1, r2, r3)
+#  define qrshr_u(r0, r1, r2, r3)	xrshr(0, r0, r1, r2, r3)
+#  define xrshr(s, r0, r1, r2, r3)	_xrshr(_jit, s, r0, r1, r2, r3)
+static void
+_xrshr(jit_state_t*,jit_bool_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define qrshi(r0, r1, r2, i0)		xrshi(1, r0, r1, r2, i0)
+#  define qrshi_u(r0, r1, r2, i0)	xrshi(0, r0, r1, r2, i0)
+#  define xrshi(s, r0, r1, r2, i0)	_xrshi(_jit, s, r0, r1, r2, i0)
+static void
+_xrshi(jit_state_t*,jit_bool_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
 #  if __WORDSIZE == 32
 #    define lrotr(r0,r1,r2)		ROTLW(r0,r1,r2)
 #  else
@@ -1745,6 +1765,81 @@ _lshi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_xlshr(jit_state_t *_jit, jit_bool_t sign,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    jit_word_t		over, zero, done, done_over;
+    s0 = jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    lshr(r0, t2, t3);
+    if (sign)
+	rshr(r1, t2, t0);
+    else
+	rshr_u(r1, t2, t0);
+    zero = beqi(_jit->pc.w, t3, 0);
+    over = beqi(_jit->pc.w, t3, __WORDSIZE);
+    done = fallback_jmpi(_jit->pc.w);
+    patch_at(over, _jit->pc.w);
+    /* overflow */
+    movi(r0, 0);
+    done_over = fallback_jmpi(_jit->pc.w);
+    /* zero */
+    patch_at(zero, _jit->pc.w);
+    if (sign)
+	rshi(r1, t2, __WORDSIZE - 1);
+    else
+	movi(r1, 0);
+    patch_at(done, _jit->pc.w);
+    patch_at(done_over, _jit->pc.w);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+static void
+_xlshi(jit_state_t *_jit, jit_bool_t sign,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+    if (i0 == 0) {
+	movr(r0, r2);
+	if (sign)
+	    rshi(r1, r2, __WORDSIZE - 1);
+	else
+	    movi(r1, 0);
+    }
+    else if (i0 == __WORDSIZE) {
+	movr(r1, r2);
+	movi(r0, 0);
+    }
+    else {
+	assert((jit_uword_t)i0 <= __WORDSIZE);
+	if (sign)
+	    rshi(r1, r2, __WORDSIZE - i0);
+	else
+	    rshi_u(r1, r2, __WORDSIZE - i0);
+	lshi(r0, r2, i0);
+    }
+}
+
+static void
 _rshi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     if (i0 == 0)
@@ -1769,6 +1864,87 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 #  else
 	SRDI(r0, r1, i0);
 #  endif
+    }
+}
+
+static void
+_xrshr(jit_state_t *_jit, jit_bool_t sign,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    jit_word_t		over, zero, done, done_over;
+    s0 = jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    if (sign)
+	rshr(r0, t2, t3);
+    else
+	rshr_u(r0, t2, t3);
+    lshr(r1, t2, t0);
+    zero = beqi(_jit->pc.w, t3, 0);
+    over = beqi(_jit->pc.w, t3, __WORDSIZE);
+    done = jmpi(_jit->pc.w);
+    patch_at(over, _jit->pc.w);
+    /* underflow */
+    if (sign)
+	rshi(r0, t2, __WORDSIZE - 1);
+    else
+	movi(r0, 0);
+    done_over = jmpi(_jit->pc.w);
+    /* zero */
+    patch_at(zero, _jit->pc.w);
+    if (sign)
+	rshi(r1, t2, __WORDSIZE - 1);
+    else
+	movi(r1, 0);
+    patch_at(done, _jit->pc.w);
+    patch_at(done_over, _jit->pc.w);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+static void
+_xrshi(jit_state_t *_jit, jit_bool_t sign,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+    if (i0 == 0) {
+	movr(r0, r2);
+	if (sign)
+	    rshi(r1, r2, __WORDSIZE - 1);
+	else
+	    movi(r1, 0);
+    }
+    else if (i0 == __WORDSIZE) {
+	movr(r1, r2);
+	if (sign)
+	    rshi(r0, r2, __WORDSIZE - 1);
+	else
+	    movi(r0, 0);
+    }
+    else {
+	assert((jit_uword_t)i0 <= __WORDSIZE);
+	lshi(r1, r2, __WORDSIZE - i0);
+	if (sign)
+	    rshi(r0, r2, i0);
+	else
+	    rshi_u(r0, r2, i0);
     }
 }
 
