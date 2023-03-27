@@ -319,16 +319,27 @@ qrshi    _u       O1 = O3 >> O4, O2 = O3 << (WORDSIZE - O4)
 @end example
 
 @item Unary ALU operations
-These accept two operands, both of which must be registers.
+These accept two operands, the first must be a register and the
+second is a register if the @code{r} modifier is used, otherwise,
+the @code{i} modifier is used and the second argument is a constant.
+
 @example
 negr         _f  _d  O1 = -O2
+negi         _f  _d  O1 = -O2
 comr                 O1 = ~O2
+comi                 O1 = ~O2
 clor		     O1 = number of leading one bits in O2
+cloi		     O1 = number of leading one bits in O2
 clzr		     O1 = number of leading zero bits in O2
+clzi		     O1 = number of leading zero bits in O2
 ctor		     O1 = number of trailing one bits in O2
+ctoi		     O1 = number of trailing one bits in O2
 ctzr		     O1 = number of trailing zero bits in O2
+ctzi		     O1 = number of trailing zero bits in O2
 rbitr		     O1 = bits of O2 reversed
+rbiti		     O1 = bits of O2 reversed
 popcntr		     O1 = number of bits set in O2
+popcnti		     O1 = number of bits set in O2
 @end example
 
 Note that @code{ctzr} is basically equivalent of a @code{C} call
@@ -343,13 +354,16 @@ The @code{clor} and @code{ctor} are just counterparts of the versions
 that search for zero bits.
 
 These unary ALU operations are only defined for float operands.
+
 @example
 absr         _f  _d  O1 = fabs(O2)
+absi         _f  _d  O1 = fabs(O2)
 sqrtr        _f  _d  O1 = sqrt(O2)
+sqrti        _f  _d  O1 = sqrt(O2)
 @end example
 
-Besides requiring the @code{r} modifier, there are no unary operations
-with an immediate operand.
+Note that for @code{float} and @code{double} unary operations, @lightning{}
+will generate code to actually execute the operation at runtime.
 
 @item Compare instructions
 These accept three operands; again, the last can be an immediate.
