@@ -287,11 +287,35 @@ minus one.
 @code{O2}. It can be used as quick way to check if a division is
 exact, in which case the remainder is zero.
 
+@code{qlsh} shifts from 0 to @emph{wordsize}, doing a normal left
+shift for the first result register and setting the second result
+resister to the overflow bits. @code{qlsh} can be used as a quick
+way to multiply by powers of two.
+
+@code{qrsh} shifts from 0 to @emph{wordsize}, doing a normal right
+shift for the first result register and setting the second result
+register to the overflow bits. @code{qrsh} can be used as a quick
+way to divide by powers of two.
+
+Note that @code{qlsh} and @code{qrsh} are basically implemented as
+two shifts. It is undefined behavior to pass a value not in the range
+0 to @emph{wordsize}. Most cpus will usually @code{and} the shift
+amount with @emph{wordsize} - 1, or possible use the @emph{remainder}.
+@lightning{} only generates code to specially handle 0 and @emph{wordsize}
+shifts. Since in a code generator for a @emph{safe language} should
+usually check the shift amount, these instructions usually should be
+used as a fast path to check for division without remainder or
+multiplication that does not overflow.
+
 @example
 qmulr    _u       O1 O2 = O3 * O4
 qmuli    _u       O1 O2 = O3 * O4
 qdivr    _u       O1 O2 = O3 / O4
 qdivi    _u       O1 O2 = O3 / O4
+qlshr    _u       O1 = O3 << O4, O2 = O3 >> (WORDSIZE - O4)
+qlshi    _u       O1 = O3 << O4, O2 = O3 >> (WORDSIZE - O4)
+qrshr    _u       O1 = O3 >> O4, O2 = O3 << (WORDSIZE - O4)
+qrshi    _u       O1 = O3 >> O4, O2 = O3 << (WORDSIZE - O4)
 @end example
 
 @item Unary ALU operations
