@@ -3114,9 +3114,9 @@ _ldi_i(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     jit_bool_t		inv;
     jit_int32_t		reg;
     jit_word_t		lo, hi;
-    if (can_sign_extend_short_p(i0))
+    if (can_sign_extend_short_p(i0) && !(i0 & 3))
 	LWA(r0, _R0_REGNO, i0);
-    else if (can_sign_extend_int_p(i0)) {
+    else if (can_sign_extend_int_p(i0) && !(i0 & 3)) {
 	hi = (jit_int16_t)((i0 >> 16) + ((jit_uint16_t)i0 >> 15));
 	lo = (jit_int16_t)(i0 - (hi << 16));
 	reg = jit_get_reg(jit_class_gpr);
@@ -3158,7 +3158,7 @@ _ldxi_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     jit_int32_t		reg;
     if (i0 == 0)
 	ldr_i(r0, r1);
-    else if (can_sign_extend_short_p(i0)) {
+    else if (can_sign_extend_short_p(i0) && !(i0 & 3)) {
 	if (r1 == _R0_REGNO) {
 	    reg = jit_get_reg(jit_class_gpr);
 	    movr(rn(reg), r1);
@@ -3250,9 +3250,9 @@ _ldi_l(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     jit_bool_t		inv;
     jit_int32_t		reg;
     jit_word_t		lo, hi;
-    if (can_sign_extend_short_p(i0))
+    if (can_sign_extend_short_p(i0) && !(i0 & 3))
 	LD(r0, _R0_REGNO, i0);
-    else if (can_sign_extend_int_p(i0)) {
+    else if (can_sign_extend_int_p(i0) && !(i0 & 3)) {
 	hi = (jit_int16_t)((i0 >> 16) + ((jit_uint16_t)i0 >> 15));
 	lo = (jit_int16_t)(i0 - (hi << 16));
 	reg = jit_get_reg(jit_class_gpr);
@@ -3294,7 +3294,7 @@ _ldxi_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     jit_int32_t		reg;
     if (i0 == 0)
 	ldr_l(r0, r1);
-    else if (can_sign_extend_short_p(i0)) {
+    else if (can_sign_extend_short_p(i0) && !(i0 & 3)) {
 	if (r1 == _R0_REGNO) {
 	    reg = jit_get_reg(jit_class_gpr);
 	    movr(rn(reg), r1);
@@ -3524,9 +3524,9 @@ _sti_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
     jit_bool_t		inv;
     jit_int32_t		reg;
     jit_word_t		lo, hi;
-    if (can_sign_extend_short_p(i0))
+    if (can_sign_extend_short_p(i0) && !(i0 & 3))
 	STD(r0, _R0_REGNO, i0);
-    else if (can_sign_extend_int_p(i0)) {
+    else if (can_sign_extend_int_p(i0) && !(i0 & 3)) {
 	hi = (jit_int16_t)((i0 >> 16) + ((jit_uint16_t)i0 >> 15));
 	lo = (jit_int16_t)(i0 - (hi << 16));
 	reg = jit_get_reg(jit_class_gpr);
@@ -3568,7 +3568,7 @@ _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     jit_int32_t		reg;
     if (i0 == 0)
 	str_l(r0, r1);
-    else if (can_sign_extend_short_p(i0)) {
+    else if (can_sign_extend_short_p(i0) && !(i0 & 3)) {
 	if (r0 == _R0_REGNO) {
 	    reg = jit_get_reg(jit_class_gpr);
 	    movr(rn(reg), i0);
