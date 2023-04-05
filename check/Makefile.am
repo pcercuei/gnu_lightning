@@ -133,6 +133,7 @@ EXTRA_DIST =				\
 	rbit.tst	rbit.ok		\
 	popcnt.tst	popcnt.ok	\
 	imm.tst		imm.ok		\
+	unldst.tst	unldst.ok	\
 	check.sh			\
 	check.x87.sh			\
 	check.arm.sh	check.swf.sh	\
@@ -164,7 +165,8 @@ base_TESTS =				\
 	float jmpr live put		\
 	qalu_mul qalu_div qalu_shift	\
 	range ranger ret skip tramp	\
-	va_list bit rbit popcnt imm
+	va_list bit rbit popcnt imm	\
+	unldst
 
 $(base_TESTS):	check.sh
 	$(LN_S) $(srcdir)/check.sh $@
@@ -191,7 +193,7 @@ x87_TESTS =					\
 	varargs.x87 stack.x87			\
 	clobber.x87 carry.x87 call.x87		\
 	float.x87 jmpr.x87 put.x87		\
-	va_list.x87 imm.x87
+	va_list.x87 imm.x87 unldst.x87
 $(x87_TESTS):	check.x87.sh
 	$(LN_S) $(srcdir)/check.x87.sh $@
 TESTS += $(x87_TESTS)
@@ -215,7 +217,7 @@ x87_nodata_TESTS =							\
 	varargs.x87.nodata stack.x87.nodata				\
 	clobber.x87.nodata carry.x87.nodata call.x87.nodata		\
 	float.x87.nodata jmpr.x87.nodata put.x87.nodata			\
-	va_list.x87.nodata imm.x87.nodata
+	va_list.x87.nodata imm.x87.nodata unldst.x87.nodata
 $(x87_nodata_TESTS):	check.x87.nodata.sh
 	$(LN_S) $(srcdir)/check.x87.nodata.sh $@
 TESTS += $(x87_nodata_TESTS)
@@ -241,7 +243,8 @@ arm_TESTS =					\
 	varargs.arm stack.arm			\
 	clobber.arm carry.arm call.arm		\
 	float.arm jmpr.arm tramp.arm range.arm	\
-	ranger.arm put.arm va_list.arm imm.arm
+	ranger.arm put.arm va_list.arm imm.arm	\
+	unldst.arm
 $(arm_TESTS):	check.arm.sh
 	$(LN_S) $(srcdir)/check.arm.sh $@
 TESTS += $(arm_TESTS)
@@ -267,7 +270,8 @@ swf_TESTS =					\
 	varargs.swf stack.swf			\
 	clobber.swf carry.swf call.swf		\
 	float.swf jmpr.swf tramp.swf range.swf	\
-	ranger.swf put.swf va_list.swf imm.swf
+	ranger.swf put.swf va_list.swf imm.swf	\
+	unldst.swf
 $(swf_TESTS):	check.swf.sh
 	$(LN_S) $(srcdir)/check.swf.sh $@
 TESTS += $(swf_TESTS)
@@ -291,7 +295,8 @@ arm_swf_TESTS =							\
 	varargs.arm.swf stack.arm.swf				\
 	clobber.arm.swf carry.arm.swf call.arm.swf		\
 	float.arm.swf jmpr.arm.swf tramp.arm.swf range.arm.swf	\
-	ranger.arm.swf put.arm.swf va_list.arm.swf imm.arm.swf
+	ranger.arm.swf put.arm.swf va_list.arm.swf imm.arm.swf	\
+	unldst.arm.swf
 $(arm_swf_TESTS):	check.arm.swf.sh
 	$(LN_S) $(srcdir)/check.arm.swf.sh $@
 TESTS += $(arm_swf_TESTS)
@@ -317,7 +322,8 @@ arm4_swf_TESTS =						\
 	clobber.arm4.swf carry.arm4.swf call.arm4.swf		\
 	float.arm4.swf jmpr.arm4.swf tramp.arm4.swf		\
 	range.arm4.swf ranger.arm4.swf put.arm4.swf		\
-	va_list.arm4.swf imm.arm4.swf
+	va_list.arm4.swf imm.arm4.swf				\
+	unldst.arm4.swf
 $(arm4_swf_TESTS):	check.arm4.swf.sh
 	$(LN_S) $(srcdir)/check.arm4.swf.sh $@
 TESTS += $(arm4_swf_TESTS)
@@ -345,7 +351,8 @@ nodata_TESTS =						\
 	clobber.nodata carry.nodata call.nodata		\
 	float.nodata jmpr.nodata tramp.nodata		\
 	range.nodata ranger.nodata put.nodata		\
-	va_list.nodata bit.nodata imm.nodata
+	va_list.nodata bit.nodata imm.nodata		\
+	unldst.nodata
 $(nodata_TESTS):	check.nodata.sh
 	$(LN_S) $(srcdir)/check.nodata.sh $@
 TESTS += $(nodata_TESTS)
