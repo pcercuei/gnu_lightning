@@ -1,4 +1,5 @@
 #define GENTABLE		0
+#define USEFUNC			0
 
 #if __WORDSIZE == 32
 #define GVAL			0xfedcba98
@@ -8,27 +9,42 @@
 #define FVAL			2.5
 #define DVAL			7.5
 
-#define LOAD(NAME, R0, BASE, SIZE, RESULT)				\
+#if USEFUNC
+#  define LOAD(NAME, TYPE, R0, BASE, SIZE, RESULT)			\
 	prepare								\
 		pushargi BASE						\
 		pushargi SIZE						\
-	finishi NAME							\
+	finishi NAME##TYPE						\
 	retval %R0							\
-	beqi NAME##R0##BASE##SIZE %R0 RESULT				\
+	beqi NAME##TYPE##R0##BASE##SIZE %R0 RESULT			\
 	calli @abort							\
-NAME##R0##BASE##SIZE:
-#define LOAD1(NAME, R0, R1, R2, V0, V1, V2, BASE, SIZE, RESULT)		\
-	LOAD(NAME, R0, BASE, SIZE, RESULT)				\
-	LOAD(NAME, R1, BASE, SIZE, RESULT)				\
-	LOAD(NAME, R2, BASE, SIZE, RESULT)				\
-	LOAD(NAME, V0, BASE, SIZE, RESULT)				\
-	LOAD(NAME, V1, BASE, SIZE, RESULT)				\
-	LOAD(NAME, V2, BASE, SIZE, RESULT)
+NAME##TYPE##R0##BASE##SIZE:
+#else
+#  define LOAD(NAME, TYPE, R0, BASE, SIZE, RESULT)			\
+	movi %R0 BASE							\
+	NAME##r##TYPE %R0 %R0 SIZE					\
+	beqi NAME##r##TYPE##R0##BASE##SIZE %R0 RESULT			\
+	calli @abort							\
+NAME##r##TYPE##R0##BASE##SIZE:						\
+	NAME##i##TYPE %R0 BASE SIZE					\
+	beqi NAME##i##TYPE##R0##BASE##SIZE %R0 RESULT			\
+	calli @abort							\
+NAME##i##TYPE##R0##BASE##SIZE:
+#endif
+#define LOAD1(NAME, TYPE, R0, R1, R2, V0, V1, V2, BASE, SIZE, RESULT)	\
+	LOAD(NAME, TYPE, R0, BASE, SIZE, RESULT)			\
+	LOAD(NAME, TYPE, R1, BASE, SIZE, RESULT)			\
+	LOAD(NAME, TYPE, R2, BASE, SIZE, RESULT)			\
+	LOAD(NAME, TYPE, V0, BASE, SIZE, RESULT)			\
+	LOAD(NAME, TYPE, V1, BASE, SIZE, RESULT)			\
+	LOAD(NAME, TYPE, V2, BASE, SIZE, RESULT)
 #define  UNLD(BASE, SIZE, RESULT)					\
-	LOAD1(unld, r0, r1, r2, v0, v1, v2, BASE, SIZE, RESULT)
+	LOAD1(unld, , r0, r1, r2, v0, v1, v2, BASE, SIZE, RESULT)
 #define UNLDU(BASE, SIZE, RESULT)					\
-	LOAD1(unld_u, r0, r1, r2, v0, v1, v2, BASE, SIZE, RESULT)
-#define STORE(R0, R1, R2, BASE, SIZE, RES0, RES1)			\
+	LOAD1(unld, _u, r0, r1, r2, v0, v1, v2, BASE, SIZE, RESULT)
+
+#if USEFUNC
+#  define STORE(R0, R1, R2, BASE, SIZE, RES0, RES1)			\
 	movi %R0 str0							\
 	movi %R1 0							\
 	str %R0 %R1							\
@@ -47,6 +63,38 @@ NAME##R0##BASE##SIZE:
 unst##R0##R1##R2##BASE##SIZE##fail:					\
 	calli @abort							\
 unst##R0##R1##R2##BASE##SIZE:
+#else
+#  define STORE(R0, R1, R2, BASE, SIZE, RES0, RES1)			\
+	movi %R0 str0							\
+	movi %R1 0							\
+	str %R0 %R1							\
+	stxi $(__WORDSIZE >> 3) %R0 %R1					\
+	movi %R0 GVAL							\
+	movi %R1 BASE							\
+	unstr %R1 %R0 SIZE						\
+	movi %R0 str0							\
+	ldr %R1 %R0							\
+	ldxi %R2 %R0 $(__WORDSIZE >> 3)					\
+	bnei unst##r##R0##R1##R2##BASE##SIZE##fail %R1 RES0		\
+	beqi unst##r##R0##R1##R2##BASE##SIZE %R2 RES1			\
+unst##r##R0##R1##R2##BASE##SIZE##fail:					\
+	calli @abort							\
+unst##r##R0##R1##R2##BASE##SIZE:					\
+	movi %R0 str0							\
+	movi %R1 0							\
+	str %R0 %R1							\
+	stxi $(__WORDSIZE >> 3) %R0 %R1					\
+	movi %R0 GVAL							\
+	unsti BASE %R0 SIZE						\
+	movi %R0 str0							\
+	ldr %R1 %R0							\
+	ldxi %R2 %R0 $(__WORDSIZE >> 3)					\
+	bnei unst##i##R0##R1##R2##BASE##SIZE##fail %R1 RES0		\
+	beqi unst##i##R0##R1##R2##BASE##SIZE %R2 RES1			\
+unst##i##R0##R1##R2##BASE##SIZE##fail:					\
+	calli @abort							\
+unst##i##R0##R1##R2##BASE##SIZE:
+#endif
 #define STORE1(R0, R1, R2, V0, V1, V2, BASE, SIZE, RES0, RES1)		\
 	STORE(R0, R1, R2, BASE, SIZE, RES0, RES1)			\
 	STORE(R1, R2, V0, BASE, SIZE, RES0, RES1)			\
@@ -57,7 +105,8 @@ unst##R0##R1##R2##BASE##SIZE:
 #define  UNST(BASE, SIZE, RES0, RES1)					\
 	STORE1(r0, r1, r2, v0, v1, v2, BASE, SIZE, RES0, RES1)
 
-#define F_LDST(F0, BASE, VAL)						\
+#if USEFUNC
+#  define F_LDST(F0, BASE, VAL)						\
 	movi %r2 str0							\
 	movi %r1 0							\
 	str %r2 %r1							\
@@ -79,6 +128,24 @@ unst##R0##R1##R2##BASE##SIZE:
 	beqi_f f##F0##BASE %F0 VAL					\
 	calli @abort							\
 f##F0##BASE:
+#else
+#  define F_LDST(F0, BASE, VAL)						\
+	movi %v0 BASE							\
+	movi_f %F0 VAL							\
+	unstr_x %v0 %F0 4						\
+	movi_f %F0 0							\
+	unldr_x %F0 %v0 4						\
+	beqi_f fr##F0##BASE %F0 VAL					\
+	calli @abort							\
+fr##F0##BASE:								\
+	movi_f %F0 VAL							\
+	unsti_x BASE %F0 4						\
+	movi_f %F0 0							\
+	unldi_x %F0 BASE 4						\
+	beqi_f fi##F0##BASE %F0 VAL					\
+	calli @abort							\
+fi##F0##BASE:
+#endif
 #define FLDST1(F0, F1, F2, F3, F4, F5, BASE, VAL)			\
 	F_LDST(F0, BASE, VAL)						\
 	F_LDST(F1, BASE, VAL)						\
@@ -89,9 +156,10 @@ f##F0##BASE:
 #define FLDST(BASE, VAL)						\
 	FLDST1(f0, f1, f2, f3, f4, f5, BASE, VAL)
 
-#if __WORDSIZE == 32
-#  if __BYTE_ORDER == __LITTLE_ENDIAN
-#    define D_LDST(F0, BASE, VAL)					\
+#if USEFUNC
+#  if __WORDSIZE == 32
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+#      define D_LDST(F0, BASE, VAL)					\
 	movi %r2 BASE							\
 	movi %r1 0							\
 	str %r2 %r1							\
@@ -128,8 +196,8 @@ f##F0##BASE:
 	beqi_d d##F0##BASE %F0 VAL					\
 	calli @abort							\
 d##F0##BASE:
-#  else
-#    define D_LDST(F0, BASE, VAL)					\
+#    else
+#      define D_LDST(F0, BASE, VAL)					\
 	movi %r2 BASE							\
 	movi %r1 0							\
 	str %r2 %r1							\
@@ -166,10 +234,9 @@ d##F0##BASE:
 	beqi_d d##F0##BASE %F0 VAL					\
 	calli @abort							\
 d##F0##BASE:
-#  endif
-
-#else
-#  define D_LDST(F0, BASE, VAL)						\
+#    endif
+#  else
+#    define D_LDST(F0, BASE, VAL)					\
 	movi %r2 str0							\
 	movi %r1 0							\
 	stxi 8 %r2 %r1							\
@@ -189,7 +256,26 @@ d##F0##BASE:
 	beqi_d d##F0##BASE %F0 VAL					\
 	calli @abort							\
 d##F0##BASE:
+#  endif
+#else
+#  define D_LDST(F0, BASE, VAL)						\
+	movi %v0 BASE							\
+	movi_d %F0 VAL							\
+	unstr_x %v0 %F0 8						\
+	movi_d %F0 0							\
+	unldr_x %F0 %v0 8						\
+	beqi_d dr##F0##BASE %F0 VAL					\
+	calli @abort							\
+dr##F0##BASE:								\
+	movi_d %F0 VAL							\
+	unsti_x BASE %F0 8						\
+	movi_d %F0 0							\
+	unldi_x %F0 BASE 8						\
+	beqi_d di##F0##BASE %F0 VAL					\
+	calli @abort							\
+di##F0##BASE:
 #endif
+
 #define DLDST1(F0, F1, F2, F3, F4, F5, BASE, VAL)			\
 	D_LDST(F0, BASE, VAL)						\
 	D_LDST(F1, BASE, VAL)						\
@@ -432,7 +518,7 @@ ld4_un3:
 #  else
 	ldxi_ui %r0 %r1 -1
 #  endif
-	rshi %r0 %r0 8
+	rshi_u %r0 %r0 8
 	ldxi_c %r2 %r1 3
 	lshi %r2 %r2 24
 #else
@@ -538,7 +624,7 @@ ld5_un4:
 	ldxi_us %r2 %r1 2
 	lshi %r2 %r2 8
 	orr %r0 %r0 %r2
-	ldxi_uc %r2 %r1 4 
+	ldxi_uc %r2 %r1 4
 #  endif
 	jmpi ld5_or
 ld5_un2:
@@ -607,7 +693,7 @@ ld5u_un4:
 	ldxi_us %r2 %r1 2
 	lshi %r2 %r2 8
 	orr %r0 %r0 %r2
-	ldxi_uc %r2 %r1 4 
+	ldxi_uc %r2 %r1 4
 #  endif
 	jmpi ld5u_or
 ld5u_un2:
@@ -802,18 +888,14 @@ ld7:
 	bner ld7_un4 %r1 %r2
 #  if __BYTE_ORDER == __LITTLE_ENDIAN
 	ldr_ui %r0 %r1
-	ldxi_us %r2 %r1 4
-	lshi %r2 %r2 32
-	orr %r0 %r0 %r2
-	ldxi_c %r2 %r1 6
-	lshi %r2 %r2 48
+	ldxi_i %r2 %r1 4
+	lshi %r2 %r2 40
+	rshi %r2 %r2 8
 #  else
 	ldr_i %r0 %r1
 	lshi %r0 %r0 24
-	ldxi_us %r2 %r1 4
-	lshi %r2 %r2 8
-	orr %r0 %r0 %r2
-	ldxi_uc %r2 %r1 6
+	ldxi_ui %r2 %r1 4
+	rshi %r2 %r2 8
 #  endif
 	jmpi ld7_or
 ld7_un4:
@@ -883,18 +965,14 @@ ld7u:
 	bner ld7u_un4 %r1 %r2
 #  if __BYTE_ORDER == __LITTLE_ENDIAN
 	ldr_ui %r0 %r1
-	ldxi_us %r2 %r1 4
-	lshi %r2 %r2 32
-	orr %r0 %r0 %r2
-	ldxi_uc %r2 %r1 6
-	lshi %r2 %r2 48
+	ldxi_ui %r2 %r1 4
+	lshi %r2 %r2 40
+	rshi_u %r2 %r2 8
 #  else
 	ldr_ui %r0 %r1
 	lshi %r0 %r0 24
-	ldxi_us %r2 %r1 4
-	lshi %r2 %r2 8
-	orr %r0 %r0 %r2
-	ldxi_uc %r2 %r1 6
+	ldxi_ui %r2 %r1 4
+	rshi_u %r2 %r2 8
 #  endif
 	jmpi ld7u_or
 ld7u_un4:
@@ -1011,7 +1089,7 @@ ld8_un2:
 #  endif
 	jmpi ld8_or
 ld8_un7:
-	bnei ld8_un6 %r0 6
+	bnei ld8_un6 %r2 6
 #  if __BYTE_ORDER == __LITTLE_ENDIAN
 	ldr_us %r0 %r1
 	ldxi_l %r2 %r1 2
@@ -1885,7 +1963,7 @@ loop_d:
 	 UNLD(buf1, 1, 0xffffff81)
 	 UNLD(buf1, 2, 0xffff8281)
 	 UNLD(buf1, 3, 0xff838281)
-	 UNLD(buf1, 4, 0xff838281)
+	 UNLD(buf1, 4, 0x84838281)
 	 UNLD(buf2, 1, 0xffffff82)
 	 UNLD(buf2, 2, 0xffff8382)
 	 UNLD(buf2, 3, 0xff848382)
@@ -1901,7 +1979,7 @@ loop_d:
 	UNLDU(buf1, 1, 0x00000081)
 	UNLDU(buf1, 2, 0x00008281)
 	UNLDU(buf1, 3, 0x00838281)
-	UNLDU(buf1, 4, 0xff838281)
+	UNLDU(buf1, 4, 0x84838281)
 	UNLDU(buf2, 1, 0x00000082)
 	UNLDU(buf2, 2, 0x00008382)
 	UNLDU(buf2, 3, 0x00848382)
