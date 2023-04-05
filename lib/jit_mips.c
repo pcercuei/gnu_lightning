@@ -188,13 +188,15 @@ static jit_int32_t fregs[] = {
 void
 jit_get_cpu(void)
 {
+    /* By default assume it works or have/need unaligned instructions. */
+    jit_cpu.sll_delay = jit_cpu.cop1_delay = jit_cpu.lwl_lwr_delay =
+	jit_cpu.unaligned = 1;
+
 #if defined(__linux__)
     FILE	*fp;
     char	*ptr;
     char	 buf[128];
 
-    /* By default assume it works. */
-    jit_cpu.sll_delay = jit_cpu.cop1_delay = 1;
     if ((fp = fopen("/proc/cpuinfo", "r")) != NULL) {
 	while (fgets(buf, sizeof(buf), fp)) {
 	    if (strncmp(buf, "isa\t\t\t: ", 8) == 0) {
@@ -239,6 +241,10 @@ jit_get_cpu(void)
 	jit_cpu.cop1_delay = 0;
     if (jit_cpu.sll_delay && jit_cpu.release < 3)
 	jit_cpu.sll_delay = 0;
+    if (jit_cpu.lwl_lwr_delay && jit_cpu.release < 2)
+	jit_cpu.lwl_lwr_delay = 0;
+    if (jit_cpu.release >= 6)
+	jit_cpu.unaligned = 0;
 }
 
 void
@@ -1617,6 +1623,18 @@ _emit_code(jit_state_t *_jit)
 		case_rrr(ldx, _l);
 		case_rrw(ldx, _l);
 #endif
+	    case jit_code_unldr:
+		unldr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi:
+		unldi(rn(node->u.w), node->v.w, node->w.w);
+		break;
+	    case jit_code_unldr_u:
+		unldr_u(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_u:
+		unldi_u(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _c);
 		case_wr(st, _c);
 		case_rr(st, _s);
@@ -1637,6 +1655,12 @@ _emit_code(jit_state_t *_jit)
 		case_rrr(stx, _l);
 		case_wrr(stx, _l);
 #endif
+	    case jit_code_unstr:
+		unstr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti:
+		unsti(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
 #if __WORDSIZE == 64
@@ -1781,10 +1805,22 @@ _emit_code(jit_state_t *_jit)
 		case_rw(ld, _f);
 		case_rrr(ldx, _f);
 		case_rrw(ldx, _f);
+	    case jit_code_unldr_x:
+		unldr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_x:
+		unldi_x(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _f);
 		case_wr(st, _f);
 		case_rrr(stx, _f);
 		case_wrr(stx, _f);
+	    case jit_code_unstr_x:
+		unstr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti_x:
+		unsti_x(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(mov, _f);
 	    case jit_code_movi_f:
 		assert(node->flag & jit_flag_data);
@@ -2048,17 +2084,15 @@ _emit_code(jit_state_t *_jit)
 		epilog(node);
 		_jitc->function = NULL;
 		break;
-#if !NEW_ABI
 	    case jit_code_movr_w_f:
 		movr_w_f(rn(node->u.w), rn(node->v.w));
 		break;
-#endif
 	    case jit_code_movr_f_w:
 		movr_f_w(rn(node->u.w), rn(node->v.w));
 		break;
 	    case jit_code_movi_f_w:
 		assert(node->flag & jit_flag_data);
-		movi_f_w(rn(node->u.w), (jit_float32_t *)node->v.n->u.w);
+		movi_f_w(rn(node->u.w), *(jit_float32_t *)node->v.n->u.w);
 		break;
 #if NEW_ABI
 	    case jit_code_movr_d_w:
@@ -2066,16 +2100,11 @@ _emit_code(jit_state_t *_jit)
 		break;
 	    case jit_code_movi_d_w:
 		assert(node->flag & jit_flag_data);
-		movi_d_w(rn(node->u.w), (jit_float64_t *)node->v.n->u.w);
-		break;
-#  if __mips_soft_float
-	    case jit_code_movr_w_f:
-		movr_w_f(rn(node->u.w), rn(node->v.w));
+		movi_d_w(rn(node->u.w), *(jit_float64_t *)node->v.n->u.w);
 		break;
 	    case jit_code_movr_w_d:
 		movr_w_d(rn(node->u.w), rn(node->v.w));
 		break;
-#  endif
 #else
 	    case jit_code_movr_ww_d:
 		movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
@@ -2086,7 +2115,7 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_movi_d_ww:
 		assert(node->flag & jit_flag_data);
 		movi_d_ww(rn(node->u.w), rn(node->v.w),
-			  (jit_float64_t *)node->w.n->u.w);
+			  *(jit_float64_t *)node->w.n->u.w);
 		break;
 #endif
 	    case jit_code_va_start:

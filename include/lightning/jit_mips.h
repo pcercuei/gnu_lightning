@@ -123,6 +123,11 @@ typedef struct {
     jit_uint32_t cop1_delay	: 1;
     /* set if sll can be put in delay slot */
     jit_uint32_t sll_delay	: 1;
+    /* set if lwl and lwr can be put in delay slot */
+    jit_uint32_t lwl_lwr_delay	: 1;
+    /* generate special instructions for un{ld,st}*; ignored for mips 6
+     * that does not have unaligned load/store instructions. */
+    jit_uint32_t unaligned	: 1;
 } jit_cpu_t;
 
 /*
