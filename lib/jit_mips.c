@@ -1390,6 +1390,7 @@ _emit_code(jit_state_t *_jit)
 #endif
 
     _jitc->function = NULL;
+    _jitc->inst.pend = 0;
 
     jit_reglive_setup();
 
