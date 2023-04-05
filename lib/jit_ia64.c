@@ -245,6 +245,8 @@ jit_get_cpu(void)
 		     : "=r" (clz));
     assert(clz == 0 || clz == 1);
     jit_cpu.clz = clz;
+    /* By default assume kernel or cpu will not handle unaligned load/store */
+    jit_cpu.unaligned = 1;
 }
 
 void
@@ -1312,6 +1314,15 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(ldx, _ui);
 		case_rrr(ldx, _l);
 		case_rrw(ldx, _l);
+	    case jit_code_unldr:
+		unldr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi:
+		unldi(rn(node->u.w), node->v.w, node->w.w);
+		break;
+	    case jit_code_unldr_u:
+		unldr_u(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
 		case_rr(st, _c);
 		case_wr(st, _c);
 		case_rr(st, _s);
@@ -1328,6 +1339,12 @@ _emit_code(jit_state_t *_jit)
 		case_wrr(stx, _i);
 		case_rrr(stx, _l);
 		case_wrr(stx, _l);
+	    case jit_code_unstr:
+		unstr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti:
+		unsti(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_brr(blt,);
 		case_brw(blt,);
 		case_brr(blt, _u);
@@ -1385,6 +1402,18 @@ _emit_code(jit_state_t *_jit)
 		case_rw(ld, _f);
 		case_rrr(ldx, _f);
 		case_rrw(ldx, _f);
+	    case jit_code_unldr_x:
+		unldr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_x:
+		unldi_x(rn(node->u.w), node->v.w, node->w.w);
+		break;
+	    case jit_code_unstr_x:
+		unstr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti_x:
+		unsti_x(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(st, _f);
 		case_wr(st, _f);
 		case_rrr(stx, _f);
@@ -1722,10 +1751,12 @@ _emit_code(jit_state_t *_jit)
 		movr_d_w(rn(node->u.w), rn(node->v.w));
 		break;
 	    case jit_code_movi_f_w:
-		movi_f_w(rn(node->u.w), node->v.n->u.p);
+		assert(node->flag & jit_flag_data);
+		movi_f_w(rn(node->u.w), *(jit_float32_t *)node->v.n->u.w);
 		break;
 	    case jit_code_movi_d_w:
-		movi_d_w(rn(node->u.w), node->v.n->u.p);
+		assert(node->flag & jit_flag_data);
+		movi_d_w(rn(node->u.w), *(jit_float64_t *)node->v.n->u.w);
 		break;
 		negi(rn(node->u.w), node->v.w);
 		break;
