@@ -562,6 +562,10 @@ static void _ldxr_l(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 static void _ldxi_l(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 #    endif
 #  endif
+#  define unldr(r0, r1, i0)		generic_unldr(r0, r1, i0)
+#  define unldi(r0, i0, i1)		generic_unldi(r0, i0, i1)
+#  define unldr_u(r0, r1, i0)		generic_unldr_u(r0, r1, i0)
+#  define unldi_u(r0, i0, i1)		generic_unldi_u(r0, i0, i1)
 #  define str_c(r0, r1)			_str_c(_jit, r0, r1)
 static void _str_c(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define sti_c(i0, r0)			_sti_c(_jit, i0, r0)
@@ -598,6 +602,8 @@ static void _stxr_l(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #    define stxi_l(i0, r0, r1)		_stxi_l(_jit, i0, r0, r1)
 static void _stxi_l(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
 #  endif
+#define unstr(r0, r1, i0)		generic_unstr(r0, r1, i0)
+#define unsti(i0, r0, i1)		generic_unsti(i0, r0, i1)
 #  define jcc(code, i0)			_jcc(_jit, code, i0)
 #  define jo(i0)			jcc(X86_CC_O, i0)
 #  define jno(i0)			jcc(X86_CC_NO, i0)
