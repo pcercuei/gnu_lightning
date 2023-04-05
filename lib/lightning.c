@@ -1457,7 +1457,7 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int;
 	    break;
 	case jit_code_unldi:	case jit_code_unldi_u:	case jit_code_unldi_x:
-	    mask = jit_cc_a0_reg|jit_cc_a1_int|jit_cc_a2_int;
+	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int|jit_cc_a2_int;
 	    break;
 	case jit_code_movi_f:	case jit_code_movi_f_w:
 	case jit_code_negi_f:	case jit_code_absi_f:
