@@ -1595,6 +1595,7 @@ _emit_code(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
 		undo.prevw = prevw;
 #endif
+		undo.const_offset = _jitc->consts.vector.offset;
 		undo.patch_offset = _jitc->patches.offset;
 	    restart_function:
 		compute_framesize();
@@ -1632,6 +1633,7 @@ _emit_code(jit_state_t *_jit)
 		    prevw = undo.prevw;
 #endif
 		    _jitc->patches.offset = undo.patch_offset;
+		    _jitc->consts.vector.offset = undo.const_offset;
 		    patch_alist(1);
 		    goto restart_function;
 		}
