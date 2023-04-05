@@ -280,4 +280,9 @@ static char *code_name[] = {
     "qlshr_u",		"qlshi_u",
     "qrshr",		"qrshi",
     "qrshr_u",		"qrshi_u",
+    "unldr",		"unldi",
+    "unldr_u",		"unldi_u",
+    "unstr",		"unsti",
+    "unldr_x",		"unldi_x",
+    "unstr_x",		"unsti_x",
 };

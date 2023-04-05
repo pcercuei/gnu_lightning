@@ -222,21 +222,29 @@ _jit_print_node(jit_state_t *_jit, jit_node_t *node)
 	r_r_r:
 	    print_chr(' ');	print_reg(node->u.w);
 	    print_chr(' ');	print_reg(node->v.w);
-	    print_chr(' ');	print_reg(node->w.w);   return;
+	    print_chr(' ');	print_reg(node->w.w);	return;
 	r_r_w:
 	    print_chr(' ');	print_reg(node->u.w);
 	    print_chr(' ');	print_reg(node->v.w);
-	    print_chr(' ');	print_hex(node->w.w);   return;
+	    print_chr(' ');	print_hex(node->w.w);	return;
+	r_w_w:
+	    print_chr(' ');	print_reg(node->u.w);
+	    print_chr(' ');	print_hex(node->v.w);
+	    print_chr(' ');	print_dec(node->w.w);	return;
+	w_r_w:
+	    print_chr(' ');	print_hex(node->u.w);
+	    print_chr(' ');	print_reg(node->v.w);
+	    print_chr(' ');	print_dec(node->w.w);	return;
 	q_r_r:
 	    print_str(" (");	print_reg(node->u.q.l);
 	    print_chr(' ');	print_reg(node->u.q.h);
 	    print_str(") ");	print_reg(node->v.w);
-	    print_chr(' ');	print_reg(node->w.w);   return;
+	    print_chr(' ');	print_reg(node->w.w);	return;
 	q_r_w:
 	    print_str(" (");	print_reg(node->u.q.l);
 	    print_chr(' ');	print_reg(node->u.q.h);
 	    print_str(") ");	print_reg(node->v.w);
-	    print_chr(' ');	print_hex(node->w.w);   return;
+	    print_chr(' ');	print_hex(node->w.w);	return;
 	r_r_q:
 	    print_chr(' ');	print_reg(node->u.w);
 	    print_chr(' ');	print_reg(node->v.w);
@@ -395,6 +403,10 @@ _jit_print_node(jit_state_t *_jit, jit_node_t *node)
 		    goto r_r_r;
 		case jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_int:
 		    goto r_r_w;
+		case jit_cc_a0_reg|jit_cc_a1_int|jit_cc_a2_int:
+		    goto r_w_w;
+		case jit_cc_a0_int|jit_cc_a1_reg|jit_cc_a2_int:
+		    goto w_r_w;
 		case jit_cc_a0_reg|jit_cc_a0_rlh|
 		     jit_cc_a1_reg|jit_cc_a2_reg:
 		    goto q_r_r;
