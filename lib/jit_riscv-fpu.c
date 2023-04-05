@@ -135,6 +135,10 @@ static void _ldi_f(jit_state_t*, jit_int32_t, jit_word_t);
 static void _ldxr_f(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define ldxi_f(r0, r1, i0)		_ldxi_f(_jit, r0, r1, i0)
 static void _ldxi_f(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define unldr_x(r0, r1, i0)		_unldr_x(_jit, r0, r1, i0)
+static void _unldr_x(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define unldi_x(r0, i0, i1)		_unldi_x(_jit, r0, i0, i1)
+static void _unldi_x(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #  define str_f(r0, r1)			FSW(r0, r1, 0)
 #  define sti_f(im, r0)			_sti_f(_jit, im, r0)
 static void _sti_f(jit_state_t*, jit_word_t, jit_int32_t);
@@ -142,12 +146,14 @@ static void _sti_f(jit_state_t*, jit_word_t, jit_int32_t);
 static void _stxr_f(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define stxi_f(im, r0, r1)		_stxi_f(_jit, im, r0, r1)
 static void _stxi_f(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
+#define unstr_x(r0, r1, i0)		_unstr_x(_jit, r0, r1, i0)
+static void _unstr_x(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#define unsti_x(i0, r0, i1)		_unsti_x(_jit, i0, r0, i1)
+static void _unsti_x(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
 #  define movr_f(r0, r1)		FMV_S(r0, r1)
 #  define movi_f(r0, im)		_movi_f(_jit, r0, im)
 static void _movi_f(jit_state_t*, jit_int32_t, jit_float32_t);
 #  define movr_f_w(r0, r1)		FMV_X_W(r0, r1)
-#  define movi_f_w(r0, im)		_movi_f_w(_jit, r0, im)
-static void _movi_f_w(jit_state_t*, jit_int32_t, jit_float32_t);
 #  define movr_w_f(r0, r1)		FMV_W_X(r0, r1)
 #  define extr_d_f(r0, r1)		FCVT_S_D(r0, r1)
 #  define ltr_f(r0, r1, r2)		FLT_S(r0, r1, r2)
@@ -294,8 +300,6 @@ static void _stxi_d(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
 #  define movi_d(r0, im)		_movi_d(_jit, r0, im)
 static void _movi_d(jit_state_t*, jit_int32_t, jit_float64_t);
 #  define movr_d_w(r0, r1)		FMV_X_D(r0, r1)
-#  define movi_d_w(r0, im)		_movi_d_w(_jit, r0, im)
-static void _movi_d_w(jit_state_t*, jit_int32_t, jit_float64_t);
 #  define movr_w_d(r0, r1)		FMV_D_X(r0, r1)
 #  define extr_f_d(r0, r1)		FCVT_D_S(r0, r1)
 #  define ltr_d(r0, r1, r2)		FLT_D(r0, r1, r2)
@@ -469,6 +473,24 @@ _ldxi_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_unldr_x(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (jit_unaligned_p())
+	fallback_unldr_x(r0, r1, i0);
+    else
+	generic_unldr_x(r0, r1, i0);
+}
+
+static void
+_unldi_x(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    if (jit_unaligned_p())
+	fallback_unldi_x(r0, i0, i1);
+    else
+	generic_unldi_x(r0, i0, i1);
+}
+
+static void
 _sti_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		t0;
@@ -507,6 +529,24 @@ _stxi_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
+_unstr_x(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (jit_unaligned_p())
+	fallback_unstr_x(r0, r1, i0);
+    else
+	generic_unstr_x(r0, r1, i0);
+}
+
+static void
+_unsti_x(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+{
+    if (jit_unaligned_p())
+	fallback_unsti_x(i0, r0, i1);
+    else
+	fallback_unsti_x(i0, r0, i1);
+}
+
+static void
 _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
 {
     union {
@@ -523,17 +563,6 @@ _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
 	movr_w_f(r0, rn(reg));
 	jit_unget_reg(reg);
     }
-}
-
-static void
-_movi_f_w(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
-{
-    union {
-	jit_int32_t	i;
-	jit_float32_t	f;
-    } data;
-    data.f = i0;
-    movi(r0, data.i);
 }
 
 fopi(lt)
@@ -957,17 +986,6 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
 	movr_w_d(r0, rn(reg));
 	jit_unget_reg(reg);
     }
-}
-
-static void
-_movi_d_w(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
-{
-    union {
-	jit_int64_t	l;
-	jit_float64_t	d;
-    } data;
-    data.d = i0;
-    movi(r0, data.l);
 }
 
 dopi(lt)
