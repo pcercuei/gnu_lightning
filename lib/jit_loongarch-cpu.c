@@ -18,6 +18,7 @@
  */
 
 #if PROTO
+# define jit_unaligned_p()		(jit_cpu.unaligned)
 # define ii(i)				*_jit->pc.ui++ = (i)
 # define can_sign_extend_si12_p(s12)	((s12) <= 2047 && (s12) >= -2048)
 # define can_zero_extend_u12_p(u12)	((u12) <= 4095 && (u12) >= 0)
@@ -476,6 +477,14 @@ static void _ldxi_ui(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 # define ldxr_l(r0, r1, r2)		LDX_D(r0, r1, r2)
 # define ldxi_l(r0, r1, i0)		_ldxi_l(_jit, r0, r1, i0)
 static void _ldxi_l(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define unldr(r0, r1, i0)		_unldr(_jit, r0, r1, i0)
+static void _unldr(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define unldi(r0, i0, i1)		_unldi(_jit, r0, i0, i1)
+static void _unldi(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
+#  define unldr_u(r0, r1, i0)		_unldr_u(_jit, r0, r1, i0)
+static void _unldr_u(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define unldi_u(r0, i0, i1)		_unldi_u(_jit, r0, i0, i1)
+static void _unldi_u(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 # define str_c(r0, r1)			ST_B(r1, r0, 0)
 # define sti_c(i0, r0)			_sti_c(_jit, i0, r0)
 static void _sti_c(jit_state_t*, jit_word_t, jit_int32_t);
@@ -500,6 +509,10 @@ static void _stxi_i(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
 # define stxr_l(r0, r1, r2)		STX_D(r2, r1, r0)
 # define stxi_l(i0, r0, r1)		_stxi_l(_jit, i0, r0, r1)
 static void _stxi_l(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
+#define unstr(r0, r1, i0)		_unstr(_jit, r0, r1, i0)
+static void _unstr(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#define unsti(i0, r0, i1)		_unsti(_jit, i0, r0, i1)
+static void _unsti(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
 # define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
 static void _bswapr_us(jit_state_t*, jit_int32_t, jit_int32_t);
 # define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
@@ -1594,6 +1607,44 @@ _ldxi_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_unldr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (jit_unaligned_p())
+	fallback_unldr(r0, r1, i0);
+    else
+	generic_unldr(r0, r1, i0);
+}
+
+static void
+_unldi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0, r2;
+    if (jit_unaligned_p())
+	fallback_unldi(r0, i0, i1);
+    else
+	generic_unldi(r0, i0, i1);
+}
+
+static void
+_unldr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (jit_unaligned_p())
+	fallback_unldr_u(r0, r1, i0);
+    else
+	generic_unldr_u(r0, r1, i0);
+}
+
+static void
+_unldi_u(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0, r2;
+    if (jit_unaligned_p())
+	fallback_unldi_u(r0, i0, i1);
+    else
+	generic_unldi_u(r0, i0, i1);
+}
+
+static void
 _sti_c(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
@@ -1703,6 +1754,24 @@ _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 	STX_D(r1, r0, rn(reg));
 	jit_unget_reg(reg);
     }
+}
+
+static void
+_unstr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    if (jit_unaligned_p())
+	fallback_unstr(r0, r1, i0);
+    else
+	generic_unstr(r0, r1, i0);
+}
+
+static void
+_unsti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+{
+    if (jit_unaligned_p())
+	fallback_unsti(i0, r0, i1);
+    else
+	generic_unsti(i0, r0, i1);
 }
 
 static void
