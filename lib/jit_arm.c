@@ -240,6 +240,11 @@ jit_get_cpu(void)
     /* do not generate hardware integer division by default */
     if (jit_cpu.version == 7)
 	jit_cpu.extend = 0;
+
+    /* By default generate extra instructions for unaligned load/store. */
+    jit_cpu.unaligned = 1;
+    /* Linux should only not handle unaligned vfp load/store */
+    jit_cpu.vfp_unaligned = 1;
 }
 
 void
@@ -1636,6 +1641,18 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(ldx, _us);
 		case_rrr(ldx, _i);
 		case_rrw(ldx, _i);
+	    case jit_code_unldr:
+		unldr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi:
+		unldi(rn(node->u.w), node->v.w, node->w.w);
+		break;
+	    case jit_code_unldr_u:
+		unldr_u(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_u:
+		unldi_u(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _c);
 		case_wr(st, _c);
 		case_rr(st, _s);
@@ -1648,6 +1665,12 @@ _emit_code(jit_state_t *_jit)
 		case_wrr(stx, _s);
 		case_rrr(stx, _i);
 		case_wrr(stx, _i);
+	    case jit_code_unstr:
+		unstr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti:
+		unsti(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
 		case_rr(bswap, _us);
@@ -1773,10 +1796,34 @@ _emit_code(jit_state_t *_jit)
 		case_vw(ld, _f);
 		case_vvv(ldx, _f);
 		case_vvw(ldx, _f);
+	    case jit_code_unldr_x:
+		if (jit_swf_p())
+		    swf_unldr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		else
+		    vfp_unldr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_x:
+		if (jit_swf_p())
+		    swf_unldi_x(rn(node->u.w), node->v.w, node->w.w);
+		else
+		    vfp_unldi_x(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_vv(st, _f);
 		case_wv(st, _f);
 		case_vvv(stx, _f);
 		case_wvv(stx, _f);
+	    case jit_code_unstr_x:
+		if (jit_swf_p())
+		    swf_unstr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		else
+		    vfp_unstr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti_x:
+		if (jit_swf_p())
+		    swf_unsti_x(node->u.w, rn(node->v.w), node->w.w);
+		else
+		    vfp_unsti_x(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_vv(mov, _f);
 	    case jit_code_movi_f:
 		assert_data(node);
@@ -2062,41 +2109,34 @@ _emit_code(jit_state_t *_jit)
 		break;
 	    case jit_code_movr_w_f:
 		if (jit_swf_p())
-		    swf_movr_f(rn(node->u.w), rn(node->v.w));
+		    swf_movr_w_f(rn(node->u.w), rn(node->v.w));
 		else
-		    vfp_movr_f(rn(node->u.w), rn(node->v.w));
+		    vfp_movr_w_f(rn(node->u.w), rn(node->v.w));
 		break;
 	    case jit_code_movr_f_w:
 		if (jit_swf_p())
-		    swf_movr_f(rn(node->u.w), rn(node->v.w));
+		    swf_movr_f_w(rn(node->u.w), rn(node->v.w));
 		else
-		    vfp_movr_f(rn(node->u.w), rn(node->v.w));
+		    vfp_movr_f_w(rn(node->u.w), rn(node->v.w));
 		break;
 	    case jit_code_movi_f_w:
 		assert_data(node);
-		if (jit_swf_p())
-		    swf_movi_f(rn(node->u.w), node->v.f);
-		else
-		    vfp_movi_f(rn(node->u.w), node->v.f);
+		movi_f_w(rn(node->u.w), node->v.f);
 		break;
 	    case jit_code_movr_ww_d:
 		if (jit_swf_p())
-		    swf_movr_d(rn(node->u.w), rn(node->v.w));
+		    swf_movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		else
-		    vfp_movr_d(rn(node->u.w), rn(node->v.w));
+		    vfp_movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		break;
 	    case jit_code_movr_d_ww:
 		if (jit_swf_p())
-		    swf_movr_d(rn(node->u.w), rn(node->w.w));
+		    swf_movr_d_ww(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		else
-		    vfp_movr_d(rn(node->u.w), rn(node->w.w));
+		    vfp_movr_d_ww(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		break;
 	    case jit_code_movi_d_ww:
-		assert_data(node);
-		if (jit_swf_p())
-		    swf_movi_d(rn(node->u.w), node->w.d);
-		else
-		    vfp_movi_d(rn(node->u.w), node->w.d);
+		movi_d_ww(rn(node->u.w), rn(node->v.w), node->w.d);
 		break;
 	    case jit_code_va_start:
 		vastart(rn(node->u.w));

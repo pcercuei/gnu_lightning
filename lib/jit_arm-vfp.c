@@ -473,12 +473,17 @@ static void _cc_vorsl(jit_state_t*,int,int,int,int,int);
 static void _vfp_popcntr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_movr_f(r0,r1)		_vfp_movr_f(_jit,r0,r1)
 static void _vfp_movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define vfp_movr_d(r0,r1)		_vfp_movr_d(_jit,r0,r1)
-static void _vfp_movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_movi_f(r0,i0)		_vfp_movi_f(_jit,r0,i0)
 static void _vfp_movi_f(jit_state_t*,jit_int32_t,jit_float32_t);
+#  define vfp_movr_w_f(r0, r1)		VMOV_S_A(r0, r1)
+#  define vfp_movr_f_w(r0, r1)		VMOV_A_S(r0, r1)
+#  define vfp_movr_d(r0,r1)		_vfp_movr_d(_jit,r0,r1)
+static void _vfp_movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_movi_d(r0,i0)		_vfp_movi_d(_jit,r0,i0)
 static void _vfp_movi_d(jit_state_t*,jit_int32_t,jit_float64_t);
+#  define vfp_movr_ww_d(r0, r1, r2)	VMOV_D_AA(r0, r1, r2)
+#  define vfp_movr_d_ww(r0, r1, r2)	VMOV_AA_D(r0, r1, r2)
+static void _vfp_movr_d_ww(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define vfp_extr_f(r0,r1)		_vfp_extr_f(_jit,r0,r1)
 static void _vfp_extr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_extr_d(r0,r1)		_vfp_extr_d(_jit,r0,r1)
@@ -795,6 +800,10 @@ static void _vfp_ldxr_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 static void _vfp_ldxi_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define vfp_ldxi_d(r0,r1,i0)		_vfp_ldxi_d(_jit,r0,r1,i0)
 static void _vfp_ldxi_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define vfp_unldr_x(r0, r1, i0)	_vfp_unldr_x(_jit, r0, r1, i0)
+static void _vfp_unldr_x(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define vfp_unldi_x(r0, i0, i1)	_vfp_unldi_x(_jit, r0, i0, i1)
+static void _vfp_unldi_x(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #  define vfp_str_f(r0,r1)		VSTR_F32(r1,r0,0)
 #  define vfp_str_d(r0,r1)		VSTR_F64(r1,r0,0)
 #  define vfp_sti_f(i0,r0)		_vfp_sti_f(_jit,i0,r0)
@@ -809,6 +818,10 @@ static void _vfp_stxr_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 static void _vfp_stxi_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define vfp_stxi_d(i0,r0,r1)		_vfp_stxi_d(_jit,i0,r0,r1)
 static void _vfp_stxi_d(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#define vfp_unstr_x(r0, r1, i0)		_vfp_unstr_x(_jit, r0, r1, i0)
+static void _vfp_unstr_x(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#define vfp_unsti_x(i0, r0, i1)		_vfp_unsti_x(_jit, i0, r0, i1)
+static void _vfp_unsti_x(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
 #  define vfp_vaarg_d(r0, r1)		_vfp_vaarg_d(_jit, r0, r1)
 static void _vfp_vaarg_d(jit_state_t*, jit_int32_t, jit_int32_t);
 #endif
@@ -1239,39 +1252,9 @@ _vfp_popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _vfp_movr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    if (r0 != r1) {
-	if (jit_fpr_p(r1)) {
-	    if (jit_fpr_p(r0))
-		VMOV_F32(r0, r1);
-	    else
-		VMOV_A_S(r0, r1);
-	}
-	else if (jit_fpr_p(r0))
-	    VMOV_S_A(r0, r1);
-	else
-	    movr(r0, r1);
-    }
-}
-
-static void
-_vfp_movr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    if (r0 != r1) {
-	if (jit_fpr_p(r1)) {
-	    if (jit_fpr_p(r0))
-		VMOV_F64(r0, r1);
-	    else
-		VMOV_AA_D(r0, r0 + 1, r1);
-	}
-	else if (jit_fpr_p(r0))
-	    VMOV_D_AA(r0, r1, r1 + 1);
-	else {
-	    /* minor consistency check */
-	    assert(r0 + 1 != r1 && r0 -1 != r1);
-	    movr(r0, r1);
-	    movr(r0 + 1, r1 + 1);
-	}
-    }
+    assert(jit_fpr_p(r0) && jit_fpr_p(r1));
+    if (r0 != r1)
+	VMOV_F32(r0, r1);
 }
 
 static void
@@ -1284,22 +1267,27 @@ _vfp_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
     jit_int32_t		reg;
     jit_int32_t		code;
     u.f = i0;
-    if (jit_fpr_p(r0)) {
-	/* float arguments are packed, for others,
-	 * lightning only address even registers */
-	if (!(r0 & 1) && (r0 - 32) >= 0 &&
-	    ((code = encode_vfp_double(1, 0, u.i, u.i)) != -1 ||
-	     (code = encode_vfp_double(1, 1, ~u.i, ~u.i)) != -1))
-	    VIMM(code, r0);
-	else {
-	    reg = jit_get_reg(jit_class_gpr);
-	    movi(rn(reg), u.i);
-	    VMOV_S_A(r0, rn(reg));
-	    jit_unget_reg(reg);
-	}
+    assert(jit_fpr_p(r0));
+    /* float arguments are packed, for others,
+     * lightning only address even registers */
+    if (!(r0 & 1) && (r0 - 32) >= 0 &&
+	((code = encode_vfp_double(1, 0, u.i, u.i)) != -1 ||
+	 (code = encode_vfp_double(1, 1, ~u.i, ~u.i)) != -1))
+	VIMM(code, r0);
+    else {
+	reg = jit_get_reg(jit_class_gpr);
+	movi(rn(reg), u.i);
+	VMOV_S_A(r0, rn(reg));
+	jit_unget_reg(reg);
     }
-    else
-	movi(r0, u.i);
+}
+
+static void
+_vfp_movr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    assert(jit_fpr_p(r0) && jit_fpr_p(r1));
+    if (r0 != r1)
+	VMOV_F64(r0, r1);
 }
 
 static void
@@ -1312,23 +1300,23 @@ _vfp_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
     jit_int32_t		code;
     jit_int32_t		rg0, rg1;
     u.d = i0;
-    if (jit_fpr_p(r0)) {
-	if ((code = encode_vfp_double(1, 0, u.i[0], u.i[1])) != -1 ||
-	    (code = encode_vfp_double(1, 1, ~u.i[0], ~u.i[1])) != -1)
-	    VIMM(code, r0);
-	else {
-	    rg0 = jit_get_reg(jit_class_gpr);
-	    rg1 = jit_get_reg(jit_class_gpr);
-	    movi(rn(rg0), u.i[0]);
-	    movi(rn(rg1), u.i[1]);
-	    VMOV_D_AA(r0, rn(rg0), rn(rg1));
-	    jit_unget_reg(rg1);
-	    jit_unget_reg(rg0);
-	}
-    }
+#  if __BYTE_ORDER == __BIG_ENDIAN
+    code = u.i[0];
+    u.i[0] = u.i[1];
+    u.i[1] = code;
+#  endif
+    assert(jit_fpr_p(r0));
+    if ((code = encode_vfp_double(1, 0, u.i[0], u.i[1])) != -1 ||
+	(code = encode_vfp_double(1, 1, ~u.i[0], ~u.i[1])) != -1)
+	VIMM(code, r0);
     else {
-	movi(r0, u.i[0]);
-	movi(r0 + 1, u.i[1]);
+	rg0 = jit_get_reg(jit_class_gpr);
+	rg1 = jit_get_reg(jit_class_gpr);
+	movi(rn(rg0), u.i[0]);
+	movi(rn(rg1), u.i[1]);
+	VMOV_D_AA(r0, rn(rg0), rn(rg1));
+	jit_unget_reg(rg1);
+	jit_unget_reg(rg0);
     }
 }
 
@@ -2208,6 +2196,107 @@ _vfp_ldxi_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_vfp_unldr_x(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		t0, r2;
+    jit_int32_t		t1, r3;
+    assert(i0 == 4 || i0 == 8);
+    if (jit_vfp_unaligned_p()) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+	if (i0 == 4) {
+	    if (jit_unaligned_p())
+		unldr(r2, r1, 4);
+	    else
+		ldr(r2, r1);
+	    vfp_movr_w_f(r0, r2);
+	}
+	else {
+	    t1 = jit_get_reg(jit_class_gpr);
+	    r3 = rn(t1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    if (jit_unaligned_p()) {
+		unldr(r2, r1, 4);
+		addi(r3, r1, 4);
+		unldr(r3, r3, 4);
+	    }
+	    else {
+		ldr(r2, r1);
+		ldxi(r3, r1, 4);
+	    }
+#else
+	    if (jit_unaligned_p()) {
+		unldr(r3, r1, 4);
+		addi(r2, r1, 4);
+		unldr(r2, r2, 4);
+	    }
+	    else {
+		ldr(r3, r1);
+		ldxi(r2, r1, 4);
+	    }
+#endif
+	    vfp_movr_ww_d(r0, r2, r3);
+	    jit_unget_reg(t1);
+	}
+	jit_unget_reg(t0);
+    }
+    else {
+	if (i0 == 4)
+	    vfp_ldr_f(r0, r1);
+	else
+	    vfp_ldr_d(r0, r1);
+    }
+}
+
+static void
+_vfp_unldi_x(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+   jit_int32_t		t0, r2;
+    jit_int32_t		t1, r3;
+    assert(i1 == 4 || i1 == 8);
+    if (jit_vfp_unaligned_p()) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+	if (i1 == 4) {
+	    unldi(r2, i0, 4);
+	    vfp_movr_w_f(r0, r2);
+	}
+	else {
+	    t1 = jit_get_reg(jit_class_gpr);
+	    r3 = rn(t1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    if (jit_unaligned_p()) {
+		unldi(r2, i0, 4);
+		unldi(r3, i0 + 4, 4);
+	    }
+	    else {
+		ldi(r2, i0);
+		ldi(r3, i0 + 4);
+	    }
+#else
+	    if (jit_unaligned_p()) {
+		unldi(r3, i0, 4);
+		unldi(r2, i0 + 4, 4);
+	    }
+	    else {
+		ldi(r3, i0);
+		ldi(r2, i0 + 4);
+	    }
+#endif
+	    vfp_movr_ww_d(r0, r3, r2);
+	    jit_unget_reg(t1);
+	}
+	jit_unget_reg(t0);
+    }
+    else {
+	if (i0 == 4)
+	    vfp_ldi_f(r0, i0);
+	else
+	    vfp_ldi_d(r0, i0);
+    }
+}
+
+static void
 _vfp_sti_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
@@ -2333,6 +2422,110 @@ _vfp_stxi_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 	str_i(rn(reg), r1);
 	stxi_i(4, rn(reg), r1 + 1);
 	jit_unget_reg(reg);
+    }
+}
+
+static void
+_vfp_unstr_x(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		t0, r2;
+    jit_int32_t		t1, r3;
+    assert(i0 == 4 || i0 == 8);
+    if (jit_vfp_unaligned_p()) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+	if (i0 == 4) {
+	    vfp_movr_f_w(r2, r1);
+	    if (jit_unaligned_p())
+		unstr(r0, r2, 4);
+	    else
+		str(r0, r2);
+	}
+	else {
+	    t1 = jit_get_reg(jit_class_gpr);
+	    r3 = rn(t1);
+	    vfp_movr_d_ww(r2, r3, r1);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    if (jit_unaligned_p()) {
+		unstr(r0, r2, 4);
+		addi(r2, r0, 4);
+		unstr(r2, r3, 4);
+	    }
+	    else {
+		str(r0, r2);
+		stxi(4, r0, r3);
+	    }
+#else
+	    if (jit_unaligned_p()) {
+		unstr(r0, r3, 4);
+		addi(r3, r0, 4);
+		unstr(r3, r2, 4);
+	    }
+	    else {
+		str(r0, r3);
+		stxi(4, r0, r2);
+	    }
+#endif
+	    jit_unget_reg(t1);
+	}
+	jit_unget_reg(t0);
+    }
+    else {
+	if (i0 == 4)
+	    vfp_str_f(r0, r1);
+	else
+	    vfp_str_d(r0, r1);
+    }
+}
+
+static void
+_vfp_unsti_x(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+{
+    jit_int32_t		t0, r2;
+    jit_int32_t		t1, r3;
+    assert(i1 == 4 || i1 == 8);
+    if (jit_vfp_unaligned_p()) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+	if (i1 == 4) {
+	    vfp_movr_f_w(r2, r0);
+	    if (jit_unaligned_p())
+		unsti(i0, r2, 4);
+	    else
+		sti(i0, r2);
+	}
+	else {
+	    t1 = jit_get_reg(jit_class_gpr);
+	    r3 = rn(t1);
+	    vfp_movr_d_ww(r2, r3, r0);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    if (jit_unaligned_p()) {
+		unsti(i0, r3, 4);
+		unsti(i0 + 4, r2, 4);
+	    }
+	    else {
+		sti(i0, r3);
+		sti(i0 + 4, r2);
+	    }
+#else
+	    if (jit_unaligned_p()) {
+		unsti(i0, r2, 4);
+		unsti(i0 + 4, r3, 4);
+	    }
+	    else {
+		sti(i0, r2);
+		sti(i0 + 4, r3);
+	    }
+#endif
+	    jit_unget_reg(t1);
+	}
+	jit_unget_reg(t0);
+    }
+    else {
+	if (i1 == 4)
+	    vfp_sti_f(i0, r0);
+	else
+	    vfp_sti_d(i0, r0);
     }
 }
 
