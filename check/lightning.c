@@ -394,6 +394,8 @@ static void ldxr_ui(void);	static void ldxi_ui(void);
 static void ldxr_l(void);	static void ldxi_l(void);
 #endif
 static void ldxr(void);		static void ldxi(void);
+static void unldr(void);	static void unldi(void);
+static void unldr_u(void);	static void unldi_u(void);
 static void str_c(void);	static void sti_c(void);
 static void str_s(void);	static void sti_s(void);
 static void str_i(void);	static void sti_i(void);
@@ -408,6 +410,7 @@ static void stxr_i(void);	static void stxi_i(void);
 static void stxr_l(void);	static void stxi_l(void);
 #endif
 static void stxr(void);		static void stxi(void);
+static void unstr(void);	static void unsti(void);
 static void bltr(void);		static void blti(void);
 static void bltr_u(void);	static void blti_u(void);
 static void bler(void);		static void blei(void);
@@ -492,10 +495,15 @@ static void truncr_f_l(void);
 static void truncr_f(void);
 static void extr_f(void);	static void extr_d_f(void);
 static void movr_f(void);	static void movi_f(void);
+static void movr_w_f(void);
+static void movr_f_w(void);	static void movi_f_w(void);
 static void ldr_f(void);	static void ldi_f(void);
 static void ldxr_f(void);	static void ldxi_f(void);
+static void unldr_x(void);	static void unldi_x(void);
 static void str_f(void);	static void sti_f(void);
 static void stxr_f(void);	static void stxi_f(void);
+static void unstr_x(void);	static void unsti_x(void);
+static void unldr_f(void);	static void unldi_f(void);
 static void bltr_f(void);	static void blti_f(void);
 static void bler_f(void);	static void blei_f(void);
 static void beqr_f(void);	static void beqi_f(void);
@@ -544,6 +552,13 @@ static void truncr_d_l(void);
 static void truncr_d(void);
 static void extr_d(void);	static void extr_f_d(void);
 static void movr_d(void);	static void movi_d(void);
+#if __WORDSIZE == 32
+static void movr_ww_d(void);
+static void movr_d_ww(void);	static void movi_d_ww(void);
+#else
+static void movr_w_d(void);
+static void movr_d_w(void);	static void movi_d_w(void);
+#endif
 static void ldr_d(void);	static void ldi_d(void);
 static void ldxr_d(void);	static void ldxi_d(void);
 static void str_d(void);	static void sti_d(void);
@@ -774,6 +789,8 @@ static instr_t		  instr_vector[] = {
     entry(ldxr_l),	entry(ldxi_l),
 #endif
     entry(ldxr),	entry(ldxi),
+    entry(unldr),	entry(unldi),
+    entry(unldr_u),	entry(unldi_u),
     entry(str_c),	entry(sti_c),
     entry(str_s),	entry(sti_s),
     entry(str_i),	entry(sti_i),
@@ -788,6 +805,7 @@ static instr_t		  instr_vector[] = {
     entry(stxr_l),	entry(stxi_l),
 #endif
     entry(stxr),	entry(stxi),
+    entry(unstr),	entry(unsti),
     entry(bltr),	entry(blti),
     entry(bltr_u),	entry(blti_u),
     entry(bler),	entry(blei),
@@ -872,10 +890,14 @@ static instr_t		  instr_vector[] = {
     entry(truncr_f),
     entry(extr_f),	entry(extr_d_f),
     entry(movr_f),	entry(movi_f),
+    entry(movr_w_f),
+    entry(movr_f_w),	entry(movi_f_w),
     entry(ldr_f),	entry(ldi_f),
     entry(ldxr_f),	entry(ldxi_f),
+    entry(unldr_x),	entry(unldi_x),
     entry(str_f),	entry(sti_f),
     entry(stxr_f),	entry(stxi_f),
+    entry(unstr_x),	entry(unsti_x),
     entry(bltr_f),	entry(blti_f),
     entry(bler_f),	entry(blei_f),
     entry(beqr_f),	entry(beqi_f),
@@ -924,6 +946,13 @@ static instr_t		  instr_vector[] = {
     entry(truncr_d),
     entry(extr_d),	entry(extr_f_d),
     entry(movr_d),	entry(movi_d),
+#if __WORDSIZE == 32
+    entry(movr_ww_d),
+    entry(movr_d_ww),	entry(movi_d_ww),
+#else
+    entry(movr_w_d),
+    entry(movr_d_w),    entry(movi_d_w),
+#endif
     entry(ldr_d),	entry(ldi_d),
     entry(ldxr_d),	entry(ldxi_d),
     entry(str_d),	entry(sti_d),
@@ -1132,6 +1161,41 @@ name(void)								\
     jit_word_t	im = get_imm();						\
     jit_##name(r0, r1, im);						\
 }
+#define entry_ir_im_im(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_gpr_t	r0 = get_ireg();					\
+    jit_word_t	i0 = get_imm(), i1 = get_imm();				\
+    jit_##name(r0, i0, i1);						\
+}
+#define entry_ir_fr_im(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_gpr_t	r0 = get_ireg();					\
+    jit_fpr_t	r1 = get_freg();					\
+    jit_word_t	im = get_imm();						\
+    jit_##name(r0, r1, im);						\
+}
+#define entry_im_fr_im(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_word_t	i0 = get_imm();						\
+    jit_fpr_t	r0 = get_freg();					\
+    jit_word_t	i1 = get_imm();						\
+    jit_##name(i0, r0, i1);						\
+}
+#define entry_im_ir_im(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_word_t	i0 = get_imm();						\
+    jit_gpr_t	r0 = get_ireg();					\
+    jit_word_t	i1 = get_imm();						\
+    jit_##name(i0, r0, i1);						\
+}
 #define entry_ir_ir_ir_ir(name)						\
 static void								\
 name(void)								\
@@ -1157,7 +1221,6 @@ name(void)								\
     jit_gpr_t r1 = get_ireg(), r2 = get_ireg();				\
     jit_##name(r0, im, r1, r2);						\
 }
-
 #define	entry_ir_ir_im_im(name)						\
 static void								\
 name(void) {								\
@@ -1165,7 +1228,6 @@ name(void) {								\
     jit_word_t	i0 = get_imm(),  i1 = get_imm();			\
     jit_##name(r0, r1, i0, i1);						\
 }
-
 #define	entry_ir_im_im_im(name)						\
 static void								\
 name(void) {								\
@@ -1173,7 +1235,6 @@ name(void) {								\
     jit_word_t	i0 = get_imm(),  i1 = get_imm(), i2 = get_imm();	\
     jit_##name(r0, i0, i1, i2);						\
 }
-
 #define entry_ir_ir(name)						\
 static void								\
 name(void)								\
@@ -1350,6 +1411,30 @@ name(void)								\
     jit_gpr_t	r1 = get_ireg();					\
     jit_##name(r0, r1);							\
 }
+#define entry_ir_fm(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_gpr_t		r0 = get_ireg();				\
+    jit_float64_t	im = get_float(skip_ws);			\
+    jit_##name(r0, make_float(im));					\
+}
+#define entry_ir_dm(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_gpr_t		r0 = get_ireg();				\
+    jit_float64_t	im = get_float(skip_ws);			\
+    jit_##name(r0,im);							\
+}
+#define entry_ir_ir_dm(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_gpr_t		r0 = get_ireg(), r1 = get_ireg();		\
+    jit_float64_t	im = get_float(skip_ws);			\
+    jit_##name(r0, r1, im);						\
+}
 #define entry_fr_fm(name)						\
 static void								\
 name(void)								\
@@ -1390,6 +1475,15 @@ name(void)								\
     jit_gpr_t	r1 = get_ireg();					\
     jit_word_t	im = get_imm();						\
     jit_##name(r0, r1, im);						\
+}
+#define entry_fr_im_im(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_fpr_t	r0 = get_freg();					\
+    jit_word_t	i0 = get_imm();						\
+    jit_word_t	i1 = get_imm();						\
+    jit_##name(r0, i0, i1);						\
 }
 #define entry_pm_fr(name)						\
 static void								\
@@ -1715,6 +1809,8 @@ entry_ir_ir_ir(ldxr_ui)		entry_ir_ir_im(ldxi_ui)
 entry_ir_ir_ir(ldxr_l)		entry_ir_ir_im(ldxi_l)
 #endif
 entry_ir_ir_ir(ldxr)		entry_ir_ir_im(ldxi)
+entry_ir_ir_im(unldr)		entry_ir_im_im(unldi)
+entry_ir_ir_im(unldr_u)		entry_ir_im_im(unldi_u)
 entry_ir_ir(str_c)		entry_pm_ir(sti_c)
 entry_ir_ir(str_s)		entry_pm_ir(sti_s)
 entry_ir_ir(str_i)		entry_pm_ir(sti_i)
@@ -1729,6 +1825,7 @@ entry_ir_ir_ir(stxr_i)		entry_im_ir_ir(stxi_i)
 entry_ir_ir_ir(stxr_l)		entry_im_ir_ir(stxi_l)
 #endif
 entry_ir_ir_ir(stxr)		entry_im_ir_ir(stxi)
+entry_ir_ir_im(unstr)		entry_im_ir_im(unsti)
 entry_lb_ir_ir(bltr)		entry_lb_ir_im(blti)
 entry_lb_ir_ir(bltr_u)		entry_lb_ir_im(blti_u)
 entry_lb_ir_ir(bler)		entry_lb_ir_im(blei)
@@ -1813,10 +1910,14 @@ entry_ir_fr(truncr_f_l)
 entry_ir_fr(truncr_f)
 entry_fr_ir(extr_f)		entry_fr_fr(extr_d_f)
 entry_fr_fr(movr_f)		entry_fr_fm(movi_f)
+entry_fr_ir(movr_w_f)
+entry_ir_fr(movr_f_w)		entry_ir_fm(movi_f_w)
 entry_fr_ir(ldr_f)		entry_fr_pm(ldi_f)
 entry_fr_ir_ir(ldxr_f)		entry_fr_ir_im(ldxi_f)
+entry_fr_ir_im(unldr_x)		entry_fr_im_im(unldi_x)
 entry_ir_fr(str_f)		entry_pm_fr(sti_f)
 entry_ir_ir_fr(stxr_f)		entry_im_ir_fr(stxi_f)
+entry_ir_fr_im(unstr_x)		entry_im_fr_im(unsti_x)
 entry_lb_fr_fr(bltr_f)		entry_lb_fr_fm(blti_f)
 entry_lb_fr_fr(bler_f)		entry_lb_fr_fm(blei_f)
 entry_lb_fr_fr(beqr_f)		entry_lb_fr_fm(beqi_f)
@@ -1865,6 +1966,13 @@ entry_ir_fr(truncr_d_l)
 entry_ir_fr(truncr_d)
 entry_fr_ir(extr_d)		entry_fr_fr(extr_f_d)
 entry_fr_fr(movr_d)		entry_fr_dm(movi_d)
+#if __WORDSIZE == 32
+entry_fr_ir_ir(movr_ww_d)
+entry_ir_ir_fr(movr_d_ww)	entry_ir_ir_dm(movi_d_ww)
+#else
+entry_fr_ir(movr_w_d)
+entry_ir_fr(movr_d_w)		entry_ir_dm(movi_d_w)
+#endif
 entry_fr_ir(ldr_d)		entry_fr_pm(ldi_d)
 entry_fr_ir_ir(ldxr_d)		entry_fr_ir_im(ldxi_d)
 entry_ir_fr(str_d)		entry_pm_fr(sti_d)
