@@ -117,6 +117,8 @@ static void _ldi_f(jit_state_t*,jit_int32_t,jit_word_t);
 static void _ldxr_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define ldxi_f(r0,r1,i0)		_ldxi_f(_jit,r0,r1,i0)
 static void _ldxi_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define unldr_x(r0, r1, i0)		generic_unldr_x(_jit, r0, r1, i0)
+#  define unldi_x(r0, i0, i1)		generic_unldi_x(_jit, r0, i0, i1)
 #  define str_f(r0,r1)			_str_f(_jit,r0,r1)
 static void _str_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define sti_f(i0,r0)			_sti_f(_jit,i0,r0)
@@ -125,10 +127,14 @@ static void _sti_f(jit_state_t*,jit_word_t,jit_int32_t);
 static void _stxr_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define stxi_f(i0,r0,r1)		_stxi_f(_jit,i0,r0,r1)
 static void _stxi_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#define unstr_x(r0, r1, i0)		generic_unstr_x(_jit, r0, r1, i0)
+#define unsti_x(i0, r0, i1)		generic_unsti_x(_jit, i0, r0, i1)
 #  define movr_f(r0,r1)			_movr_f(_jit,r0,r1)
 static void _movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_f(r0,i0)			_movi_f(_jit,r0,i0)
 static void _movi_f(jit_state_t*,jit_int32_t,jit_float32_t);
+#  define movr_w_f(r0,r1)		FMOVSW(r0, r1)
+#  define movr_f_w(r0,r1)		FMOVWS(r1, r0)
 #  define extr_d_f(r0,r1)		FCVT_SD(r0,r1)
 #  define fccr(cc,r0,r1,r2)		_fccr(_jit,cc,r0,r1,r2)
 static void _fccr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
@@ -244,6 +250,8 @@ static void _stxi_d(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static void _movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_d(r0,i0)			_movi_d(_jit,r0,i0)
 static void _movi_d(jit_state_t*,jit_int32_t,jit_float64_t);
+#  define movr_w_d(r0, r1)		FMOVDX(r0, r1)
+#  define movr_d_w(r0, r1)		FMOVXD(r0, r1)
 #  define extr_f_d(r0,r1)		FCVT_DS(r0,r1)
 #  define dccr(cc,r0,r1,r2)		_dccr(_jit,cc,r0,r1,r2)
 static void _dccr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
