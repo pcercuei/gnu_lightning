@@ -1205,6 +1205,22 @@ _emit_code(jit_state_t *_jit)
 		case_rrr(ldx, _l);
 		case_rrw(ldx, _l);
 #endif
+#define unldr(r0, r1, i0)	fallback_unldr(r0, r1, i0)
+	    case jit_code_unldr:
+		unldr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+#define unldi(r0, i0, i1)	fallback_unldi(r0, i0, i1)
+	    case jit_code_unldi:
+		unldi(rn(node->u.w), node->v.w, node->w.w);
+		break;
+#define unldr_u(r0, r1, i0)	fallback_unldr_u(r0, r1, i0)
+	    case jit_code_unldr_u:
+		unldr_u(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+#define unldi_u(r0, i0, i1)	fallback_unldi_u(r0, i0, i1)
+	    case jit_code_unldi_u:
+		unldi_u(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _c);
 		case_wr(st, _c);
 		case_rr(st, _s);
@@ -1225,6 +1241,14 @@ _emit_code(jit_state_t *_jit)
 		case_rrr(stx, _l);
 		case_wrr(stx, _l);
 #endif
+#define unstr(r0, r1, i0)	fallback_unstr(r0, r1, i0)
+	    case jit_code_unstr:
+		unstr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+#define unsti(i0, r0, i1)	fallback_unsti(i0, r0, i1)
+	    case jit_code_unsti:
+		unsti(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
 #if __WORDSIZE == 64
@@ -1360,10 +1384,26 @@ _emit_code(jit_state_t *_jit)
 		case_rw(ld, _f);
 		case_rrr(ldx, _f);
 		case_rrw(ldx, _f);
+#define unldr_x(r0, r1, i0)	fallback_unldr_x(r0, r1, i0)
+	    case jit_code_unldr_x:
+		unldr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+#define unldi_x(r0, i0, i1)	fallback_unldi_x(r0, i0, i1)
+	    case jit_code_unldi_x:
+		unldi_x(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _f);
 		case_wr(st, _f);
 		case_rrr(stx, _f);
 		case_wrr(stx, _f);
+#define unstr_x(r0, r1, i0)	fallback_unstr_x(r0, r1, i0)
+	    case jit_code_unstr_x:
+		unstr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+#define unsti_x(i0, r0, i1)	fallback_unsti_x(i0, r0, i1)
+	    case jit_code_unsti_x:
+		unsti_x(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(mov, _f);
 	    case jit_code_movi_f:
 		assert_data(node);
@@ -1593,6 +1633,8 @@ _emit_code(jit_state_t *_jit)
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;
 		    undo.func.allocar = _jitc->function->allocar;
+		    /* cvt_offset must also not be undone */
+		    undo.func.cvt_offset = _jitc->function->cvt_offset;
 		    memcpy(_jitc->function, &undo.func, sizeof(undo.func));
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;
@@ -1608,6 +1650,40 @@ _emit_code(jit_state_t *_jit)
 		epilog(node);
 		_jitc->function = NULL;
 		break;
+	    case jit_code_movr_w_f:
+		movr_w_f(rn(node->u.w), rn(node->v.w));
+		break;
+	    case jit_code_movr_f_w:
+		movr_f_w(rn(node->u.w), rn(node->v.w));
+		break;
+	    case jit_code_movi_f_w:
+		assert(node->flag & jit_flag_data);
+		movi_f_w(rn(node->u.w), *(jit_float32_t *)node->v.n->u.w);
+		break;
+#if __WORDSIZE == 32
+	    case jit_code_movr_ww_d:
+		movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
+		break;
+	    case jit_code_movr_d_ww:
+		movr_d_ww(rn(node->u.w), rn(node->v.w), rn(node->w.w));
+		break;
+	    case jit_code_movi_d_ww:
+		assert(node->flag & jit_flag_data);
+		movi_d_ww(rn(node->u.w), rn(node->v.w),
+			  *(jit_float64_t *)node->w.n->u.w);
+		break;
+#else
+	    case jit_code_movr_w_d:
+		movr_w_d(rn(node->u.w), rn(node->v.w));
+		break;
+	    case jit_code_movr_d_w:
+		movr_d_w(rn(node->u.w), rn(node->v.w));
+		break;
+	    case jit_code_movi_d_w:
+		assert(node->flag & jit_flag_data);
+		movi_d_w(rn(node->u.w), *(jit_float64_t *)node->v.n->u.w);
+		break;
+#endif
 	    case jit_code_va_start:
 		vastart(rn(node->u.w));
 		break;
