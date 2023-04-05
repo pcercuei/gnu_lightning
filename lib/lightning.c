@@ -1456,6 +1456,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_rbiti:	case jit_code_popcnti:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int;
 	    break;
+	case jit_code_unldi:	case jit_code_unldi_u:	case jit_code_unldi_x:
+	    mask = jit_cc_a0_reg|jit_cc_a1_int|jit_cc_a2_int;
+	    break;
 	case jit_code_movi_f:	case jit_code_movi_f_w:
 	case jit_code_negi_f:	case jit_code_absi_f:
 	case jit_code_sqrti_f:
@@ -1510,6 +1513,7 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_ldxi_c:	case jit_code_ldxi_uc:	case jit_code_ldxi_s:
 	case jit_code_ldxi_us:	case jit_code_ldxi_i:	case jit_code_ldxi_ui:
 	case jit_code_ldxi_l:	case jit_code_ldxi_f:	case jit_code_ldxi_d:
+	case jit_code_unldr:	case jit_code_unldr_u:	case jit_code_unldr_x:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_reg|jit_cc_a2_int;
 	    break;
 	case jit_code_qmuli:	case jit_code_qmuli_u:
@@ -1576,6 +1580,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_sti_l:	case jit_code_sti_f:	case jit_code_sti_d:
 	    mask = jit_cc_a0_int|jit_cc_a1_reg;
 	    break;
+	case jit_code_unsti:	case jit_code_unsti_x:
+	    mask = jit_cc_a0_int|jit_cc_a1_reg|jit_cc_a2_int;
+	    break;
 	case jit_code_blti:	case jit_code_blti_u:	case jit_code_blei:
 	case jit_code_blei_u:	case jit_code_beqi:	case jit_code_bgei:
 	case jit_code_bgei_u:	case jit_code_bgti:	case jit_code_bgti_u:
@@ -1601,6 +1608,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_str_c:	case jit_code_str_s:	case jit_code_str_i:
 	case jit_code_str_l:	case jit_code_str_f:	case jit_code_str_d:
 	    mask = jit_cc_a0_reg|jit_cc_a1_reg;
+	    break;
+	case jit_code_unstr:	case jit_code_unstr_x:
+	    mask = jit_cc_a0_reg|jit_cc_a1_reg|jit_cc_a2_int;
 	    break;
 	case jit_code_stxi_c:	case jit_code_stxi_s:	case jit_code_stxi_i:
 	case jit_code_stxi_l:	case jit_code_stxi_f:	case jit_code_stxi_d:
@@ -4046,6 +4056,15 @@ static void _htoni_ui(jit_state_t*, jit_int32_t, jit_word_t);
 #  define htoni_ul(r0, i0)		_htoni_ul(_jit, r0, i0)
 static void _htoni_ul(jit_state_t*, jit_int32_t, jit_word_t);
 #endif
+#  define movi_f_w(r0, i0)		_movi_f_w(_jit, r0, i0)
+static void _movi_f_w(jit_state_t*, jit_int32_t, jit_float32_t);
+#if __WORDSIZE == 32
+#  define movi_d_ww(r0, r1, i0)		_movi_d_ww(_jit, r0, r1, i0)
+static void _movi_d_ww(jit_state_t*, jit_int32_t, jit_int32_t, jit_float64_t);
+#else
+#  define movi_d_w(r0, i0)		_movi_d_w(_jit, r0, i0)
+static void _movi_d_w(jit_state_t*, jit_int32_t, jit_float64_t);
+#endif
 #define cloi(r0, i0)			_cloi(_jit, r0, i0)
 static void _cloi(jit_state_t*, jit_int32_t, jit_word_t);
 #define clzi(r0, i0)			_clzi(_jit, r0, i0)
@@ -4063,7 +4082,31 @@ static void _exti(jit_state_t*,jit_int32_t, jit_word_t, jit_word_t, jit_word_t);
 #define exti_u(r0, i0, i1, i2)		_exti_u(_jit, r0, i0, i1, i2)
 static void _exti_u(jit_state_t*,
 		    jit_int32_t, jit_word_t, jit_word_t, jit_word_t);
-
+#define generic_unldr(r0, r1, i0)	_generic_unldr(_jit, r0, r1, i0)
+static void _generic_unldr(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#define generic_unldi(r0, i0, i1)	_generic_unldi(_jit, r0, i0, i1)
+static void _generic_unldi(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
+#define generic_unldr_u(r0, r1, i0)	_generic_unldr_u(_jit, r0, r1, i0)
+static void _generic_unldr_u(jit_state_t*,
+			     jit_int32_t, jit_int32_t, jit_word_t);
+#define generic_unldi_u(r0, i0, i1)	_generic_unldi_u(_jit, r0, i0, i1)
+static void _generic_unldi_u(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
+#define generic_unstr(r0, r1, i0)	_generic_unstr(_jit, r0, r1, i0)
+static void _generic_unstr(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#define generic_unsti(i0, r0, i1)	_generic_unsti(_jit, i0, r0, i1)
+static void _generic_unsti(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
+#if !defined(__i386__) && !defined(__x86_64__)
+#  define generic_unldr_x(r0, r1, i0)	_generic_unldr_x(_jit, r0, r1, i0)
+static void _generic_unldr_x(jit_state_t*,
+			     jit_int32_t, jit_int32_t, jit_word_t);
+#  define generic_unldi_x(r0, i0, i1)	_generic_unldi_x(_jit, r0, i0, i1)
+static void _generic_unldi_x(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
+#  define generic_unstr_x(r0, r1, i0)	_generic_unstr_x(_jit, r0, r1, i0)
+static void _generic_unstr_x(jit_state_t*,
+			     jit_int32_t, jit_int32_t, jit_word_t);
+#  define generic_unsti_x(i0, r0, i1)	_generic_unsti_x(_jit, i0, r0, i1)
+static void _generic_unsti_x(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
+#endif
 #define patch_alist(revert)		_patch_alist(_jit, revert)
 static maybe_unused void _patch_alist(jit_state_t *_jit, jit_bool_t revert);
 
@@ -4283,6 +4326,58 @@ _htoni_ul(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 #endif
 
+static void
+_movi_f_w(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
+{
+    union {
+	jit_int32_t	i;
+	jit_float32_t	f;
+    } data;
+    data.f = i0;
+#if defined(__ia64__)
+    /* Should be used only in this case (with out0 == 120) */
+    if (r0 >= 120)
+	r0 = _jitc->rout + (r0 - 120);
+#endif
+    movi(r0, data.i);
+}
+
+#if __WORDSIZE == 32
+static void
+_movi_d_ww(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_float64_t i0)
+{
+    union {
+	jit_int32_t	i[2];
+	jit_float64_t	d;
+    } data;
+    data.d = i0;
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+    movi(r0, data.i[0]);
+    movi(r1, data.i[1]);
+#  else
+    movi(r1, data.i[0]);
+    movi(r0, data.i[1]);
+#  endif
+}
+
+#else
+static void
+_movi_d_w(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
+{
+    union {
+	jit_int64_t	l;
+	jit_float64_t	d;
+    } data;
+    data.d = i0;
+#  if defined(__ia64__)
+    /* Should be used only in this case (with out0 == 120) */
+    if (r0 >= 120)
+	r0 = _jitc->rout + (r0 - 120);
+#  endif
+    movi(r0, data.l);
+}
+#endif
+
  void
 _jit_negi_f(jit_state_t *_jit, jit_int32_t u, jit_float32_t v)
 {
@@ -4454,6 +4549,544 @@ static void _exti_u(jit_state_t *_jit,
 #endif
     movi(r0, i0);
 }
+
+static void
+_generic_unldr(jit_state_t *_jit,
+	       jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		t0, r2;
+    assert(i0 >= 1 && i0 <= sizeof(jit_word_t));
+    if (i0 & (i0 - 1)) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+	movr(r2, r1);
+    }
+    switch (i0) {
+	case 1:
+	    ldr_c(r0, r1);
+	    break;
+	case 2:
+	    ldr_s(r0, r1);
+	    break;
+	case 3:
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_us(r0, r2);
+	    ldxi_c(r2, r2, 2);
+	    lshi(r2, r2, 16);
+#else
+	    ldr_c(r0, r2);
+	    lshi(r0, r0, 16);
+	    ldxi_us(r2, r2, 1);
+#endif
+	    break;
+#if __WORDSIZE == 32
+	default:
+	    ldr_i(r0, r1);
+	    break;
+#else
+	case 4:
+	    ldr_i(r0, r1);
+	    break;
+	case 5:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_ui(r0, r2);
+	    ldxi_c(r2, r2, 4);
+	    lshi(r2, r2, 32);
+#  else
+	    ldr_i(r0, r2);
+	    lshi(r0, r0, 8);
+	    ldxi_uc(r2, r2, 4);
+#  endif
+	    break;
+	case 6:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_ui(r0, r2);
+	    ldxi_s(r2, r2, 4);
+	    lshi(r2, r2, 32);
+#  else
+	    ldr_i(r0, r2);
+	    lshi(r0, r0, 16);
+	    ldxi_us(r2, r2, 4);
+#  endif
+	    break;
+	case 7:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_ui(r0, r2);
+	    ldxi_i(r2, r2, 4);
+	    lshi(r2, r2, 40);
+	    rshi(r2, r2, 8);
+#  else
+	    ldr_i(r0, r2);
+	    lshi(r0, r0, 24);
+	    ldxi_ui(r2, r2, 4);
+	    rshi(r2, r2, 8);
+#  endif
+	    break;
+	default:
+	    ldr_l(r0, r1);
+	    break;
+#endif
+    }
+    if (i0 & (i0 - 1)) {
+	orr(r0, r0, r2);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_generic_unldi(jit_state_t *_jit,
+	       jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0, r2;
+    assert(i1 >= 1 && i1 <= sizeof(jit_word_t));
+    if (i1 & (i1 - 1)) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+    }
+    switch (i1) {
+	case 1:
+	    ldi_c(r0, i0);
+	    break;
+	case 2:
+	    ldi_s(r0, i0);
+	    break;
+	case 3:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_us(r0, i0);
+	    ldi_c(r2, i0 + 2);
+	    lshi(r2, r2, 16);
+#  else
+	    ldi_c(r0, i0);
+	    lshi(r0, r0, 16);
+	    ldi_us(r2, i0 + 1);
+#  endif
+	    break;
+#  if __WORDSIZE == 32
+	default:
+	    ldi_i(r0, i0);
+	    break;
+#  else
+	case 4:
+	    ldi_i(r0, i0);
+	    break;
+	case 5:
+#   if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_ui(r0, i0);
+	    ldi_c(r2, i0 + 4);
+	    lshi(r2, r2, 32);
+#   else
+	    ldi_i(r0, i0);
+	    lshi(r0, r0, 8);
+	    ldi_uc(r2, i0 + 4);
+#   endif
+	    break;
+	case 6:
+#   if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_ui(r0, i0);
+	    ldi_s(r2, i0 + 4);
+	    lshi(r2, r2, 32);
+#   else
+	    ldi_i(r0, i0);
+	    lshi(r0, r0, 16);
+	    ldi_us(r2, i0 + 4);
+#   endif
+	    break;
+	case 7:
+#   if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_ui(r0, i0);
+	    ldi_i(r2, i0 + 4);
+	    lshi(r2, r2, 40);
+	    rshi(r2, r2, 8);
+#   else
+	    ldi_i(r0, i0);
+	    lshi(r0, r0, 24);
+	    ldi_ui(r2, i0 + 4);
+	    rshi(r2, r2, 8);
+#   endif
+	    break;
+	default:
+	    ldi_l(r0, i0);
+	    break;
+#  endif
+    }
+    if (i1 & (i1 - 1)) {
+	orr(r0, r0, r2);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_generic_unldr_u(jit_state_t *_jit,
+		 jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		t0, r2;
+    assert(i0 >= 1 && i0 <= sizeof(jit_word_t));
+    if (i0 & (i0 - 1)) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+	movr(r2, r1);
+    }
+    switch (i0) {
+	case 1:
+	    ldr_uc(r0, r1);
+	    break;
+	case 2:
+	    ldr_us(r0, r1);
+	    break;
+	case 3:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_us(r0, r2);
+	    ldxi_uc(r2, r2, 2);
+	    lshi(r2, r2, 16);
+#  else
+	    ldr_uc(r0, r2);
+	    lshi(r0, r0, 16);
+	    ldxi_us(r2, r2, 1);
+#  endif
+	    break;
+#  if __WORDSIZE == 32
+	default:
+	    ldr_i(r0, r1);
+	    break;
+#  else
+	case 4:
+	    ldr_ui(r0, r1);
+	    break;
+	case 5:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_ui(r0, r2);
+	    ldxi_uc(r2, r2, 4);
+	    lshi(r2, r2, 32);
+#    else
+	    ldr_ui(r0, r2);
+	    lshi(r0, r0, 8);
+	    ldxi_uc(r2, r2, 4);
+#    endif
+	    break;
+	case 6:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_ui(r0, r2);
+	    ldxi_us(r2, r2, 4);
+	    lshi(r2, r2, 32);
+#    else
+	    ldr_ui(r0, r2);
+	    lshi(r0, r0, 16);
+	    ldxi_us(r2, r2, 4);
+#    endif
+	    break;
+	case 7:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldr_ui(r0, r2);
+	    ldxi_ui(r2, r2, 4);
+	    lshi(r2, r2, 40);
+	    rshi_u(r2, r2, 8);
+#    else
+	    ldr_ui(r0, r2);
+	    lshi(r0, r0, 24);
+	    ldxi_ui(r2, r2, 4);
+	    rshi(r2, r2, 8);
+#    endif
+	    break;
+	default:
+	    ldr_l(r0, r1);
+	    break;
+#  endif
+    }
+    if (i0 & (i0 - 1)) {
+	orr(r0, r0, r2);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_generic_unldi_u(jit_state_t *_jit,
+		 jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0, r2;
+    assert(i1 >= 1 && i1 <= sizeof(jit_word_t));
+    if (i1 & (i1 - 1)) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+    }
+    switch (i1) {
+	case 1:
+	    ldi_uc(r0, i0);
+	    break;
+	case 2:
+	    ldi_us(r0, i0);
+	    break;
+	case 3:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_us(r0, i0);
+	    ldi_uc(r2, i0 + 2);
+	    lshi(r2, r2, 16);
+#  else
+	    ldi_uc(r0, i0);
+	    lshi(r0, r0, 16);
+	    ldi_us(r2, i0 + 1);
+#  endif
+	    break;
+#  if __WORDSIZE == 32
+	default:
+	    ldi_i(r0, i0);
+	    break;
+#  else
+	case 4:
+	    ldi_ui(r0, i0);
+	    break;
+	case 5:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_ui(r0, i0);
+	    ldi_uc(r2, i0 + 4);
+	    lshi(r2, r2, 32);
+#    else
+	    ldi_ui(r0, i0);
+	    lshi(r0, r0, 8);
+	    ldi_uc(r2, i0 + 4);
+#    endif
+	    break;
+	case 6:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_ui(r0, i0);
+	    ldi_us(r2, i0 + 4);
+	    lshi(r2, r2, 32);
+#    else
+	    ldi_ui(r0, i0);
+	    lshi(r0, r0, 16);
+	    ldi_us(r2, i0 + 4);
+#    endif
+	    break;
+	case 7:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    ldi_ui(r0, i0);
+	    ldi_ui(r2, i0 + 4);
+	    lshi(r2, r2, 40);
+	    rshi_u(r2, r2, 8);
+#    else
+	    ldi_ui(r0, i0);
+	    lshi(r0, r0, 24);
+	    ldi_ui(r2, i0 + 4);
+	    rshi(r2, r2, 8);
+#    endif
+	    break;
+	default:
+	    ldi_l(r0, i0);
+	    break;
+#  endif
+    }
+    if (i1 & (i1 - 1)) {
+	orr(r0, r0, r2);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_generic_unstr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_word_t		t0, r2;
+    assert(i0 > 0 && i0 <= sizeof(jit_word_t));
+    if (i0 & (i0 - 1)) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+    }
+    switch (i0) {
+	case 1:
+	    str_c(r0, r1);
+	    break;
+	case 2:
+	    str_s(r0, r1);
+	    break;
+	case 3:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    str_s(r0, r1);
+	    rshi(r2, r1, 16);
+	    stxi_c(2, r0, r2);
+#  else
+	    stxi_c(2, r0, r1);
+	    rshi(r2, r1, 8);
+	    str_s(r0, r2);
+#  endif
+	    break;
+#  if __WORDSIZE == 32
+	default:
+	    str_i(r0, r1);
+	    break;
+#  else
+	case 4:
+	    str_i(r0, r1);
+	    break;
+	case 5:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    str_i(r0, r1);
+	    rshi(r2, r1, 32);
+	    stxi_c(4, r0, r2);
+#    else
+	    stxi_c(4, r0, r1);
+	    rshi(r2, r1, 8);
+	    str_i(r0, r2);
+#    endif
+	    break;
+	case 6:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    str_i(r0, r1);
+	    rshi(r2, r1, 32);
+	    stxi_s(4, r0, r2);
+#    else
+	    stxi_s(4, r0, r1);
+	    rshi(r2, r1, 16);
+	    str_i(r0, r2);
+#    endif
+	    break;
+	case 7:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    str_i(r0, r1);
+	    rshi(r2, r1, 32);
+	    stxi_s(4, r0, r2);
+	    rshi(r2, r2, 16);
+	    stxi_c(6, r0, r2);
+#    else
+	    stxi_c(6, r0, r1);
+	    rshi(r2, r1, 8);
+	    stxi_s(4, r0, r2);
+	    rshi(r2, r2, 16);
+	    str_i(r0, r2);
+#    endif
+	    break;
+	default:
+	    str_l(r0, r1);
+	    break;
+#  endif
+    }
+    if (i0 & (i0 - 1))
+	jit_unget_reg(t0);
+}
+
+static void
+_generic_unsti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+{
+    jit_word_t		t0, r2;
+    assert(i1 > 0 && i1 <= sizeof(jit_word_t));
+    if (i1 & (i1 - 1)) {
+	t0 = jit_get_reg(jit_class_gpr);
+	r2 = rn(t0);
+    }
+    switch (i1) {
+	case 1:
+	    sti_c(i0, r0);
+	    break;
+	case 2:
+	    sti_s(i0, r0);
+	    break;
+	case 3:
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+	    sti_s(i0, r0);
+	    rshi(r2, r0, 16);
+	    sti_c(2 + i0, r2);
+#  else
+	    sti_c(2 + i0, r0);
+	    rshi(r2, r0, 8);
+	    sti_s(i0, r2);
+#  endif
+	    break;
+#  if __WORDSIZE == 32
+	default:
+	    sti_i(i0, r0);
+	    break;
+#  else
+	case 4:
+	    sti_i(i0, r0);
+	    break;
+	case 5:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    sti_i(i0, r0);
+	    rshi(r2, r0, 32);
+	    sti_c(4 + i0, r2);
+#    else
+	    stxi_c(4, i0, r0);
+	    rshi(r2, r0, 8);
+	    sti_i(i0, r2);
+#    endif
+	    break;
+	case 6:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    sti_i(i0, r0);
+	    rshi(r2, r0, 32);
+	    sti_s(4 + i0, r2);
+#    else
+	    sti_s(4 + i0, r0);
+	    rshi(r2, r0, 16);
+	    sti_i(i0, r2);
+#    endif
+	    break;
+	case 7:
+#    if __BYTE_ORDER == __LITTLE_ENDIAN
+	    sti_i(i0, r0);
+	    rshi(r2, r0, 32);
+	    sti_s(4 + i0, r2);
+	    rshi(r2, r2, 16);
+	    sti_c(6 + i0, r2);
+#    else
+	    sti_c(6 + i0, r0);
+	    rshi(r2, r0, 8);
+	    sti_s(4 + i0, r2);
+	    rshi(r2, r2, 16);
+	    sti_i(i0, r2);
+#    endif
+	    break;
+	default:
+	    sti_l(i0, r0);
+	    break;
+#  endif
+    }
+    if (i1 & (i1 - 1))
+	jit_unget_reg(t0);
+}
+
+#if !defined(__i386__) && !defined(__x86_64__) && !defined(__arm__)
+static void
+_generic_unldr_x(jit_state_t *_jit,
+		 jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    assert(i0 == 4 || i0 == 8);
+    if (i0 == 4)
+	ldr_f(r0, r1);
+    else
+	ldr_d(r0, r1);
+}
+
+static void
+_generic_unldi_x(jit_state_t *_jit,
+		 jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    assert(i1 == 4 || i1 == 8);
+    if (i1 == 4)
+	ldi_f(r0, i0);
+    else
+	ldi_d(r0, i0);
+}
+
+static void
+_generic_unstr_x(jit_state_t *_jit,
+		 jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    assert(i0 == 4 || i0 == 8);
+    if (i0 == 4)
+	str_f(r0, r1);
+    else
+	str_d(r0, r1);
+}
+
+static void
+_generic_unsti_x(jit_state_t *_jit,
+		 jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+{
+    assert(i1 == 4 || i1 == 8);
+    if (i1 == 4)
+	sti_f(i0, r0);
+    else
+	sti_d(i0, r0);
+}
+#endif
 
 #if defined(stack_framesize)
 static maybe_unused void

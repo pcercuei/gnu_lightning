@@ -1038,7 +1038,6 @@ typedef enum {
 #define jit_retval_d(u)		_jit_retval_d(_jit,u)
     jit_code_retval_d,
 
-    /* Special internal backend specific codes */
     jit_code_movr_w_f,		jit_code_movr_ww_d,	/* w* -> f|d */
 #define jit_movr_w_f(u, v)	jit_new_node_ww(jit_code_movr_w_f, u, v)
 #define jit_movr_ww_d(u, v, w)	jit_new_node_www(jit_code_movr_ww_d, u, v, w)
@@ -1161,6 +1160,23 @@ typedef enum {
 #define jit_qrshr_u(l,h,v,w)	jit_new_node_qww(jit_code_qrshr_u,l,h,v,w)
 #define jit_qrshi_u(l,h,v,w)	jit_new_node_qww(jit_code_qrshi_u,l,h,v,w)
     jit_code_qrshr_u,		jit_code_qrshi_u,
+
+#define jit_unldr(u,v,w)	jit_new_node_www(jit_code_unldr, u, v, w)
+#define jit_unldi(u,v,w)	jit_new_node_www(jit_code_unldi, u, v, w)
+    jit_code_unldr,		jit_code_unldi,
+#define jit_unldr_u(u,v,w)	jit_new_node_www(jit_code_unldr_u, u, v, w)
+#define jit_unldi_u(u,v,w)	jit_new_node_www(jit_code_unldi_u, u, v, w)
+    jit_code_unldr_u,		jit_code_unldi_u,
+#define jit_unstr(u,v,w)	jit_new_node_www(jit_code_unstr, u, v, w)
+#define jit_unsti(u,v,w)	jit_new_node_www(jit_code_unsti, u, v, w)
+    jit_code_unstr,		jit_code_unsti,
+
+#define jit_unldr_x(u,v,w)	jit_new_node_www(jit_code_unldr_x, u, v, w)
+#define jit_unldi_x(u,v,w)	jit_new_node_www(jit_code_unldi_x, u, v, w)
+    jit_code_unldr_x,		jit_code_unldi_x,
+#define jit_unstr_x(u,v,w)	jit_new_node_www(jit_code_unstr_x, u, v, w)
+#define jit_unsti_x(u,v,w)	jit_new_node_www(jit_code_unsti_x, u, v, w)
+    jit_code_unstr_x,		jit_code_unsti_x,
 
     jit_code_last_code
 } jit_code_t;
