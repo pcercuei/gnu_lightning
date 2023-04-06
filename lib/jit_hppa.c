@@ -164,6 +164,7 @@ _jit_prolog(jit_state_t *_jit)
     _jitc->function->self.argi = _jitc->function->self.alen = 0;
     /* float conversion */
     _jitc->function->self.aoff = alloca_offset;
+    _jitc->function->cvt_offset = alloca_offset - 8;
     _jitc->function->self.call = jit_call_default;
     jit_alloc((jit_pointer_t *)&_jitc->function->regoff,
 	      _jitc->reglen * sizeof(jit_int32_t));

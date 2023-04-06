@@ -823,6 +823,7 @@ static void _ldi_us(jit_state_t*,jit_int32_t,jit_word_t);
 #define ldxi_us(r0,r1,i0)	_ldxi_us(_jit,r0,r1,i0)
 static void _ldxi_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #define ldr(r0,r1)		ldr_ui(r0,r1)
+#define ldi(r0,i0)		ldi_ui(r0,i0)
 #define ldr_i(r0,r1)		ldr_ui(r0,r1)
 #define ldr_ui(r0,r1)		LDWI(_R0_REGNO,r1,r0)
 #define ldi_i(r0,i0)		ldi_ui(r0,i0)
