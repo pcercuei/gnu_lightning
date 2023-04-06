@@ -103,6 +103,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define STB(rn, rm)			_cnmd(_jit, 0x2, rn, rm, 0x0)
 #    define STW(rn, rm)			_cnmd(_jit, 0x2, rn, rm, 0x1)
 #    define STL(rn, rm)			_cnmd(_jit, 0x2, rn, rm, 0x2)
+#    define STLU(rn, rm)		_cnmd(_jit, 0x2, rn, rm, 0x6)
 #    define DIV0S(rn, rm)		_cnmd(_jit, 0x2, rn, rm, 0x7)
 #    define TST(rn, rm)			_cnmd(_jit, 0x2, rn, rm, 0x8)
 #    define AND(rn, rm)			_cnmd(_jit, 0x2, rn, rm, 0x9)
@@ -157,9 +158,9 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define LDW(rn, rm)			_cnmd(_jit, 0x6, rn, rm, 0x1)
 #    define LDL(rn, rm)			_cnmd(_jit, 0x6, rn, rm, 0x2)
 #    define MOV(rn, rm)			_cnmd(_jit, 0x6, rn, rm, 0x3)
-#    define LDIB(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x4)
-#    define LDIW(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x5)
-#    define LDIL(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x6)
+#    define LDBU(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x4)
+#    define LDWU(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x5)
+#    define LDLU(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x6)
 #    define NOT(rn, rm)			_cnmd(_jit, 0x6, rn, rm, 0x7)
 #    define SWAPB(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x8)
 #    define SWAPW(rn, rm)		_cnmd(_jit, 0x6, rn, rm, 0x9)
@@ -236,8 +237,6 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define FRCHG()			ii(0xfbfd)
 
 #    define ii(i)			*_jit->pc.us++ = i
-
-#    define stack_framesize		(256)
 
 static void _nop(jit_state_t*,jit_word_t);
 #    define nop(i0)			_nop(_jit,i0)
@@ -2504,15 +2503,14 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 				   /* align stack at 16 bytes */
 				   _jitc->function->self.aoff) + 15) & -16;
 
-	subi(JIT_SP, JIT_SP, stack_framesize);
-	stxi(4, JIT_SP, JIT_FP);
+	STLU(JIT_SP, JIT_FP);
+
+	STSPR(_R0);
+	STLU(JIT_SP, _R0);
 
 	for (i = 0; i < JIT_V_NUM; i++)
 		if (jit_regset_tstbit(&_jitc->function->regset, JIT_V(i)))
-			stxi((i + 2) * 4, JIT_SP, JIT_V(i));
-
-	STSPR(_R0);
-	str(JIT_SP, _R0);
+			STLU(JIT_SP, JIT_V(i));
 
 	movr(JIT_FP, JIT_SP);
 
@@ -2534,16 +2532,16 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->assume_frame)
 		return;
 
-	ldr(JIT_SP, JIT_FP);
-	LDSPR(JIT_SP);
+	movr(JIT_SP, JIT_FP);
 
-	for (i = 0; i < JIT_V_NUM; i++)
-		if (jit_regset_tstbit(&_jitc->function->regset, JIT_V(i)))
-			ldxi(JIT_V(i), JIT_FP, (i + 2) * 4);
+	for (i = JIT_V_NUM; i > 0; i--)
+		if (jit_regset_tstbit(&_jitc->function->regset, JIT_V(i - 1)))
+			LDLU(JIT_V(i - 1), JIT_SP);
 
-	addi(JIT_SP, JIT_FP, stack_framesize);
+	LDLU(JIT_FP, JIT_SP);
+	LDSPR(JIT_FP);
 
 	RTS();
-	ldxi(JIT_FP, JIT_FP, 4);
+	LDLU(JIT_FP, JIT_SP);
 }
 #endif /* CODE */
