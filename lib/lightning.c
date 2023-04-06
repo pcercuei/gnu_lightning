@@ -4355,7 +4355,8 @@ _movi_d_ww(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_float64_t i0)
 	jit_float64_t	d;
     } data;
     data.d = i0;
-#  if __BYTE_ORDER == __LITTLE_ENDIAN
+    /* Mips does not change byte order of double values */
+#  if __BYTE_ORDER == __LITTLE_ENDIAN || defined(__mips__)
     movi(r0, data.i[0]);
     movi(r1, data.i[1]);
 #  else

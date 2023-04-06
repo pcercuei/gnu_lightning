@@ -1024,7 +1024,8 @@ _movi_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
     t1 = jit_get_reg(jit_class_gpr);
     movi(rn(t0), i0);
     movi(rn(t1), i1);
-    movr_ww_d(r0, rn(t0), rn(t1));
+    MTC1(rn(t0), r0);
+    MTC1(rn(t1), r0 + 1);
     jit_unget_reg(t1);
     jit_unget_reg(t0);
 }
