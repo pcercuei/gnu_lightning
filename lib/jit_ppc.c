@@ -1917,7 +1917,7 @@ _emit_code(jit_state_t *_jit)
 		movr_w_d(rn(node->u.w), rn(node->v.w));
 		break;
 	    case jit_code_movi_w_d:
-		movi_w_d(rn(node->u.w), node->v.w, node->w.w);
+		movi_w_d(rn(node->u.w), node->v.w);
 		break;
 #else
 	    case jit_code_movr_ww_d:
