@@ -2094,6 +2094,9 @@ _emit_code(jit_state_t *_jit)
 		assert(node->flag & jit_flag_data);
 		movi_f_w(rn(node->u.w), *(jit_float32_t *)node->v.n->u.w);
 		break;
+	    case jit_code_movi_w_f:
+		movi_w_f(rn(node->u.w), node->v.w);
+		break;
 #if NEW_ABI
 	    case jit_code_movr_d_w:
 		movr_d_w(rn(node->u.w), rn(node->v.w));
@@ -2104,6 +2107,9 @@ _emit_code(jit_state_t *_jit)
 		break;
 	    case jit_code_movr_w_d:
 		movr_w_d(rn(node->u.w), rn(node->v.w));
+		break;
+	    case jit_code_movi_w_d:
+		movi_w_d(rn(node->u.w), node->v.w);
 		break;
 #else
 	    case jit_code_movr_ww_d:
@@ -2116,6 +2122,9 @@ _emit_code(jit_state_t *_jit)
 		assert(node->flag & jit_flag_data);
 		movi_d_ww(rn(node->u.w), rn(node->v.w),
 			  *(jit_float64_t *)node->w.n->u.w);
+		break;
+	    case jit_code_movi_ww_d:
+		movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
 		break;
 #endif
 	    case jit_code_va_start:

@@ -280,6 +280,8 @@ static void _divi_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_float64_t*);
 #  define sqrtr_d(r0,r1)		SQRT_D(r0,r1)
 #  define movr_w_f(r0, r1)		MTC1(r1, r0)
 #  define movr_f_w(r0, r1)		MFC1(r0, r1)
+# define movi_w_f(r0, i0)		_movi_w_f(_jit, r0, i0)
+static void _movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #  define extr_f(r0, r1)		_extr_f(_jit, r0, r1)
 static void _extr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define truncr_f_i(r0, r1)		_truncr_f_i(_jit, r0, r1)
@@ -324,11 +326,15 @@ static void _movi64(jit_state_t*,jit_int32_t,jit_int64_t);
 #    endif
 #    define movr_w_d(r0, r1)		DMTC1(r1, r0)
 #    define movr_d_w(r0, r1)		DMFC1(r0, r1)
+#    define movi_w_d(r0, i0)		_movi_w_d(_jit, r0, i0)
+static void _movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
 #  else
 #    define movr_ww_d(r0, r1, r2)	_movr_ww_d(_jit, r0, r1, r2)
 static void _movr_ww_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #    define movr_d_ww(r0, r1, r2)	_movr_d_ww(_jit, r0, r1, r2)
 static void _movr_d_ww(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#    define movi_ww_d(r0, i0, i1)	_movi_ww_d(_jit, r0, i0, i1)
+static void _movi_ww_d(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #  endif
 #  define extr_d(r0, r1)		_extr_d(_jit, r0, r1)
 static void _extr_d(jit_state_t*,jit_int32_t,jit_int32_t);
@@ -922,6 +928,16 @@ _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 	MTC1(_ZERO_REGNO, r0);
 }
 
+static void
+_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movr_w_f(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
 dopi(add)
 dopi(sub)
 dopi(rsb)
@@ -963,6 +979,16 @@ _movi64(jit_state_t *_jit, jit_int32_t r0, jit_int64_t i0)
     }
 }
 
+static void
+_movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi64(rn(reg), i0);
+    movr_w_d(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
 #else
 static void
 _movr_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
@@ -988,6 +1014,19 @@ _movr_d_ww(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	MFC1(r0, r2 + BE_P);
 	MFC1(r1, r2 + LE_P);
     }
+}
+
+static void
+_movi_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		t0, t1;
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    movi(rn(t0), i0);
+    movi(rn(t1), i1);
+    movr_ww_d(r0, rn(t0), rn(t1));
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
 }
 #endif
 
