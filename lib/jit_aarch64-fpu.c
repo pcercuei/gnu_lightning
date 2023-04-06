@@ -127,14 +127,16 @@ static void _sti_f(jit_state_t*,jit_word_t,jit_int32_t);
 static void _stxr_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define stxi_f(i0,r0,r1)		_stxi_f(_jit,i0,r0,r1)
 static void _stxi_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define unstr_x(r0, r1, i0)		generic_unstr_x(r0, r1, i0)
-#define unsti_x(i0, r0, i1)		generic_unsti_x(i0, r0, i1)
+#  define unstr_x(r0, r1, i0)		generic_unstr_x(r0, r1, i0)
+#  define unsti_x(i0, r0, i1)		generic_unsti_x(i0, r0, i1)
 #  define movr_f(r0,r1)			_movr_f(_jit,r0,r1)
 static void _movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_f(r0,i0)			_movi_f(_jit,r0,i0)
 static void _movi_f(jit_state_t*,jit_int32_t,jit_float32_t);
 #  define movr_w_f(r0,r1)		FMOVSW(r0, r1)
 #  define movr_f_w(r0,r1)		FMOVWS(r0, r1)
+#  define movi_w_f(r0, i0)		_movi_w_f(_jit, r0, i0)
+static void _movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #  define extr_d_f(r0,r1)		FCVT_SD(r0,r1)
 #  define fccr(cc,r0,r1,r2)		_fccr(_jit,cc,r0,r1,r2)
 static void _fccr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
@@ -173,10 +175,10 @@ static void _ltgti_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_float32_t);
 #  define ordi_f(r0,r1,i0)		fcci(CC_VC,r0,r1,i0)
 #  define unordr_f(r0,r1,r2)		fccr(CC_VS,r0,r1,r2)
 #  define unordi_f(r0,r1,i0)		fcci(CC_VS,r0,r1,i0)
-#define fbccr(cc,i0,r0,r1)		_fbccr(_jit,cc,i0,r0,r1)
+#  define fbccr(cc,i0,r0,r1)		_fbccr(_jit,cc,i0,r0,r1)
 static jit_word_t
 _fbccr(jit_state_t*,jit_int32_t,jit_word_t,jit_int32_t,jit_int32_t);
-#define fbcci(cc,i0,r0,i1)		_fbcci(_jit,cc,i0,r0,i1)
+#  define fbcci(cc,i0,r0,i1)		_fbcci(_jit,cc,i0,r0,i1)
 static jit_word_t
 _fbcci(jit_state_t*,jit_int32_t,jit_word_t,jit_int32_t,jit_float32_t);
 #  define bltr_f(i0,r0,r1)		fbccr(BCC_MI,i0,r0,r1)
@@ -252,6 +254,8 @@ static void _movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi_d(jit_state_t*,jit_int32_t,jit_float64_t);
 #  define movr_w_d(r0, r1)		FMOVDX(r0, r1)
 #  define movr_d_w(r0, r1)		FMOVXD(r0, r1)
+#define movi_w_d(r0, i0)		_movi_w_d(_jit, r0, i0)
+static void _movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
 #  define extr_f_d(r0,r1)		FCVT_DS(r0,r1)
 #  define dccr(cc,r0,r1,r2)		_dccr(_jit,cc,r0,r1,r2)
 static void _dccr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
@@ -290,10 +294,10 @@ static void _ltgti_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_float64_t);
 #  define ordi_d(r0,r1,i0)		dcci(CC_VC,r0,r1,i0)
 #  define unordr_d(r0,r1,r2)		dccr(CC_VS,r0,r1,r2)
 #  define unordi_d(r0,r1,i0)		dcci(CC_VS,r0,r1,i0)
-#define dbccr(cc,i0,r0,r1)		_dbccr(_jit,cc,i0,r0,r1)
+#  define dbccr(cc,i0,r0,r1)		_dbccr(_jit,cc,i0,r0,r1)
 static jit_word_t
 _dbccr(jit_state_t*,jit_int32_t,jit_word_t,jit_int32_t,jit_int32_t);
-#define dbcci(cc,i0,r0,i1)		_dbcci(_jit,cc,i0,r0,i1)
+#  define dbcci(cc,i0,r0,i1)		_dbcci(_jit,cc,i0,r0,i1)
 static jit_word_t
 _dbcci(jit_state_t*,jit_int32_t,jit_word_t,jit_int32_t,jit_float64_t);
 #  define bltr_d(i0,r0,r1)		dbccr(BCC_MI,i0,r0,r1)
@@ -586,6 +590,16 @@ _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
 }
 
 static void
+_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t                reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movr_w_f(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
 _fccr(jit_state_t *_jit, jit_int32_t cc,
       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
@@ -799,6 +813,16 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
 	FMOVDX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
+}
+
+static void
+_movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t                reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movr_w_d(r0, rn(reg));
+    jit_unget_reg(reg);
 }
 
 static void
