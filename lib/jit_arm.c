@@ -2123,6 +2123,12 @@ _emit_code(jit_state_t *_jit)
 		assert_data(node);
 		movi_f_w(rn(node->u.w), node->v.f);
 		break;
+	    case jit_code_movi_w_f:
+		if (jit_swf_p())
+		    swf_movi_w_f(rn(node->u.w), node->v.w);
+		else
+		    vfp_movi_w_f(rn(node->u.w), node->v.w);
+		break;
 	    case jit_code_movr_ww_d:
 		if (jit_swf_p())
 		    swf_movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
@@ -2137,6 +2143,12 @@ _emit_code(jit_state_t *_jit)
 		break;
 	    case jit_code_movi_d_ww:
 		movi_d_ww(rn(node->u.w), rn(node->v.w), node->w.d);
+		break;
+	    case jit_code_movi_ww_d:
+		if (jit_swf_p())
+		    swf_movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
+		else
+		    vfp_movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
 		break;
 	    case jit_code_va_start:
 		vastart(rn(node->u.w));
@@ -2255,12 +2267,19 @@ _emit_code(jit_state_t *_jit)
 	/* update register live state */
 	jit_reglive(node);
 
+#if defined JIT_INSTR_MAX
+	word = 4096 - JIT_INSTR_MAX;
+#else
+	word = 3968;
+#endif
+	/* longest sequence should be 64 bytes, but preventively
+	 * do not let it go past 256 remaining bytes before a flush */
+	if (word > 3968)
+	    word = 3968;
 	if (_jitc->consts.length &&
-	    (_jit->pc.uc - _jitc->consts.data >= 3968 ||
+	    (_jit->pc.uc - _jitc->consts.data >= word ||
 	     (jit_uword_t)_jit->pc.uc -
-	     (jit_uword_t)_jitc->consts.patches[0] >= 3968)) {
-	    /* longest sequence should be 64 bytes, but preventively
-	     * do not let it go past 128 remaining bytes before a flush */
+	     (jit_uword_t)_jitc->consts.patches[0] >= word)) {
 	    if (node->next &&
 		node->next->code != jit_code_jmpi &&
 		node->next->code != jit_code_jmpr &&

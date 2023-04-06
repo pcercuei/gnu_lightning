@@ -477,6 +477,8 @@ static void _vfp_movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _vfp_movi_f(jit_state_t*,jit_int32_t,jit_float32_t);
 #  define vfp_movr_w_f(r0, r1)		VMOV_S_A(r0, r1)
 #  define vfp_movr_f_w(r0, r1)		VMOV_A_S(r0, r1)
+#  define vfp_movi_w_f(r0, i0)		_vfp_movi_w_f(_jit, r0, i0)
+static void _vfp_movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #  define vfp_movr_d(r0,r1)		_vfp_movr_d(_jit,r0,r1)
 static void _vfp_movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_movi_d(r0,i0)		_vfp_movi_d(_jit,r0,i0)
@@ -484,6 +486,8 @@ static void _vfp_movi_d(jit_state_t*,jit_int32_t,jit_float64_t);
 #  define vfp_movr_ww_d(r0, r1, r2)	VMOV_D_AA(r0, r1, r2)
 #  define vfp_movr_d_ww(r0, r1, r2)	VMOV_AA_D(r0, r1, r2)
 static void _vfp_movr_d_ww(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define vfp_movi_ww_d(r0, i0, i1)    _vfp_movi_ww_d(_jit, r0, i0, i1)
+static void _vfp_movi_ww_d(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #  define vfp_extr_f(r0,r1)		_vfp_extr_f(_jit,r0,r1)
 static void _vfp_extr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define vfp_extr_d(r0,r1)		_vfp_extr_d(_jit,r0,r1)
@@ -1288,6 +1292,29 @@ _vfp_movr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     assert(jit_fpr_p(r0) && jit_fpr_p(r1));
     if (r0 != r1)
 	VMOV_F64(r0, r1);
+}
+
+static void
+_vfp_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t                reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    vfp_movr_w_f(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_vfp_movi_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t                t0, t1;
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    movi(rn(t0), i0);
+    movi(rn(t1), i1);
+    vfp_movr_ww_d(r0, rn(t0), rn(t1));
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
 }
 
 static void

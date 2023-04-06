@@ -134,6 +134,8 @@ static void _swf_movi_f(jit_state_t*,jit_int32_t,jit_float32_t);
 static void _swf_movr_w_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define swf_movr_f_w(r0, r1)		_swf_movr_f_w(_jit, r0, r1)
 static void _swf_movr_f_w(jit_state_t*,jit_int32_t,jit_int32_t);
+#define swf_movi_w_f(r0, i0)		_swf_movi_w_f(_jit, r0, i0)
+static void _swf_movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #  define swf_movr_d(r0,r1)		_swf_movr_d(_jit,r0,r1)
 static void _swf_movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define swf_movi_d(r0,i0)		_swf_movi_d(_jit,r0,i0)
@@ -142,6 +144,8 @@ static void _swf_movi_d(jit_state_t*,jit_int32_t,jit_float64_t);
 static void _swf_movr_ww_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define swf_movr_d_ww(r0, r1, r2)	_swf_movr_d_ww(_jit, r0, r1, r2)
 static void _swf_movr_d_ww(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define swf_movi_ww_d(r0, i0, i1)	_swf_movi_ww_d(_jit, r0, i0, i1)
+static void _swf_movi_ww_d(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #  define swf_absr_f(r0,r1)		_swf_absr_f(_jit,r0,r1)
 static void _swf_absr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define swf_absr_d(r0,r1)		_swf_absr_d(_jit,r0,r1)
@@ -1941,6 +1945,17 @@ _swf_movr_f_w(jit_state_t *_jit ,jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
+_swf_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    CHECK_SWF_OFFSET();
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    swf_movr_w_f(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
 _swf_movr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
@@ -2010,6 +2025,21 @@ _swf_movr_d_ww(jit_state_t *_jit,
     CHECK_SWF_OFFSET();
     swf_ldrin(r0, _FP_REGNO, swf_off(r2) + 8);
     swf_ldrin(r1, _FP_REGNO, swf_off(r2) + 4);
+}
+
+static void
+_swf_movi_ww_d(jit_state_t *_jit,
+	       jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		reg;
+    assert(jit_fpr_p(r0));
+    CHECK_SWF_OFFSET();
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    swf_strin(rn(reg), _FP_REGNO, swf_off(r0) + 8);
+    movi(rn(reg), i1);
+    swf_strin(rn(reg), _FP_REGNO, swf_off(r0) + 4);
+    jit_unget_reg(reg);
 }
 
 static void
