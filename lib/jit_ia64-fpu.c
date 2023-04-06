@@ -439,10 +439,14 @@ static void _movi_d(jit_state_t*,jit_int32_t,jit_float64_t*);
 static void _movr_w_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #define movr_f_w(r0,r1)			_movr_f_w(_jit,r0,r1)
 static void _movr_f_w(jit_state_t*,jit_int32_t,jit_int32_t);
+#define movi_w_f(r0, i0)		_movi_w_f(_jit, r0, i0)
+static void _movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #define movr_w_d(r0,r1)			_movr_w_d(_jit,r0,r1)
 static void _movr_w_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #define movr_d_w(r0,r1)			_movr_d_w(_jit,r0,r1)
 static void _movr_d_w(jit_state_t*,jit_int32_t,jit_int32_t);
+#define movi_w_d(r0, i0)		_movi_w_d(_jit, r0, i0)
+static void _movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
 #define absr_f(r0,r1)			absr_d(r0,r1)
 #define absr_d(r0,r1)			FABS(r0,r1)
 #define negr_f(r0,r1)			negr_d(r0,r1)
@@ -1076,6 +1080,16 @@ _movr_f_w(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
+_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movr_w_f(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
 _movr_w_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     /* Should be used only in this case (with out0 == 120) */
@@ -1091,6 +1105,16 @@ _movr_d_w(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     if (r0 >= 120)
 	r0 = _jitc->rout + (r0 - 120);
     GETF_D(r0, r1);
+}
+
+static void
+_movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movr_w_d(r0, rn(reg));
+    jit_unget_reg(reg);
 }
 
 #define fpr_opi(name, type, size)					\
