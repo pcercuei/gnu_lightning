@@ -816,7 +816,7 @@ _unldi_x(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
 	    t1 = jit_get_reg(jit_class_gpr);
 	    r3 = rn(t1);
 #    if __BYTE_ORDER == __LITTLE_ENDIAN
-	    unldi(r2, r1, 4);
+	    unldi(r2, i0, 4);
 	    unldi(r3, i0 + 4, 4);
 #    else
 	    unldi(r3, i0, 4);
