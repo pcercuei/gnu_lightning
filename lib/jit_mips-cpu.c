@@ -3023,29 +3023,28 @@ _ldxi_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _unldr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_word_t		cross, done;
-    jit_int32_t		t0, r2, t1, r3;
+    jit_int32_t		t0, r2;
     if (jit_unaligned_p()) {
 	assert(i0 >= 1 && i0 <= sizeof(jit_word_t));
 	if (i0 == 1)
 	    ldr_c(r0, r1);
 	else {
-	    t0 = jit_get_reg(jit_class_gpr);	r2 = rn(t0);
-	    t1 = jit_get_reg(jit_class_gpr);	r3 = rn(t1);
-	    movr(r3, r1);
-	    andi(r2, r1, sizeof(jit_word_t) - 1);
-	    LOAD_LEFT(r0, 0, r3);
-	    cross = bgei(_jit->pc.w, r2, sizeof(jit_word_t) - (i0 - 1));
-	    done = jmpi(_jit->pc.w, 1);
-	    flush();
-	    patch_at(cross, _jit->pc.w);	
-	    lshi(r2, r2, 3);
-	    rshr(r0, r0, r2);
-	    lshr(r0, r0, r2);
-	    LOAD_RIGHT(r2, sizeof(jit_word_t) - 1, r3);
-	    orr(r0, r0, r2);
-	    flush();
-	    patch_at(done, _jit->pc.w);
+	    if (r0 == r1) {
+		t0 = jit_get_reg(jit_class_gpr);
+		r2 = rn(t0);
+		movr(r2, r1);
+	    }
+	    else
+		r2 = r1;
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    LOAD_LEFT(r0, sizeof(jit_word_t) - 1, r2);
+	    LOAD_RIGHT(r0, 0, r2);
+#else
+	    LOAD_LEFT(r0, 0, r2);
+	    LOAD_RIGHT(r0, sizeof(jit_word_t) - 1, r2);
+#endif
+	    if (r0 == r1)
+		jit_unget_reg(t0);
 	    switch (i0) {
 		case 2:
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -3094,8 +3093,6 @@ _unldr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 		    break;
 #endif
 	    }
-	    jit_unget_reg(t1);
-	    jit_unget_reg(t0);
 	}
     }
     else
@@ -3115,29 +3112,28 @@ _unldi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
 static void
 _unldr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_word_t		cross, done;
-    jit_int32_t		t0, r2, t1, r3;
+    jit_int32_t		t0, r2;
     if (jit_unaligned_p()) {
 	assert(i0 >= 1 && i0 <= sizeof(jit_word_t));
 	if (i0 == 1)
 	    ldr_uc(r0, r1);
 	else {
-	    t0 = jit_get_reg(jit_class_gpr);	r2 = rn(t0);
-	    t1 = jit_get_reg(jit_class_gpr);	r3 = rn(t1);
-	    movr(r3, r1);
-	    andi(r2, r1, sizeof(jit_word_t) - 1);
-	    LOAD_LEFT(r0, 0, r3);
-	    cross = bgei(_jit->pc.w, r2, sizeof(jit_word_t) - (i0 - 1));
-	    done = jmpi(_jit->pc.w, 1);
-	    flush();
-	    patch_at(cross, _jit->pc.w);	
-	    lshi(r2, r2, 3);
-	    rshr(r0, r0, r2);
-	    lshr(r0, r0, r2);
-	    LOAD_RIGHT(r2, sizeof(jit_word_t) - 1, r3);
-	    orr(r0, r0, r2);
-	    flush();
-	    patch_at(done, _jit->pc.w);
+	    if (r0 == r1) {
+		t0 = jit_get_reg(jit_class_gpr);
+		r2 = rn(t0);
+		movr(r2, r1);
+	    }
+	    else
+		r2 = r1;
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    LOAD_LEFT(r0, sizeof(jit_word_t) - 1, r2);
+	    LOAD_RIGHT(r0, 0, r2);
+#else
+	    LOAD_LEFT(r0, 0, r2);
+	    LOAD_RIGHT(r0, sizeof(jit_word_t) - 1, r2);
+#endif
+	    if (r0 == r1)
+		jit_unget_reg(t0);
 	    switch (i0) {
 		case 2:
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -3186,8 +3182,6 @@ _unldr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 		    break;
 #endif
 	    }
-	    jit_unget_reg(t1);
-	    jit_unget_reg(t0);
 	}
     }
     else
@@ -3365,45 +3359,34 @@ _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 static void
 _unstr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_word_t		cross, done;
-    jit_word_t		t0, t1, r2, r3;
     assert(i0 > 0 && i0 <= sizeof(jit_word_t));
     if (jit_unaligned_p()) {
 	switch (i0) {
 	    case 4:
-		t0 = jit_get_reg(jit_class_gpr);
-		r2 = rn(t0);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		SWL(r1, 3, r0);
+		SWR(r1, 0, r0);
+#else
 		SWL(r1, 0, r0);
-		andi(r2, r0, 3);
-		cross = bnei(_jit->pc.w, r2, 0);
-		done = jmpi(_jit->pc.w, 0);
-		flush();
-		patch_at(cross, _jit->pc.w);
 		SWR(r1, 3, r0);
-		flush();
-		patch_at(done, _jit->pc.w);
-		jit_unget_reg(t0);
+#endif
 		break;
 #if __WORDSIZE == 64
 	    case 8:
-		t0 = jit_get_reg(jit_class_gpr);
-		r2 = rn(t0);
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+		SDL(r1, 7, r0);
+		SDR(r1, 0, r0);
+#  else
 		SDL(r1, 0, r0);
-		andi(r2, r0, 7);
-		cross = bnei(_jit->pc.w, r2, 0);
-		done = jmpi(_jit->pc.w, 0);
-		flush();
-		patch_at(cross, _jit->pc.w);
 		SDR(r1, 7, r0);
-		flush();
-		patch_at(done, _jit->pc.w);
-		jit_unget_reg(t0);
+#  endif
 		break;
 #endif
 	    default:
-		/* Cost of loading memory contents, creating masks, and'ing,
-		 * and or'ing values to use SW* or SD* is larger than using
-		 * fallback. */
+		/* FIXME Cost of loading memory contents, creating masks,
+		 * and'ing, and or'ing values to use SW* or SD* might
+		 * larger than using fallback. */
+		 /* FIXME Probably not, and would be without branches. */
 		fallback_unstr(r0, r1, i0);
 		break;
 	}
