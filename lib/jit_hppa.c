@@ -1162,7 +1162,6 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(ldx, _us);
 		case_rrr(ldx, _i);
 		case_rrw(ldx, _i);
-
 #define unldr(r0, r1, i0)	fallback_unldr(r0, r1, i0)
 	    case jit_code_unldr:
 		unldr(rn(node->u.w), rn(node->v.w), node->w.w);
@@ -1525,6 +1524,9 @@ _emit_code(jit_state_t *_jit)
 		assert(node->flag & jit_flag_data);
 		movi_f_w(rn(node->u.w), *(jit_float32_t *)node->v.n->u.w);
 		break;
+	    case jit_code_movi_w_f:
+		movi_w_f(rn(node->u.w), node->v.w);
+		break;
 	    case jit_code_movr_ww_d:
 		movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		break;
@@ -1535,6 +1537,9 @@ _emit_code(jit_state_t *_jit)
 		assert(node->flag & jit_flag_data);
 		movi_d_ww(rn(node->u.w), rn(node->v.w),
 			  *(jit_float64_t *)node->w.n->u.w);
+		break;
+	    case jit_code_movi_ww_d:
+		movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
 		break;
 	    case jit_code_va_start:
 		vastart(rn(node->u.w));

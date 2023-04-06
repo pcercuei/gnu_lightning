@@ -287,9 +287,13 @@ static void _truncr_d_i(jit_state_t*,jit_int32_t,jit_int32_t);
 #define movr_f(r0,r1)			FCPY_S(r1,r0)
 #define movi_f(r0,i0)			_movi_f(_jit,r0,i0)
 static void _movi_f(jit_state_t*,jit_int32_t,jit_float32_t*);
+#define movi_w_f(r0, i0)		_movi_w_f(_jit, r0, i0)
+static void _movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #define movr_d(r0,r1)			FCPY_D(r1,r0)
 #define movi_d(r0,i0)			_movi_d(_jit,r0,i0)
 static void _movi_d(jit_state_t*,jit_int32_t,jit_float64_t*);
+#define movi_ww_d(r0, i0, i1)		_movi_ww_d(_jit, r0, i0, i1)
+static void _movi_ww_d(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #define absr_f(r0,r1)			FABS_S(r1,r0)
 #define absr_d(r0,r1)			FABS_D(r1,r0)
 #define addr_f(r0,r1,r2)		FADD_S(r1,r2,r0)
@@ -717,6 +721,16 @@ _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 }
 
 static void
+_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t                reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movr_w_f(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
 _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 {
     union {
@@ -739,6 +753,19 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
     }
     else
 	ldi_d(r0, (jit_word_t)i0);
+}
+
+static void
+_movi_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t                t0, t1;
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    movi(rn(t0), i0);
+    movi(rn(t1), i1);
+    movr_ww_d(r0, rn(t0), rn(t1));
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
 }
 
 #define fpr_opi(name, type, size)					\
