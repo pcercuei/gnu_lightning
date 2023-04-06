@@ -495,8 +495,8 @@ static void truncr_f_l(void);
 static void truncr_f(void);
 static void extr_f(void);	static void extr_d_f(void);
 static void movr_f(void);	static void movi_f(void);
-static void movr_w_f(void);
-static void movr_f_w(void);	static void movi_f_w(void);
+static void movr_w_f(void);	static void movr_f_w(void);
+static void movi_f_w(void);	static void movi_w_f(void);
 static void ldr_f(void);	static void ldi_f(void);
 static void ldxr_f(void);	static void ldxi_f(void);
 static void unldr_x(void);	static void unldi_x(void);
@@ -553,11 +553,11 @@ static void truncr_d(void);
 static void extr_d(void);	static void extr_f_d(void);
 static void movr_d(void);	static void movi_d(void);
 #if __WORDSIZE == 32
-static void movr_ww_d(void);
-static void movr_d_ww(void);	static void movi_d_ww(void);
+static void movr_ww_d(void);	static void movr_d_ww(void);
+static void movi_d_ww(void);	static void movi_ww_d(void);
 #else
-static void movr_w_d(void);
-static void movr_d_w(void);	static void movi_d_w(void);
+static void movr_w_d(void);	static void movr_d_w(void);
+static void movi_d_w(void);	static void movi_w_d(void);
 #endif
 static void ldr_d(void);	static void ldi_d(void);
 static void ldxr_d(void);	static void ldxi_d(void);
@@ -890,8 +890,8 @@ static instr_t		  instr_vector[] = {
     entry(truncr_f),
     entry(extr_f),	entry(extr_d_f),
     entry(movr_f),	entry(movi_f),
-    entry(movr_w_f),
-    entry(movr_f_w),	entry(movi_f_w),
+    entry(movr_w_f),	entry(movr_f_w),
+    entry(movi_f_w),	entry(movi_w_f),
     entry(ldr_f),	entry(ldi_f),
     entry(ldxr_f),	entry(ldxi_f),
     entry(unldr_x),	entry(unldi_x),
@@ -947,11 +947,11 @@ static instr_t		  instr_vector[] = {
     entry(extr_d),	entry(extr_f_d),
     entry(movr_d),	entry(movi_d),
 #if __WORDSIZE == 32
-    entry(movr_ww_d),
-    entry(movr_d_ww),	entry(movi_d_ww),
+    entry(movr_ww_d),	entry(movr_d_ww),
+    entry(movi_d_ww),	entry(movi_ww_d),
 #else
-    entry(movr_w_d),
-    entry(movr_d_w),    entry(movi_d_w),
+    entry(movr_w_d),	entry(movr_d_w),
+    entry(movi_d_w),	entry(movi_w_d),
 #endif
     entry(ldr_d),	entry(ldi_d),
     entry(ldxr_d),	entry(ldxi_d),
@@ -1410,6 +1410,14 @@ name(void)								\
     jit_fpr_t	r0 = get_freg();					\
     jit_gpr_t	r1 = get_ireg();					\
     jit_##name(r0, r1);							\
+}
+#define entry_fr_im(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_fpr_t	r0 = get_freg();					\
+    jit_word_t	i0 = get_imm();						\
+    jit_##name(r0, i0);							\
 }
 #define entry_ir_fm(name)						\
 static void								\
@@ -1910,8 +1918,8 @@ entry_ir_fr(truncr_f_l)
 entry_ir_fr(truncr_f)
 entry_fr_ir(extr_f)		entry_fr_fr(extr_d_f)
 entry_fr_fr(movr_f)		entry_fr_fm(movi_f)
-entry_fr_ir(movr_w_f)
-entry_ir_fr(movr_f_w)		entry_ir_fm(movi_f_w)
+entry_fr_ir(movr_w_f)		entry_ir_fr(movr_f_w)
+entry_ir_fm(movi_f_w)		entry_fr_im(movi_w_f)
 entry_fr_ir(ldr_f)		entry_fr_pm(ldi_f)
 entry_fr_ir_ir(ldxr_f)		entry_fr_ir_im(ldxi_f)
 entry_fr_ir_im(unldr_x)		entry_fr_im_im(unldi_x)
@@ -1967,11 +1975,11 @@ entry_ir_fr(truncr_d)
 entry_fr_ir(extr_d)		entry_fr_fr(extr_f_d)
 entry_fr_fr(movr_d)		entry_fr_dm(movi_d)
 #if __WORDSIZE == 32
-entry_fr_ir_ir(movr_ww_d)
-entry_ir_ir_fr(movr_d_ww)	entry_ir_ir_dm(movi_d_ww)
+entry_fr_ir_ir(movr_ww_d)	entry_ir_ir_fr(movr_d_ww)
+entry_ir_ir_dm(movi_d_ww)	entry_fr_im_im(movi_ww_d)
 #else
-entry_fr_ir(movr_w_d)
-entry_ir_fr(movr_d_w)		entry_ir_dm(movi_d_w)
+entry_fr_ir(movr_w_d)		entry_ir_fr(movr_d_w)
+entry_ir_dm(movi_d_w)		entry_fr_im(movi_w_d)
 #endif
 entry_fr_ir(ldr_d)		entry_fr_pm(ldi_d)
 entry_fr_ir_ir(ldxr_d)		entry_fr_ir_im(ldxi_d)

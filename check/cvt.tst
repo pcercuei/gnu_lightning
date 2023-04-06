@@ -366,6 +366,50 @@ idw##R0##F0##F1:
 	MVDWI(R5, F5, F0)
 #endif
 
+#define MVWFI(F0, F1)						\
+	movi_f %F1 0.25						\
+	movi_w_f %F0 0x3e800000					\
+	beqr_f iwf##F0##F1 %F0 %F1				\
+	calli @abort						\
+iwf##F0##F1:
+#define WFI(F0, F1, F2, F3, F4, F5)				\
+	MVWFI(F0, F1)						\
+	MVWFI(F1, F2)						\
+	MVWFI(F2, F3)						\
+	MVWFI(F3, F4)						\
+	MVWFI(F4, F5)						\
+	MVWFI(F5, F0)
+
+#if __WORDSIZE == 32
+#    define MVWDI(F0, F1)					\
+	movi_d %F1 0.5						\
+	movi_ww_d %F0 0 0x3fe00000				\
+	beqr_d iwwd##F0##F1 %F0 %F1				\
+	calli @abort						\
+iwwd##F0##F1:
+#    define WDI(F0, F1, F2, F3, F4, F5)				\
+	MVWDI(F0, F1)						\
+	MVWDI(F1, F2)						\
+	MVWDI(F2, F3)						\
+	MVWDI(F3, F4)						\
+	MVWDI(F4, F5)						\
+	MVWDI(F5, F0)
+#else
+#  define MVWDI(F0, F1)						\
+	movi_d %F1 0.5						\
+	movi_w_d %F0 0x3fe0000000000000				\
+	beqr_d iwd##F0##F1 %F0 %F1				\
+	calli @abort						\
+iwd##F0##F1:
+#define WDI(F0, F1, F2, F3, F4, F5)				\
+	MVWDI(F0, F1)						\
+	MVWDI(F1, F2)						\
+	MVWDI(F2, F3)						\
+	MVWDI(F3, F4)						\
+	MVWDI(F4, F5)						\
+	MVWDI(F5, F0)
+#endif
+
 .code
 	prolog
 
@@ -486,6 +530,25 @@ dw:
 idw:
 #endif
 
+	movi_f %f1 0.25
+	movi_w_f %f0 0x3e800000
+	beqr_f iwf %f0 %f1
+	calli @abort
+iwf:
+#if __WORDSIZE == 32
+	movi_d %f1 0.5
+	movi_ww_d %f0 0 0x3fe00000
+	beqr_d iwwd %f0 %f1
+	calli @abort
+iwwd:
+#else
+	movi_d %f1 0.5
+	movi_w_d %f0 0x3fe0000000000000
+	beqr_d iwd %f0 %f1
+	calli @abort
+iwd:
+#endif
+
 	EXTII(v0, v1, v2, r0, r1, r2)
 	EXIF(v0, v1, v2, r0, r1, r2, f0, f1, f2, f3, f4, f5)
 	EXID(v0, v1, v2, r0, r1, r2, f0, f1, f2, f3, f4, f5)
@@ -501,6 +564,8 @@ idw:
 	FWI(v0, v1, v2, r0, r1, r2, f0, f1, f2, f3, f4, f5)
 	DW(v0, v1, v2, r0, r1, r2, f0, f1, f2, f3, f4, f5)
 	DWI(v0, v1, v2, r0, r1, r2, f0, f1, f2, f3, f4, f5)
+	WFI(f0, f1, f2, f3, f4, f5)
+	WDI(f0, f1, f2, f3, f4, f5)
 
 	// just to know did not abort
 	prepare
