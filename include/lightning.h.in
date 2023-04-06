@@ -1178,6 +1178,12 @@ typedef enum {
 #define jit_unsti_x(u,v,w)	jit_new_node_www(jit_code_unsti_x, u, v, w)
     jit_code_unstr_x,		jit_code_unsti_x,
 
+#define jit_movi_w_f(u,v)	jit_new_node_ww(jit_code_movi_w_f, u, v)
+#define jit_movi_w_d(u,v)	jit_new_node_ww(jit_code_movi_w_d, u, v)
+#define jit_movi_ww_d(u,v, w)	jit_new_node_www(jit_code_movi_ww_d, u, v, w)
+    jit_code_movi_w_f,
+    jit_code_movi_w_d,		jit_code_movi_ww_d,
+
     jit_code_last_code
 } jit_code_t;
 

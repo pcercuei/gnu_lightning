@@ -1454,9 +1454,13 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_cloi:	case jit_code_clzi:
 	case jit_code_ctoi:	case jit_code_ctzi:
 	case jit_code_rbiti:	case jit_code_popcnti:
+	case jit_code_movi_w_f:	case jit_code_movi_w_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int;
 	    break;
 	case jit_code_unldi:	case jit_code_unldi_u:	case jit_code_unldi_x:
+	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int|jit_cc_a2_int;
+	    break;
+	case jit_code_movi_ww_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int|jit_cc_a2_int;
 	    break;
 	case jit_code_movi_f:	case jit_code_movi_f_w:

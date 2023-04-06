@@ -285,4 +285,6 @@ static char *code_name[] = {
     "unstr",		"unsti",
     "unldr_x",		"unldi_x",
     "unstr_x",		"unsti_x",
+    "movi_w_f",
+    "movi_w_d",		"movi_ww_d",
 };

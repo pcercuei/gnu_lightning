@@ -1,3 +1,11 @@
+2023-04-06 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning.h.in: Define new movi_w_f, movi_w_d and
+	movi_ww_d instructions, to have an inverse counterpart to
+	movi_f_w, movi_d_w and movi_d_ww.
+	* lib/lightning.c: Update for the new instructions.
+	* lib/jit_names.c, lib/jit_print.c: Update debug information.
+
 2023-04-05 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning.h.in: Define new unldr, unldi, unldr_x,
