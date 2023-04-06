@@ -177,6 +177,8 @@ static void _sse_movr_f(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _sse_movi_f(jit_state_t*, jit_int32_t, jit_float32_t*);
 #  define sse_movr_w_f(r0,r1)		movdxr(r0, r1)
 #  define sse_movr_f_w(r0,r1)		movdrx(r1, r0)
+#define sse_movi_w_f(r0, i0)		_sse_movi_w_f(_jit, r0, i0)
+static void _sse_movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #  define sse_lti_f(r0, r1, i0)		_sse_lti_f(_jit, r0, r1, i0)
 static void _sse_lti_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_float32_t*);
 #  define sse_ltr_f(r0, r1, r2)		ssecmpf(X86_CC_A, r0, r1, r2)
@@ -326,9 +328,13 @@ static void _sse_movi_d(jit_state_t*, jit_int32_t, jit_float64_t*);
 static void _sse_movr_ww_d(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #    define sse_movr_d_ww(r0, r1, r2)	_sse_movr_d_ww(_jit, r0, r1, r2)
 static void _sse_movr_d_ww(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
+#    define sse_movi_ww_d(r0, i0, i1)	_sse_movi_ww_d(_jit, r0, i0, i1)
+static void _sse_movi_ww_d(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #  else
 #    define sse_movr_w_d(r0, r1)	movqxr(r0, r1)
 #    define sse_movr_d_w(r0, r1)	movqrx(r1, r0)
+#    define sse_movi_w_d(r0, i0)	_sse_movi_w_d(_jit, r0, i0)
+static void _sse_movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
 #  endif
 #  define sse_ltr_d(r0, r1, r2)		ssecmpd(X86_CC_A, r0, r1, r2)
 #  define sse_lti_d(r0, r1, i0)		_sse_lti_d(_jit, r0, r1, i0)
@@ -843,6 +849,16 @@ _sse_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 	    jit_unget_reg(reg);
 	}
     }
+}
+
+static void
+_sse_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movdxr(r0, rn(reg));
+    jit_unget_reg(reg);
 }
 
 fopi(lt)
@@ -1409,6 +1425,30 @@ _sse_movr_d_ww(jit_state_t *_jit,
     sse_stxi_d(CVT_OFFSET, _RBP_REGNO, r2);
     ldxi_i(r0, _RBP_REGNO, CVT_OFFSET);
     ldxi_i(r1, _RBP_REGNO, CVT_OFFSET + 4);
+}
+
+static void
+_sse_movi_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		reg;
+    CHECK_CVT_OFFSET();
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    stxi_i(CVT_OFFSET, _RBP_REGNO, rn(reg));
+    movi(rn(reg), i1);
+    stxi_i(CVT_OFFSET + 4, _RBP_REGNO, rn(reg));
+    sse_ldxi_d(r0, _RBP_REGNO, CVT_OFFSET);
+    jit_unget_reg(reg);
+}
+#else
+static void
+_sse_movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    movqxr(r0, rn(reg));
+    jit_unget_reg(reg);
 }
 #endif
 

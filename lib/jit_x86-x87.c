@@ -151,6 +151,8 @@ static void _x87_movi_f(jit_state_t*, jit_int32_t, jit_float32_t*);
 static void _x87_movr_w_f(jit_state_t*, jit_int32_t, jit_int32_t);
 #define x87_movr_f_w(r0,r1)		_x87_movr_f_w(_jit,r0,r1)
 static void _x87_movr_f_w(jit_state_t*, jit_int32_t, jit_int32_t);
+#define x87_movi_w_f(r0, i0)		_x87_movi_w_f(_jit, r0, i0)
+static void _x87_movi_w_f(jit_state_t*, jit_int32_t, jit_word_t);
 #  define x87_ldr_f(r0, r1)		_x87_ldr_f(_jit, r0, r1)
 static void _x87_ldr_f(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define x87_ldi_f(r0, i0)		_x87_ldi_f(_jit, r0, i0)
@@ -272,11 +274,15 @@ static void _x87_movi_d(jit_state_t*, jit_int32_t, jit_float64_t*);
 static void _x87_movr_ww_d(jit_state_t*, jit_int32_t, jit_int32_t,jit_int32_t);
 #  define x87_movr_d_ww(r0,r1,r2)	_x87_movr_d_ww(_jit,r0,r1,r2)
 static void _x87_movr_d_ww(jit_state_t*, jit_int32_t, jit_int32_t,jit_int32_t);
+#  define x87_movi_ww_d(r0, i0, i1)	_x87_movi_ww_d(_jit, r0, i0, i1)
+static void _x87_movi_ww_d(jit_state_t*, jit_int32_t, jit_word_t, jit_word_t);
 #else
 #  define x87_movr_w_d(r0,r1)		_x87_movr_w_d(_jit,r0,r1)
 static void _x87_movr_w_d(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define x87_movr_d_w(r0,r1)		_x87_movr_d_w(_jit,r0,r1)
 static void _x87_movr_d_w(jit_state_t*, jit_int32_t, jit_int32_t);
+#define x87_movi_w_d(r0, i0)		_x87_movi_w_d(_jit, r0, i0)
+static void _x87_movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
 #endif
 #  define x87_ldr_d(r0, r1)		_x87_ldr_d(_jit, r0, r1)
 static void _x87_ldr_d(jit_state_t*, jit_int32_t, jit_int32_t);
@@ -902,6 +908,18 @@ _x87_movr_f_w(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
+_x87_movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    CHECK_CVT_OFFSET();
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    stxi_i(CVT_OFFSET, _RBP_REGNO, rn(reg));
+    jit_unget_reg(reg);
+    x87_ldxi_f(r0, _RBP_REGNO, CVT_OFFSET);
+}
+
+static void
 _x87_ldr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     fldsm(0, r1, _NOREG, _SCL1);
@@ -1160,6 +1178,20 @@ _x87_movr_d_ww(jit_state_t *_jit,
     ldxi_i(r0, _RBP_REGNO, CVT_OFFSET);
     ldxi_i(r1, _RBP_REGNO, CVT_OFFSET + 4);
 }
+
+static void
+_x87_movi_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
+{
+    jit_int32_t		reg;
+    CHECK_CVT_OFFSET();
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    stxi_i(CVT_OFFSET, _RBP_REGNO, rn(reg));
+    movi(rn(reg), i1);
+    stxi_i(CVT_OFFSET + 4, _RBP_REGNO, rn(reg));
+    jit_unget_reg(reg);
+    x87_ldxi_d(r0, _RBP_REGNO, CVT_OFFSET);
+}
 #else
 
 static void
@@ -1176,6 +1208,18 @@ _x87_movr_d_w(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     CHECK_CVT_OFFSET();
     x87_stxi_d(CVT_OFFSET, _RBP_REGNO, r1);
     ldxi_l(r0, _RBP_REGNO, CVT_OFFSET);
+}
+
+static void
+_x87_movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    CHECK_CVT_OFFSET();
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    stxi(CVT_OFFSET, _RBP_REGNO, rn(reg));
+    jit_unget_reg(reg);
+    x87_ldxi_d(r0, _RBP_REGNO, CVT_OFFSET);
 }
 #endif
 

@@ -2380,6 +2380,12 @@ _emit_code(jit_state_t *_jit)
 		assert(node->flag & jit_flag_data);
 		movi_f_w(rn(node->u.w), *(jit_float32_t *)node->v.n->u.w);
 		break;
+	    case jit_code_movi_w_f:
+		if (jit_sse_reg_p(node->u.w))
+		    sse_movi_w_f(rn(node->u.w), node->v.w);
+		else
+		    x87_movi_w_f(rn(node->u.w), node->v.w);
+		break;
 #  if __X32 || __X64_32
 	    case jit_code_movr_ww_d:
 		if (jit_sse_reg_p(node->u.w))
@@ -2398,6 +2404,12 @@ _emit_code(jit_state_t *_jit)
 		movi_d_ww(rn(node->u.w), rn(node->v.w),
 			  *(jit_float64_t *)node->w.n->u.w);
 		break;
+	    case jit_code_movi_ww_d:
+		if (jit_sse_reg_p(node->u.w))
+		    sse_movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
+		else
+		    x87_movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
+		break;
 #  else
 	    case jit_code_movr_w_d:
 		if (jit_sse_reg_p(node->u.w))
@@ -2414,6 +2426,12 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_movi_d_w:
 		assert(node->flag & jit_flag_data);
 		movi_d_w(rn(node->u.w), *(jit_float64_t *)node->v.n->u.w);
+		break;
+	    case jit_code_movi_w_d:
+		if (jit_sse_reg_p(node->u.w))
+		    sse_movi_w_d(rn(node->u.w), node->v.w);
+		else
+		    x87_movi_w_d(rn(node->u.w), node->v.w);
 		break;
 #  endif
 	    case jit_code_va_start:
