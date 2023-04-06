@@ -1,5 +1,5 @@
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 88
+#define JIT_INSTR_MAX 140
     0,	/* data */
     0,	/* live */
     4,	/* align */
@@ -436,15 +436,15 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
+    8,	/* movr_w_f */
     0,	/* movr_ww_d */
-    0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
+    8,	/* movr_w_d */
+    8,	/* movr_f_w */
+    16,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
-    0,	/* movr_d_w */
-    0,	/* movi_d_w */
+    8,	/* movr_d_w */
+    12,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
     8,	/* ctor */
@@ -495,4 +495,17 @@
     8,	/* qrshi */
     40,	/* qrshr_u */
     8,	/* qrshi_u */
+    36,	/* unldr */
+    60,	/* unldi */
+    36,	/* unldr_u */
+    60,	/* unldi_u */
+    120,	/* unstr */
+    140,	/* unsti */
+    40,	/* unldr_x */
+    68,	/* unldi_x */
+    52,	/* unstr_x */
+    80,	/* unsti_x */
+    24,	/* movi_w_f */
+    20,	/* movi_w_d */
+    0,	/* movi_ww_d */
 #endif /* __WORDSIZE */

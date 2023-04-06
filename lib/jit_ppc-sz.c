@@ -439,13 +439,13 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
-    0,	/* movr_ww_d */
+    8,	/* movr_w_f */
+    12,	/* movr_ww_d */
     0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
-    0,	/* movr_d_ww */
-    0,	/* movi_d_ww */
+    8,	/* movr_f_w */
+    4,	/* movi_f_w */
+    12,	/* movr_d_ww */
+    8,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
     8,	/* clor */
@@ -490,14 +490,27 @@
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
-    56, /* qlshr */
+    56,	/* qlshr */
     8,	/* qlshi */
-    56, /* qlshr_u */
+    56,	/* qlshr_u */
     8,	/* qlshi_u */
-    56, /* qrshr */
+    56,	/* qrshr */
     8,	/* qrshi */
-    56, /* qrshr_u */
+    56,	/* qrshr_u */
     8,	/* qrshi_u */
+    100,	/* unldr */
+    28,	/* unldi */
+    100,	/* unldr_u */
+    28,	/* unldi_u */
+    68,	/* unstr */
+    32,	/* unsti */
+    212,	/* unldr_x */
+    68,	/* unldi_x */
+    152,	/* unstr_x */
+    76,	/* unsti_x */
+    12,	/* movi_w_f */
+    0,	/* movi_w_d */
+    20,	/* movi_ww_d */
 #endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -944,13 +957,13 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
-    0,	/* movr_ww_d */
+    8,	/* movr_w_f */
+    12,	/* movr_ww_d */
     0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
-    0,	/* movr_d_ww */
-    0,	/* movi_d_ww */
+    8,	/* movr_f_w */
+    4,	/* movi_f_w */
+    12,	/* movr_d_ww */
+    8,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
     8,	/* clor */
@@ -995,14 +1008,27 @@
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
-    56, /* qlshr */
+    56,	/* qlshr */
     8,	/* qlshi */
-    56, /* qlshr_u */
+    56,	/* qlshr_u */
     8,	/* qlshi_u */
-    56, /* qrshr */
+    56,	/* qrshr */
     8,	/* qrshi */
-    56, /* qrshr_u */
+    56,	/* qrshr_u */
     8,	/* qrshi_u */
+    100,	/* unldr */
+    28,	/* unldi */
+    100,	/* unldr_u */
+    28,	/* unldi_u */
+    68,	/* unstr */
+    32,	/* unsti */
+    212,	/* unldr_x */
+    68,	/* unldi_x */
+    152,	/* unstr_x */
+    76,	/* unsti_x */
+    12,	/* movi_w_f */
+    0,	/* movi_w_d */
+    20,	/* movi_ww_d */
 #endif /* _CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -1201,7 +1227,7 @@
     8,	/* bgtr_u */
     8,	/* bgti_u */
     8,	/* bner */
-    36,	/* bnei */
+    44,	/* bnei */
     12,	/* bmsr */
     12,	/* bmsi */
     12,	/* bmcr */
@@ -1448,15 +1474,15 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
+    8,	/* movr_w_f */
     0,	/* movr_ww_d */
-    0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
+    8,	/* movr_w_d */
+    8,	/* movr_f_w */
+    4,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
-    0,	/* movr_d_w */
-    0,	/* movi_d_w */
+    8,	/* movr_d_w */
+    8,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
     32,	/* ctor */
@@ -1478,13 +1504,13 @@
     4,	/* exti_s */
     8,	/* exti_us */
     4,	/* exti_i */
-    16, /* exti_ui */
+    16,	/* exti_ui */
     4,	/* bswapi_us */
     8,	/* bswapi_ui */
-    36, /* bswapi_ul */
+    36,	/* bswapi_ul */
     8,	/* htoni_us */
     8,	/* htoni_ui */
-    36, /* htoni_ul */
+    36,	/* htoni_ul */
     0,	/* negi_f */
     0,	/* absi_f */
     0,	/* sqrti_f */
@@ -1495,18 +1521,31 @@
     4,	/* clzi */
     4,	/* ctoi */
     4,	/* ctzi */
-    36, /* rbiti */
+    36,	/* rbiti */
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
-    56, /* qlshr */
+    56,	/* qlshr */
     8,	/* qlshi */
-    56, /* qlshr_u */
+    56,	/* qlshr_u */
     8,	/* qlshi_u */
-    56, /* qrshr */
+    56,	/* qrshr */
     8,	/* qrshi */
-    56, /* qrshr_u */
+    56,	/* qrshr_u */
     8,	/* qrshi_u */
+    304,	/* unldr */
+    124,	/* unldi */
+    304,	/* unldr_u */
+    124,	/* unldi_u */
+    168,	/* unstr */
+    108,	/* unsti */
+    308,	/* unldr_x */
+    132,	/* unldi_x */
+    176,	/* unstr_x */
+    116,	/* unsti_x */
+    12,	/* movi_w_f */
+    16,	/* movi_w_d */
+    0,	/* movi_ww_d */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -1704,7 +1743,7 @@
     8,	/* bgtr_u */
     8,	/* bgti_u */
     8,	/* bner */
-    36,	/* bnei */
+    44,	/* bnei */
     12,	/* bmsr */
     12,	/* bmsi */
     12,	/* bmcr */
@@ -1951,15 +1990,15 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
+    8,	/* movr_w_f */
     0,	/* movr_ww_d */
-    0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
+    8,	/* movr_w_d */
+    8,	/* movr_f_w */
+    4,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
-    0,	/* movr_d_w */
-    0,	/* movi_d_w */
+    8,	/* movr_d_w */
+    8,	/* movi_d_w */
     8,	/* clor */
     4,	/* clzr */
     32,	/* ctor */
@@ -1981,13 +2020,13 @@
     4,	/* exti_s */
     8,	/* exti_us */
     4,	/* exti_i */
-    16, /* exti_ui */
+    16,	/* exti_ui */
     4,	/* bswapi_us */
     8,	/* bswapi_ui */
-    36, /* bswapi_ul */
+    36,	/* bswapi_ul */
     8,	/* htoni_us */
     8,	/* htoni_ui */
-    36, /* htoni_ul */
+    36,	/* htoni_ul */
     0,	/* negi_f */
     0,	/* absi_f */
     0,	/* sqrti_f */
@@ -1998,18 +2037,31 @@
     4,	/* clzi */
     4,	/* ctoi */
     4,	/* ctzi */
-    36, /* rbiti */
+    36,	/* rbiti */
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
-    56, /* qlshr */
+    56,	/* qlshr */
     8,	/* qlshi */
-    56, /* qlshr_u */
+    56,	/* qlshr_u */
     8,	/* qlshi_u */
-    56, /* qrshr */
+    56,	/* qrshr */
     8,	/* qrshi */
-    56, /* qrshr_u */
+    56,	/* qrshr_u */
     8,	/* qrshi_u */
+    292,	/* unldr */
+    124,	/* unldi */
+    292,	/* unldr_u */
+    124,	/* unldi_u */
+    168,	/* unstr */
+    108,	/* unsti */
+    296,	/* unldr_x */
+    132,	/* unldi_x */
+    176,	/* unstr_x */
+    116,	/* unsti_x */
+    12,	/* movi_w_f */
+    16,	/* movi_w_d */
+    0,	/* movi_ww_d */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */

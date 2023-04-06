@@ -443,7 +443,7 @@
     4,	/* movr_f_w */
     4,	/* movi_f_w */
     8,	/* movr_d_ww */
-    8,	/* movi_d_ww */
+    12,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
     4,	/* clor */
@@ -488,18 +488,31 @@
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
-    48, /* qlshr */
+    48,	/* qlshr */
     8,	/* qlshi */
-    44, /* qlshr_u */
+    44,	/* qlshr_u */
     8,	/* qlshi_u */
-    44, /* qrshr */
+    44,	/* qrshr */
     8,	/* qrshi */
-    44, /* qrshr_u */
+    44,	/* qrshr_u */
     8,	/* qrshi_u */
+    16,	/* unldr */
+    36,	/* unldi */
+    16,	/* unldr_u */
+    36,	/* unldi_u */
+    44,	/* unstr */
+    28,	/* unsti */
+    32,	/* unldr_x */
+    80,	/* unldi_x */
+    28,	/* unstr_x */
+    40,	/* unsti_x */
+    8,	/* movi_w_f */
+    0,	/* movi_w_d */
+    16,	/* movi_ww_d */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 80
+#define JIT_INSTR_MAX 132
     0,	/* data */
     0,	/* live */
     8,	/* align */
@@ -689,7 +702,7 @@
     12,	/* bgtr_u */
     16,	/* bgti_u */
     8,	/* bner */
-    32,	/* bnei */
+    36,	/* bnei */
     12,	/* bmsr */
     12,	/* bmsi */
     12,	/* bmcr */
@@ -936,15 +949,15 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
+    4,	/* movr_w_f */
     0,	/* movr_ww_d */
-    0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
+    4,	/* movr_w_d */
+    4,	/* movr_f_w */
+    4,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
     4,	/* movr_d_w */
-    24,	/* movi_d_w */
+    12,	/* movi_d_w */
     4,	/* clor */
     4,	/* clzr */
     28,	/* ctor */
@@ -969,10 +982,10 @@
     8,	/* exti_ui */
     4,	/* bswapi_us */
     8,	/* bswapi_ui */
-    28, /* bswapi_ul */
+    28,	/* bswapi_ul */
     4,	/* htoni_us */
     8,	/* htoni_ui */
-    28, /* htoni_ul */
+    28,	/* htoni_ul */
     0,	/* negi_f */
     0,	/* absi_f */
     0,	/* sqrti_f */
@@ -983,16 +996,29 @@
     4,	/* clzi */
     4,	/* ctoi */
     4,	/* ctzi */
-    28, /* rbiti */
+    28,	/* rbiti */
     4,	/* popcnti */
     4,	/* exti */
     4,	/* exti_u */
-    48, /* qlshr */
+    48,	/* qlshr */
     8,	/* qlshi */
-    44, /* qlshr_u */
+    44,	/* qlshr_u */
     8,	/* qlshi_u */
-    44, /* qrshr */
+    44,	/* qrshr */
     8,	/* qrshi */
-    44, /* qrshr_u */
+    44,	/* qrshr_u */
     8,	/* qrshi_u */
+    16,	/* unldr */
+    120,	/* unldi */
+    16,	/* unldr_u */
+    120,	/* unldi_u */
+    132,	/* unstr */
+    108,	/* unsti */
+    16,	/* unldr_x */
+    124,	/* unldi_x */
+    12,	/* unstr_x */
+    32,	/* unsti_x */
+    8,	/* movi_w_f */
+    12,	/* movi_w_d */
+    0,	/* movi_ww_d */
 #endif /* __WORDSIZE */
