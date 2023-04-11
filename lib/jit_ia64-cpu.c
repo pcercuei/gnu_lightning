@@ -4235,18 +4235,18 @@ _xlshr(jit_state_t *_jit, jit_bool_t sign,
 	zero = beqi(_jit->pc.w, t3, 0);
 	over = beqi(_jit->pc.w, t3, __WORDSIZE);
 	done = jmpi(_jit->pc.w);
-	patch_at(over, _jit->pc.w);
+	patch_at(jit_code_beqi, over, _jit->pc.w);
 	/* overflow */
 	movi(r0, 0);
 	done_over = jmpi(_jit->pc.w);
 	/* zero */
-	patch_at(zero, _jit->pc.w);
+	patch_at(jit_code_beqi, zero, _jit->pc.w);
 	if (sign)
 	    rshi(r1, t2, __WORDSIZE - 1);
 	else
 	    movi(r1, 0);
-	patch_at(done, _jit->pc.w);
-	patch_at(done_over, _jit->pc.w);
+	patch_at(jit_code_jmpi, done, _jit->pc.w);
+	patch_at(jit_code_jmpi, done_over, _jit->pc.w);
     }
     else {
 	if (sign)
@@ -4334,7 +4334,7 @@ _xrshr(jit_state_t *_jit, jit_bool_t sign,
 	zero = beqi(_jit->pc.w, t3, 0);
 	over = beqi(_jit->pc.w, t3, __WORDSIZE);
 	done = jmpi(_jit->pc.w);
-	patch_at(over, _jit->pc.w);
+	patch_at(jit_code_beqi, over, _jit->pc.w);
 	/* underflow */
 	if (sign)
 	    rshi(r0, t2, __WORDSIZE - 1);
@@ -4342,13 +4342,13 @@ _xrshr(jit_state_t *_jit, jit_bool_t sign,
 	    movi(r0, 0);
 	done_over = jmpi(_jit->pc.w);
 	/* zero */
-	patch_at(zero, _jit->pc.w);
+	patch_at(jit_code_beqi, zero, _jit->pc.w);
 	if (sign)
 	    rshi(r1, t2, __WORDSIZE - 1);
 	else
 	    movi(r1, 0);
-	patch_at(done, _jit->pc.w);
-	patch_at(done_over, _jit->pc.w);
+	patch_at(jit_code_jmpi, done, _jit->pc.w);
+	patch_at(jit_code_jmpi, done_over, _jit->pc.w);
 	jit_unget_reg(s1);
     }
     else {

@@ -1,5 +1,5 @@
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 240
+#define JIT_INSTR_MAX 1104
     0,	/* data */
     0,	/* live */
     48,	/* align */
@@ -436,15 +436,15 @@
     0,	/* retr_d */
     0,	/* reti_d */
     0,	/* retval_d */
-    0,	/* movr_w_f */
+    16,	/* movr_w_f */
     0,	/* movr_ww_d */
-    0,	/* movr_w_d */
-    0,	/* movr_f_w */
-    0,	/* movi_f_w */
+    16,	/* movr_w_d */
+    16,	/* movr_f_w */
+    16,	/* movi_f_w */
     0,	/* movr_d_ww */
     0,	/* movi_d_ww */
     16,	/* movr_d_w */
-    32,	/* movi_d_w */
+    16,	/* movi_d_w */
     240,	/* clor */
     176,	/* clzr */
     176,	/* ctor */
@@ -458,13 +458,54 @@
     16,	/* extr */
     16,	/* extr_u */
     48,	/* depr */
-    /* FIXME guessed values */
-    208, /* qlshr */
-    16,	/* qlshi */
-    208, /* qlshr_u */
-    16,	/* qlshi_u */
-    208, /* qrshr */
-    16,	/* qrshi */
-    208, /* qrshr_u */
-    16,	/* qrshi_u */
+    16,	/* depi */
+    16,	/* negi */
+    16,	/* comi */
+    16,	/* exti_c */
+    16,	/* exti_uc */
+    16,	/* exti_s */
+    16,	/* exti_us */
+    16,	/* exti_i */
+    16,	/* exti_ui */
+    16,	/* bswapi_us */
+    16,	/* bswapi_ui */
+    16,	/* bswapi_ul */
+    16,	/* htoni_us */
+    16,	/* htoni_ui */
+    16,	/* htoni_ul */
+    0,	/* negi_f */
+    0,	/* absi_f */
+    0,	/* sqrti_f */
+    0,	/* negi_d */
+    0,	/* absi_d */
+    0,	/* sqrti_d */
+    16,	/* cloi */
+    16,	/* clzi */
+    16,	/* ctoi */
+    16,	/* ctzi */
+    16,	/* rbiti */
+    16,	/* popcnti */
+    16,	/* exti */
+    16,	/* exti_u */
+    112,	/* qlshr */
+    32,	/* qlshi */
+    96,	/* qlshr_u */
+    32,	/* qlshi_u */
+    96,	/* qrshr */
+    32,	/* qrshi */
+    96,	/* qrshr_u */
+    32,	/* qrshi_u */
+    1104,	/* unldr */
+    176,	/* unldi */
+    1104,	/* unldr_u */
+    176,	/* unldi_u */
+    560,	/* unstr */
+    176,	/* unsti */
+    1104,	/* unldr_x */
+    176,	/* unldi_x */
+    576,	/* unstr_x */
+    176,	/* unsti_x */
+    32,	/* movi_w_f */
+    32,	/* movi_w_d */
+    0,	/* movi_ww_d */
 #endif /* __WORDSIZE */

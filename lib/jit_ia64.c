@@ -1189,6 +1189,14 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(xor,);
 		case_rrr(lsh,);
 		case_rrw(lsh,);
+		case_rrrr(qlsh,);
+		case_rrrw(qlsh,);
+		case_rrrr(qlsh, _u);
+		case_rrrw(qlsh, _u);
+		case_rrrr(qrsh,);
+		case_rrrw(qrsh,);
+		case_rrrr(qrsh, _u);
+		case_rrrw(qrsh, _u);
 		case_rrr(rsh,);
 		case_rrw(rsh,);
 		case_rrr(rsh, _u);
@@ -1322,6 +1330,9 @@ _emit_code(jit_state_t *_jit)
 		break;
 	    case jit_code_unldr_u:
 		unldr_u(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_u:
+		unldi_u(rn(node->u.w), node->v.w, node->w.w);
 		break;
 		case_rr(st, _c);
 		case_wr(st, _c);
