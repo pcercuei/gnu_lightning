@@ -1175,7 +1175,7 @@ _fallback_dep(jit_state_t *_jit,
 	i0 = __WORDSIZE - (i0 + i1);
 #  endif
 	mask = (1L << i1) - 1;
-	t0 = jit_get_reg(jit_class_gpr);
+	t0 = fallback_jit_get_reg(jit_class_gpr);
 	andi(rn(t0), r1, mask);
 	if (i0) {
 	    lshi(rn(t0), rn(t0), i0);
@@ -1206,17 +1206,17 @@ _fallback_qlshr(jit_state_t *_jit,
      */
     jit_int32_t		t0, s0, t2, s2, t3, s3;
     jit_word_t		over, zero, done, done_over;
-    s0 = jit_get_reg(jit_class_gpr);
+    s0 = fallback_jit_get_reg(jit_class_gpr);
     t0 = rn(s0);
     if (r0 == r2 || r1 == r2) {
-	s2 = jit_get_reg(jit_class_gpr);
+	s2 = fallback_jit_get_reg(jit_class_gpr);
 	t2 = rn(s2);
 	movr(t2, r2);
     }
     else
 	t2 = r2;
     if (r0 == r3 || r1 == r3) {
-	s3 = jit_get_reg(jit_class_gpr);
+	s3 = fallback_jit_get_reg(jit_class_gpr);
 	t3 = rn(s3);
 	movr(t3, r3);
     }
@@ -1289,17 +1289,17 @@ _fallback_qlshr_u(jit_state_t *_jit, jit_int32_t r0,
      */
     jit_int32_t		t0, s0, t2, s2, t3, s3;
     jit_word_t		over, zero, done, done_over;
-    s0 = jit_get_reg(jit_class_gpr);
+    s0 = fallback_jit_get_reg(jit_class_gpr);
     t0 = rn(s0);
     if (r0 == r2 || r1 == r2) {
-	s2 = jit_get_reg(jit_class_gpr);
+	s2 = fallback_jit_get_reg(jit_class_gpr);
 	t2 = rn(s2);
 	movr(t2, r2);
     }
     else
 	t2 = r2;
     if (r0 == r3 || r1 == r3) {
-	s3 = jit_get_reg(jit_class_gpr);
+	s3 = fallback_jit_get_reg(jit_class_gpr);
 	t3 = rn(s3);
 	movr(t3, r3);
     }
@@ -1368,17 +1368,17 @@ _fallback_qrshr(jit_state_t *_jit, jit_int32_t r0,
      */
     jit_int32_t		t0, s0, t2, s2, t3, s3;
     jit_word_t		over, zero, done, done_over;
-    s0 = jit_get_reg(jit_class_gpr);
+    s0 = fallback_jit_get_reg(jit_class_gpr);
     t0 = rn(s0);
     if (r0 == r2 || r1 == r2) {
-	s2 = jit_get_reg(jit_class_gpr);
+	s2 = fallback_jit_get_reg(jit_class_gpr);
 	t2 = rn(s2);
 	movr(t2, r2);
     }
     else
 	t2 = r2;
     if (r0 == r3 || r1 == r3) {
-	s3 = jit_get_reg(jit_class_gpr);
+	s3 = fallback_jit_get_reg(jit_class_gpr);
 	t3 = rn(s3);
 	movr(t3, r3);
     }
@@ -1451,17 +1451,17 @@ _fallback_qrshr_u(jit_state_t *_jit, jit_int32_t r0,
      */
     jit_int32_t		t0, s0, t2, s2, t3, s3;
     jit_word_t		over, zero, done, done_over;
-    s0 = jit_get_reg(jit_class_gpr);
+    s0 = fallback_jit_get_reg(jit_class_gpr);
     t0 = rn(s0);
     if (r0 == r2 || r1 == r2) {
-	s2 = jit_get_reg(jit_class_gpr);
+	s2 = fallback_jit_get_reg(jit_class_gpr);
 	t2 = rn(s2);
 	movr(t2, r2);
     }
     else
 	t2 = r2;
     if (r0 == r3 || r1 == r3) {
-	s3 = jit_get_reg(jit_class_gpr);
+	s3 = fallback_jit_get_reg(jit_class_gpr);
 	t3 = rn(s3);
 	movr(t3, r3);
     }
@@ -2637,6 +2637,7 @@ _unldr8(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     orr(r0, r0, r2);
     ldxi_uc(r2, r1, 7);
 #    endif
+    fallback_flush();
     fallback_patch_jmpi(or, _jit->pc.w);
     fallback_patch_jmpi(or2, _jit->pc.w);
     fallback_patch_jmpi(or7, _jit->pc.w);
