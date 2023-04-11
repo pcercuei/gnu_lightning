@@ -20,11 +20,13 @@
 #if PROTO
 #  if __WORDSIZE == 32
 #    define ldr(r0,r1)			ldr_i(r0,r1)
+#    define ldi(r0,i0)			ldi_i(r0,i0)
 #    define ldxr(r0,r1,r2)		ldxr_i(r0,r1,r2)
 #    define ldxi(r0,r1,i0)		ldxi_i(r0,r1,i0)
 #    define stxi(i0,r0,r1)		stxi_i(i0,r0,r1)
 #  else
 #    define ldr(r0,r1)			ldr_l(r0,r1)
+#    define ldi(r0,i0)			ldi_l(r0,i0)
 #    define ldxr(r0,r1,r2)		ldxr_l(r0,r1,r2)
 #    define ldxi(r0,r1,i0)		ldxi_l(r0,r1,i0)
 #    define stxi(i0,r0,r1)		stxi_l(i0,r0,r1)
