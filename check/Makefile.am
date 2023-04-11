@@ -53,8 +53,14 @@ protect_SOURCES = protect.c
 riprel_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 riprel_SOURCES = riprel.c
 
+# Actually, gcc 4.1.2 does not like unknown -Wno-option and errors out;
+# better to just have warnings.
+if cpu_ia64
+cbit_CFLAGS = $(AM_CFLAGS) -fwrapv
+else
 cbit_CFLAGS = $(AM_CFLAGS) -fwrapv -Wno-overflow -Wno-integer-overflow \
 	-Wno-shift-count-overflow
+endif
 cbit_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 cbit_SOURCES = cbit.c
 
