@@ -1,4 +1,10 @@
 #if PROTO
+/* Need 7 registers for fallback unstr */
+#if defined(__arm__)
+#  define USE_LONG_UNSTR		1
+#else
+#  define USE_LONG_UNSTR		0
+#endif
 #define USE_BIT_TABLES			1
 #define USE_BITSWAP_UNROLLED		0
 #define USE_BITSWAP_LOOP		0
@@ -133,17 +139,18 @@ static void _fallback_unldi(jit_state_t*,jit_int32_t,jit_word_t,jit_word_t);
 static void _fallback_unldr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #define fallback_unldi_u(r0, i0, i1)	_fallback_unldi_u(_jit, r0, i0, i1)
 static void _fallback_unldi_u(jit_state_t*,jit_int32_t,jit_word_t,jit_word_t);
-#define unstr2(r0, r1)			_unstr2(_jit, r0, r1)
+#if USE_LONG_UNSTR
+#  define unstr2(r0, r1)		_unstr2(_jit, r0, r1)
 static void _unstr2(jit_state_t*,jit_int32_t,jit_int32_t);
-#define unsti2(r0, i0)			_unsti2(_jit, r0, i0)
+#  define unsti2(r0, i0)		_unsti2(_jit, r0, i0)
 static void _unsti2(jit_state_t*,jit_int32_t,jit_word_t);
-#define unstr3(r0, r1)			_unstr3(_jit, r0, r1)
+#  define unstr3(r0, r1)		_unstr3(_jit, r0, r1)
 static void _unstr3(jit_state_t*,jit_int32_t,jit_int32_t);
-#define unsti3(r0, i0)			_unsti3(_jit, r0, i0)
+#  define unsti3(r0, i0)		_unsti3(_jit, r0, i0)
 static void _unsti3(jit_state_t*,jit_int32_t,jit_word_t);
-#define unstr4(r0, r1)			_unstr4(_jit, r0, r1)
+#  define unstr4(r0, r1)		_unstr4(_jit, r0, r1)
 static void _unstr4(jit_state_t*,jit_int32_t,jit_int32_t);
-#define unsti4(r0, i0)			_unsti4(_jit, r0, i0)
+#  define unsti4(r0, i0)		_unsti4(_jit, r0, i0)
 static void _unsti4(jit_state_t*,jit_int32_t,jit_word_t);
 #  if __WORDSIZE == 64
 #    define unstr5(r0, r1)		_unstr5(_jit, r0, r1)
@@ -163,6 +170,7 @@ static void _unstr8(jit_state_t*,jit_int32_t,jit_int32_t);
 #    define unsti8(r0, i0)		_unsti8(_jit, r0, i0)
 static void _unsti8(jit_state_t*,jit_int32_t,jit_word_t);
 #  endif
+#endif
 #define fallback_unstr(r0, r1, i0)	_fallback_unstr(_jit, r0, r1, i0)
 static void _fallback_unstr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #define fallback_unsti(i0, r0, i1)	_fallback_unsti(_jit, i0, r0, i1)
@@ -1719,6 +1727,7 @@ _fallback_unldi_u(jit_state_t *_jit,
     }
 }
 
+#if USE_LONG_UNSTR
 static void
 _unstr2(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
@@ -2106,9 +2115,9 @@ _unstr6(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #    else
     stxi_c(5, r1, r0);
     rshi(r2, r0, 8);
-    stxi_s(1, r1, r2);
-    rshi(r2, r2, 16);
     stxi_s(3, r1, r2);
+    rshi(r2, r2, 16);
+    stxi_s(1, r1, r2);
     rshi(r2, r2, 16);
     str_c(r1, r2);
 #    endif
@@ -2179,9 +2188,9 @@ _unsti6(jit_state_t *_jit, jit_int32_t r0, jit_word_t i1)
 #    else
 	sti_c(5 + i1, r0);
 	rshi(r2, r0, 8);
-	sti_s(1 + i1, r2);
-	rshi(r2, r2, 16);
 	sti_s(3 + i1, r2);
+	rshi(r2, r2, 16);
+	sti_s(1 + i1, r2);
 	rshi(r2, r2, 16);
 	sti_c(i1, r2);
 #    endif
@@ -2217,7 +2226,7 @@ _unstr7(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     stxi_s(5, r1, r2);
 #    else
     stxi_s(5, r1, r0);
-    rshi(r2, r0, 8);
+    rshi(r2, r0, 16);
     stxi_i(1, r1, r2);
     rshi(r2, r2, 32);
     str_c(r1, r2);
@@ -2234,9 +2243,9 @@ _unstr7(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     stxi_c(6, r1, r2);
 #    else
     stxi_c(6, r1, r0);
-    rshi(r2, r0, 16);
+    rshi(r2, r0, 8);
     stxi_i(2, r1, r2);
-    rshi(r2, r2, 16);
+    rshi(r2, r2, 32);
     str_s(r1, r2);
 #    endif
     al2 = fallback_jmpi(_jit->pc.w);
@@ -2294,7 +2303,7 @@ _unsti7(jit_state_t *_jit, jit_int32_t r0, jit_word_t i1)
 	sti_s(5 + i1, r2);
 #    else
 	sti_s(5 + i1, r0);
-	rshi(r2, r0, 8);
+	rshi(r2, r0, 16);
 	sti_i(1 + i1, r2);
 	rshi(r2, r2, 32);
 	sti_c(i1, r2);
@@ -2309,9 +2318,9 @@ _unsti7(jit_state_t *_jit, jit_int32_t r0, jit_word_t i1)
 	sti_c(6 + i1, r2);
 #    else
 	sti_c(6 + i1, r0);
-	rshi(r2, r0, 16);
+	rshi(r2, r0, 8);
 	sti_i(2 + i1, r2);
-	rshi(r2, r2, 16);
+	rshi(r2, r2, 32);
 	sti_s(i1, r2);
 #    endif
     }
@@ -2559,6 +2568,168 @@ _fallback_unsti(jit_state_t *_jit,
 #  endif
     }
 }
+
+#else
+static void
+_fallback_unstr(jit_state_t *_jit,
+		jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_word_t		done;
+    jit_int32_t		t0, t1, t2, t3, t4, t5;
+    if (i0 == 1)
+	str_c(r0, r1);
+    else {
+	t0 = fallback_jit_get_reg(jit_class_gpr);
+	t1 = fallback_jit_get_reg(jit_class_gpr);
+	t2 = fallback_jit_get_reg(jit_class_gpr);
+	t3 = fallback_jit_get_reg(jit_class_gpr);
+	t4 = fallback_jit_get_reg(jit_class_gpr);
+	t5 = fallback_jit_get_reg(jit_class_gpr);
+	/* Zero out top bits and keep value to store in t0 */
+	if (i0 != sizeof(jit_word_t)) {
+	    lshi(rn(t3), r1, (sizeof(jit_word_t) - i0) << 3);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    rshi_u(rn(t3), rn(t3), (sizeof(jit_word_t) - i0) << 3);
+#endif
+	}
+	else {
+	    assert(i0 > 0 && i0 <= (__WORDSIZE >> 3));
+	    movr(rn(t3), r1);
+	}
+	/* Check alignment */
+	andi(rn(t2), r0, sizeof(jit_word_t) - 1);
+	/* Multiply by 8 */
+	lshi(rn(t2), rn(t2), 3);
+	/* Split values to store (assume will need two stores) */
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	qlshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
+#else
+	qrshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
+#endif
+	/* Generate masks for values in memory */
+	if (i0 == sizeof(jit_word_t))
+	    movi(rn(t3), -1);
+	else {
+#if __BYTE_ORDER == __BIG_ENDIAN
+	    movi(rn(t3), ((1L << (i0 << 3)) - 1) <<
+		 ((sizeof(jit_word_t) - i0) << 3));
+#else
+	    movi(rn(t3), (1L << (i0 << 3)) - 1);
+#endif
+	}
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	qlshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
+#else
+	qrshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
+#endif
+	comr(rn(t2), rn(t2));
+	comr(rn(t3), rn(t3));
+	/* Store words */
+	andi(rn(t4), r0, -(jit_word_t)sizeof(jit_word_t));
+	ldr(rn(t5), rn(t4));
+	andr(rn(t5), rn(t5), rn(t2));
+	orr(rn(t0), rn(t0), rn(t5));
+	str(rn(t4), rn(t0));
+	/* Make sure to not read/write on possibly unmaped memory */
+	addi(rn(t5), rn(t4), i0);
+	done = fallback_blei(_jit->pc.w, rn(t5), sizeof(jit_word_t));
+	/* Store second word if vlaue crosses a word boundary */
+	ldxi(rn(t5), rn(t4), sizeof(jit_word_t));
+	andr(rn(t5), rn(t5), rn(t3));
+	orr(rn(t1), rn(t1), rn(t5));
+	stxi(sizeof(jit_word_t), rn(t4), rn(t1));
+	/* Finished */
+	fallback_flush();
+	fallback_patch_blei(done, _jit->pc.w);
+	/* Generic/simple algorithm needs 6 temporaries, as it cannot
+	 * change any of the argument registers, might need to truncate
+	 * the value to store, and need a pair for values to store and
+	 * another for the masks. */
+	jit_unget_reg(t5);
+	jit_unget_reg(t4);
+	jit_unget_reg(t3);
+	jit_unget_reg(t2);
+	jit_unget_reg(t1);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fallback_unsti(jit_state_t *_jit,
+		jit_word_t i0, jit_int32_t r0, jit_word_t i1)
+{
+    jit_word_t		done, address;
+    jit_int32_t		t0, t1, t2, t3, t4;
+    if (i1 == 1)
+	sti_c(i0, r0);
+    else {
+	t0 = fallback_jit_get_reg(jit_class_gpr);
+	t1 = fallback_jit_get_reg(jit_class_gpr);
+	t2 = fallback_jit_get_reg(jit_class_gpr);
+	t3 = fallback_jit_get_reg(jit_class_gpr);
+	t4 = fallback_jit_get_reg(jit_class_gpr);
+	/* Zero out top bits and keep value to store in t0 */
+	if (i1 != sizeof(jit_word_t)) {
+	    lshi(rn(t2), r0, (sizeof(jit_word_t) - i1) << 3);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    rshi_u(rn(t2), rn(t2), (sizeof(jit_word_t) - i1) << 3);
+	    qlshi_u(rn(t0), rn(t1), rn(t2),
+		    (i0 & (sizeof(jit_word_t) - 1)) << 3);
+#else
+	    qrshi_u(rn(t0), rn(t1), rn(t2),
+		    (i0 & (sizeof(jit_word_t)) - 1) << 3);
+#endif
+	}
+	else {
+	    assert(i1 > 0 && i1 <= (__WORDSIZE >> 3));
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	    qlshi_u(rn(t0), rn(t1), r0,
+		    (i0 & (sizeof(jit_word_t)) - 1) << 3);
+#else
+	    qrshi_u(rn(t0), rn(t1), r0,
+		    (i0 & (sizeof(jit_word_t)) - 1) << 3);
+#endif
+	}
+	/* Generate masks for values in memory */
+	if (i1 == sizeof(jit_word_t))
+	    movi(rn(t2), -1);
+	else {
+#if __BYTE_ORDER == __BIG_ENDIAN
+	    movi(rn(t2), ((1L << (i1 << 3)) - 1) <<
+		 ((sizeof(jit_word_t) - i1) << 3));
+#else
+	    movi(rn(t2), (1L << (i1 << 3)) - 1);
+#endif
+	}
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+	qlshi_u(rn(t2), rn(t3), rn(t2), (i0 & (sizeof(jit_word_t)) - 1) << 3);
+#else
+	qrshi_u(rn(t2), rn(t3), rn(t2), (i0 & (sizeof(jit_word_t)) - 1) << 3);
+#endif
+	comr(rn(t2), rn(t2));
+	comr(rn(t3), rn(t3));
+	/* Store words */
+	address = i0 & -(jit_word_t)sizeof(jit_word_t);
+	ldi(rn(t4), address);
+	andr(rn(t4), rn(t4), rn(t2));
+	orr(rn(t0), rn(t0), rn(t4));
+	sti(address, rn(t0));
+	if (address + i1 > sizeof(jit_word_t)) {
+	    address += sizeof(jit_word_t);
+	    ldi(rn(t4), address);
+	    andr(rn(t4), rn(t4), rn(t3));
+	    orr(rn(t1), rn(t1), rn(t4));
+	    sti(address, rn(t1));
+	}
+	jit_unget_reg(t4);
+	jit_unget_reg(t3);
+	jit_unget_reg(t2);
+	jit_unget_reg(t1);
+	jit_unget_reg(t0);
+    }
+}
+
+#endif
 
 #  ifdef fallback_unldr_x
 static void
