@@ -213,8 +213,12 @@ typedef union {
 #  define s26_p(d)			((d) >= -33554432 && (d) <= 33554431)
 #  define ii(i)				*_jit->pc.ui++ = i
 #  define ldr(r0,r1)			ldr_l(r0,r1)
+#  define ldi(r0,i0)			ldi_l(r0,i0)
 #  define ldxr(r0,r1,r2)		ldxr_l(r0,r1,r2)
 #  define ldxi(r0,r1,i0)		ldxi_l(r0,r1,i0)
+#  define str(r0,r1)			str_l(r0,r1)
+#  define sti(i0,r0)			sti_l(i0,r0)
+#  define stxr(r0,r1,r2)		stxr_l(r0,r1,r2)
 #  define stxi(i0,r0,r1)		stxi_l(i0,r0,r1)
 #  define FP_REGNO			0x1d
 #  define LR_REGNO			0x1e

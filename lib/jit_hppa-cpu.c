@@ -47,6 +47,14 @@ typedef struct udiv {
 #define _R31_REGNO		31
 #define _CR11_REGNO		11
 #define ii(v)			*_jit->pc.ui++ = v
+#define ldr(r0,r1)		ldr_ui(r0,r1)
+#define ldi(r0,i0)		ldi_ui(r0,i0)
+#define ldxi(r0,r1,r2)		ldxr_ui(r0,r1,r2)
+#define ldxi(r0,r1,i0)		ldxi_ui(r0,r1,i0)
+#define str(r0,r1)		str_i(r0,r1)
+#define sti(i0,r0)		sti_i(i0,r0)
+#define stxr(r0,r1,r2)		stxr_i(r0,r1,r2)
+#define stxi(i0,r0,r1)		stxi_i(i0,r0,r1)
 #define f1(o,b,t,i)			_f1(_jit,o,b,t,i)
 static void _f1(jit_state_t*,jit_int32_t,
 		jit_int32_t,jit_int32_t,jit_int32_t);
@@ -822,8 +830,6 @@ static void _ldi_us(jit_state_t*,jit_int32_t,jit_word_t);
 #define ldxr_us(r0,r1,r2)	LDH(r2,r1,r0)
 #define ldxi_us(r0,r1,i0)	_ldxi_us(_jit,r0,r1,i0)
 static void _ldxi_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#define ldr(r0,r1)		ldr_ui(r0,r1)
-#define ldi(r0,i0)		ldi_ui(r0,i0)
 #define ldr_i(r0,r1)		ldr_ui(r0,r1)
 #define ldr_ui(r0,r1)		LDWI(_R0_REGNO,r1,r0)
 #define ldi_i(r0,i0)		ldi_ui(r0,i0)
@@ -831,7 +837,6 @@ static void _ldxi_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _ldi_ui(jit_state_t*,jit_int32_t,jit_word_t);
 #define ldxr_i(r0,r1,r2)	ldxr_ui(r0,r1,r2)
 #define ldxr_ui(r0,r1,r2)	LDW(r2,r1,r0)
-#define ldxi(r0,r1,i0)		ldxi_ui(r0,r1,i0)
 #define ldxi_i(r0,r1,i0)	ldxi_ui(r0,r1,i0)
 #define ldxi_ui(r0,r1,i0)	_ldxi_ui(_jit,r0,r1,i0)
 static void _ldxi_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -854,7 +859,6 @@ static void _stxi_s(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static void _sti_i(jit_state_t*,jit_word_t,jit_int32_t);
 #define stxr_i(r0,r1,r2)	_stxr_i(_jit,r0,r1,r2)
 static void _stxr_i(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
-#define stxi(i0,r0,r1)		stxi_i(i0,r0,r1)
 #define stxi_i(i0,r0,r1)	_stxi_i(_jit,i0,r0,r1)
 static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #define bcmpr(c,i0,r0,r1)	_bcmpr(_jit,c,i0,r0,r1)

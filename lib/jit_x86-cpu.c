@@ -32,7 +32,9 @@
 #    define ldr(u, v)			ldr_i(u, v)
 #    define ldxr(u, v, w)		ldxr_i(u, v, w)
 #    define ldxi(u, v, w)		ldxi_i(u, v, w)
+#    define str(u, v)			str_i(u, v)
 #    define sti(u, v)			sti_i(u, v)
+#    define stxr(u, v, w)		stxr_i(u, v, w)
 #    define stxi(u, v, w)		stxi_i(u, v, w)
 #    define can_sign_extend_int_p(im)	1
 #    define can_zero_extend_int_p(im)	1
@@ -43,7 +45,9 @@
 #    define ldr(u, v)			ldr_l(u, v)
 #    define ldxr(u, v, w)		ldxr_l(u, v, w)
 #    define ldxi(u, v, w)		ldxi_l(u, v, w)
+#    define str(u, v)			str_l(u, v)
 #    define sti(u, v)			sti_l(u, v)
+#    define stxr(u, v, w)		stxr_l(u, v, w)
 #    define stxi(u, v, w)		stxi_l(u, v, w)
 #    define can_sign_extend_int_p(im)					\
 	(((im) >= 0 && (long long)(im) <=  0x7fffffffLL) ||		\

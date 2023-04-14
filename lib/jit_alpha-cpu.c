@@ -52,6 +52,14 @@
 #  define _s32_p(v)			((v) >= -0x80000000 && (v) <= 0x7fffffff)
 #  define _u32_p(v)			((v) >= 0 && (v) <= 0xffffffff)
 #  define ii(i)				*_jit->pc.ui++ = i
+#  define ldr(r0,r1)			ldr_l(r0,r1)
+#  define ldi(r0,i0)			ldi_l(r0,i0)
+#  define ldxr(r0,r1,r2)		ldxr_l(r0,r1,r2)
+#  define ldxi(r0,r1,i0)		ldxi_l(r0,r1,i0)
+#  define str(r0,r1)			str_l(r0,r1)
+#  define sti(i0,r0)			sti_l(i0,r0)
+#  define stxr(r0,r1,r2)		stxr_l(r0,r1,r2)
+#  define stxi(i0,r0,r1)		stxi_l(i0,r0,r1)
 #  define stack_framesize		224
 #  define _S0_REGNO			0x09
 #  define _S1_REGNO			0x0a
@@ -580,7 +588,6 @@ static void _ldi_i(jit_state_t*,jit_int32_t,jit_word_t);
 static void _ldr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define ldi_ui(r0,i0)			_ldi_ui(_jit,r0,i0)
 static void _ldi_ui(jit_state_t*,jit_int32_t,jit_word_t);
-#  define ldr(r0,r1)			ldr_l(r0,r1)
 #  define ldr_l(r0,r1)			LDQ(r0,r1,0)
 #  define ldi_l(r0,i0)			_ldi_l(_jit,r0,i0)
 static void _ldi_l(jit_state_t*,jit_int32_t,jit_word_t);
@@ -608,10 +615,8 @@ static void _ldxi_i(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _ldxr_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define ldxi_ui(r0,r1,i0)		_ldxi_ui(_jit,r0,r1,i0)
 static void _ldxi_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  define ldxr(r0,r1,r2)		ldxr_l(r0,r1,r2)
 #  define ldxr_l(r0,r1,r2)		_ldxr_l(_jit,r0,r1,r2)
 static void _ldxr_l(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
-#  define ldxi(r0,r1,i0)		ldxi_l(r0,r1,i0)
 #  define ldxi_l(r0,r1,i0)		_ldxi_l(_jit,r0,r1,i0)
 static void _ldxi_l(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define unldr(r0, r1, i0)		_unldr(_jit, r0, r1, i0)
@@ -631,7 +636,6 @@ static void _sti_s(jit_state_t*,jit_word_t,jit_int32_t);
 #  define str_i(r0,r1)			STL(r1,r0,0)
 #  define sti_i(i0,r0)			_sti_i(_jit,i0,r0)
 static void _sti_i(jit_state_t*,jit_word_t,jit_int32_t);
-#  define str(r0,r1)			str_l(r0,r1)
 #  define str_l(r0,r1)			STQ(r1,r0,0)
 #  define sti_l(i0,r0)			_sti_l(_jit,i0,r0)
 static void _sti_l(jit_state_t*,jit_word_t,jit_int32_t);

@@ -102,14 +102,20 @@ typedef union {
 #  if __WORDSIZE == 32
 #    define ldr(u,v)			ldr_i(u,v)
 #    define ldi(u,v)			ldi_i(u,v)
+#    define ldxr(u,v,w)			ldxr_i(u,v,w)
 #    define ldxi(u,v,w)			ldxi_i(u,v,w)
+#    define str(u,v)			str_i(u,v)
 #    define sti(u,v)			sti_i(u,v)
+#    define stxr(u,v,w)			stxr_i(u,v,w)
 #    define stxi(u,v,w)			stxi_i(u,v,w)
 #  else
 #    define ldr(u,v)			ldr_l(u,v)
 #    define ldi(u,v)			ldi_l(u,v)
+#    define ldxr(u,v,w)			ldxr_l(u,v,w)
 #    define ldxi(u,v,w)			ldxi_l(u,v,w)
+#    define str(u,v)			str_l(u,v)
 #    define sti(u,v)			sti_l(u,v)
+#    define stxr(u,v,w)			stxr_l(u,v,w)
 #    define stxi(u,v,w)			stxi_l(u,v,w)
 #  endif
 /* can_relative_jump_p(im) => can_sign_extend_short_p(im << 2) */

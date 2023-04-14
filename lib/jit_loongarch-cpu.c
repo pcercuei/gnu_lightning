@@ -34,8 +34,11 @@
 # define _FP_REGNO			22
 # define ldr(u, v)			ldr_l(u, v)
 # define ldi(u, v)			ldi_l(u, v)
+# define ldxr(u, v, w)			ldxr_l(u, v, w)
 # define ldxi(u, v, w)			ldxi_l(u, v, w)
+# define str(u, v)			str_l(u, v)
 # define sti(u, v)			sti_l(u, v)
+# define stxr(u, v, w)			stxr_l(u, v, w)
 # define stxi(u, v, w)			stxi_l(u, v, w)
 # define orrr(op, rk, rj, rd)		_orrr(_jit, op, rk, rj, rd)
 # define ou5rr(op, i5, rj, rd)		_orrr(_jit, op, i5, rj, rd)
