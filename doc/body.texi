@@ -450,10 +450,10 @@ the equivalent C code.  Only the @code{_i} modifier is available in
 32-bit architectures.
 
 @example
-truncr_f_i    = <int> O1 = <float> O2
-truncr_f_l    = <long>O1 = <float> O2
-truncr_d_i    = <int> O1 = <double>O2
-truncr_d_l    = <long>O1 = <double>O2
+truncr_f_i    <int> O1 = <float> O2
+truncr_f_l    <long>O1 = <float> O2
+truncr_d_i    <int> O1 = <double>O2
+truncr_d_l    <long>O1 = <double>O2
 @end example
 
 The float conversion operations are @emph{destination first,
@@ -461,9 +461,37 @@ source second}, but the order of the types is reversed.  This happens
 for historical reasons.
 
 @example
-extr_f_d    = <double>O1 = <float> O2
-extr_d_f    = <float> O1 = <double>O2
+extr_f_d      <double>O1 = <float> O2
+extr_d_f      <float> O1 = <double>O2
 @end example
+
+The float to/from integer transfer operations are also @emph{destination
+first, source second}. These were added later, but follow the pattern
+of historic patterns.
+
+@example
+movr_w_f     <float>O1 = <int>O2
+movi_w_f     <float>O1 = <int>O2
+movr_f_w     <int>O1 = <float>O2
+movi_f_w     <int>O1 = <float>O2
+movr_w_d     <double>O1 = <long>O2
+movi_w_d     <double>O1 = <long>O2
+movr_d_w     <long>O1 = <double>O2
+movi_d_w     <long>O1 = <double>O2
+movr_ww_d    <double>O1 = [<int>O2:<int>O3]
+movi_ww_d    <double>O1 = [<int>O2:<int>O3]
+movr_d_ww    [<int>O1:<int>O2] = <double>O3
+movi_d_ww    [<int>O1:<int>O2] = <double>O3
+@end example
+
+These are used to transfer bits to/from floats to/from integers, and are
+useful to access bits of floating point values.
+
+@code{movr_w_d}, @code{movi_w_d}, @code{movr_d_w} and @code{movi_d_w} are
+only available in 64-bit. Conversely, @code{movr_ww_d}, @code{movi_ww_d},
+@code{movr_d_ww} and @code{movi_d_ww} are only available in 32-bit.
+For the int pair to/from double transfers, integer arguments must respect
+endianess, to match how the cpu handles the verbatim byte values.
 
 @item Network extensions
 These accept two operands, both of which must be registers; these
