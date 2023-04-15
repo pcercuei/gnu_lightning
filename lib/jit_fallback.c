@@ -170,6 +170,18 @@ static void _unstr8(jit_state_t*,jit_int32_t,jit_int32_t);
 #    define unsti8(r0, i0)		_unsti8(_jit, r0, i0)
 static void _unsti8(jit_state_t*,jit_int32_t,jit_word_t);
 #  endif
+#else
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#    define ubqlshr_u(r0,r1,r2,r3)	_ubqlshr_u(_jit,r0,r1,r2,r3)
+static void
+_ubqlshr_u(jit_state_t *_jit, jit_int32_t r0,
+	   jit_int32_t r1, jit_int32_t r2, jit_int32_t r3);
+#  else
+#    define ubqrshr_u(r0,r1,r2,r3)	_ubqrshr_u(_jit,r0,r1,r2,r3)
+static void
+_ubqrshr_u(jit_state_t *_jit, jit_int32_t r0,
+	   jit_int32_t r1, jit_int32_t r2, jit_int32_t r3);
+#  endif
 #endif
 #define fallback_unstr(r0, r1, i0)	_fallback_unstr(_jit, r0, r1, i0)
 static void _fallback_unstr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -2570,6 +2582,71 @@ _fallback_unsti(jit_state_t *_jit,
 }
 
 #else
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+static void
+_ubqlshr_u(jit_state_t *_jit, jit_int32_t r0,
+	   jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0, s0, t2, s2, t3, s3;
+    s0 = fallback_jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r3 || r1 == r3) {
+	s2 = fallback_jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, rr);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = fallback_jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(rn(t0), t3, __WORDSIZE);
+    lshr(r0, t2, t3);
+    rshr_u(r1, t2, t0);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+
+#else
+static void
+_ubqrshr_u(jit_state_t *_jit, jit_int32_t r0,
+	   jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t	t0, s0, t2, s2, t3, s3;
+    s0 = fallback_jit_get_reg(jit_class_gpr);
+    t0 = rn(s0);
+    if (r0 == r2 || r1 == r2) {
+	s2 = fallback_jit_get_reg(jit_class_gpr);
+	t2 = rn(s2);
+	movr(t2, r2);
+    }
+    else
+	t2 = r2;
+    if (r0 == r3 || r1 == r3) {
+	s3 = fallback_jit_get_reg(jit_class_gpr);
+	t3 = rn(s3);
+	movr(t3, r3);
+    }
+    else
+	t3 = r3;
+    rsbi(t0, t3, __WORDSIZE);
+    rshr_u(r0, t2, t3);
+    lshr(r1, t2, t0);
+    jit_unget_reg(s0);
+    if (t2 != r2)
+	jit_unget_reg(s2);
+    if (t3 != r3)
+	jit_unget_reg(s3);
+}
+#endif
+
 static void
 _fallback_unstr(jit_state_t *_jit,
 		jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
@@ -2583,8 +2660,6 @@ _fallback_unstr(jit_state_t *_jit,
 	t1 = fallback_jit_get_reg(jit_class_gpr);
 	t2 = fallback_jit_get_reg(jit_class_gpr);
 	t3 = fallback_jit_get_reg(jit_class_gpr);
-	t4 = fallback_jit_get_reg(jit_class_gpr);
-	t5 = fallback_jit_get_reg(jit_class_gpr);
 	/* Zero out top bits and keep value to store in t0 */
 	if (i0 != sizeof(jit_word_t)) {
 	    lshi(rn(t3), r1, (sizeof(jit_word_t) - i0) << 3);
@@ -2602,9 +2677,9 @@ _fallback_unstr(jit_state_t *_jit,
 	lshi(rn(t2), rn(t2), 3);
 	/* Split values to store (assume will need two stores) */
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	qlshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
+	ubqlshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
 #else
-	qrshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
+	ubqrshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
 #endif
 	/* Generate masks for values in memory */
 	if (i0 == sizeof(jit_word_t))
@@ -2618,12 +2693,15 @@ _fallback_unstr(jit_state_t *_jit,
 #endif
 	}
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	qlshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
+	ubqlshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
 #else
-	qrshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
+	ubqrshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
 #endif
 	comr(rn(t2), rn(t2));
 	comr(rn(t3), rn(t3));
+	/* Allocate two extra registers later in case need temps for *q?shr_u */
+	t4 = fallback_jit_get_reg(jit_class_gpr);
+	t5 = fallback_jit_get_reg(jit_class_gpr);
 	/* Store words */
 	andi(rn(t4), r0, -(jit_word_t)sizeof(jit_word_t));
 	ldr(rn(t5), rn(t4));
