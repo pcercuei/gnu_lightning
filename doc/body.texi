@@ -517,6 +517,29 @@ The @code{_l} type is only available in 64-bit architectures, and for
 convenience, there is a version without a type modifier for integer or
 pointer operands that uses the appropriate wordsize call.
 
+@item Unaligned memory access
+These allow access to integers of size 3, in 32-bit, and extra sizes
+5, 6 and 7 in 64-bit.
+For floating point values only support for size 4 and 8 is provided.
+@example
+unldr       O1 = *(signed O3 byte integer)* = O2
+unldi       O1 = *(signed O3 byte integer)* = O2
+unldr_u     O1 = *(unsigned O3 byte integer)* = O2
+unldi_u     O1 = *(unsigned O3 byte integer)* = O2
+unldr_x     O1 = *(O3 byte float)* = O2
+unldi_x     O1 = *(O3 byte float)* = O2
+unstr       *(O3 byte integer)O1 = O2
+unsti       *(O3 byte integer)O1 = O2
+unstr_x     *(O3 byte float)O1 = O2
+unsti_x     *(O3 byte float)O1 = O2
+@end example
+With the exception of non standard sized integers, these might be
+implemented as normal loads and stores, if the processor supports
+unaligned memory access, or, mode can be chosen at jit initialization
+time, to generate or not generate, code that does trap on unaligned
+memory access. Letting the kernel trap means smaller code generation
+as it is required to check alignment at runtime@footnote{This requires changing jit_cpu.unaligned to 0 to disable or 1 to enable unaligned code generation. Not all ports have the C jit_cpu.unaligned value.}.
+
 @item Argument management
 These are:
 @example
