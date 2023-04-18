@@ -65,14 +65,16 @@ typedef union {
     struct {	jit_uint32_t _: 13;	jit_uint32_t b: 5;	} rs1;
     struct {	jit_uint32_t _: 18;	jit_uint32_t b: 1;	} i;
     struct {	jit_uint32_t _: 18;	jit_uint32_t b: 9;	} opf;
+    struct {	jit_uint32_t _: 18;	jit_uint32_t b: 5;	} rs3;
     struct {	jit_uint32_t _: 19;	jit_uint32_t b: 1;	} x;
     struct {	jit_uint32_t _: 19;	jit_uint32_t b: 8;	} asi;
     struct {	jit_uint32_t _: 19;	jit_uint32_t b: 6;	} res;
     struct {	jit_uint32_t _: 19;	jit_uint32_t b: 13;	} simm13;
     struct {	jit_uint32_t _: 20;	jit_uint32_t b: 7;	} asix;
     struct {	jit_uint32_t _: 20;	jit_uint32_t b: 6;	} asis;
-    struct {	jit_uint32_t _: 26;	jit_uint32_t b: 6;	} shim;
+    struct {	jit_uint32_t _: 23;	jit_uint32_t b: 4;	} op5;
     struct {	jit_uint32_t _: 25;	jit_uint32_t b: 7;	} imm7;
+    struct {	jit_uint32_t _: 26;	jit_uint32_t b: 6;	} shim;
     struct {	jit_uint32_t _: 27;	jit_uint32_t b: 5;	} rs2;
     jit_int32_t							  v;
 } jit_instr_t;

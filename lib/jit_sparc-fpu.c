@@ -93,6 +93,11 @@
 #  define f3f(rd, op3, rs1, opf, rs2)	_f3f(_jit, rd, op3, rs1, opf, rs2)
 static void
 _f3f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t, jit_int32_t,jit_int32_t);
+#  define FPop3(rd, rs1, rs3, op5, rs2)	f4f(rd, 55, rs1, rs3, op5, rs2)
+#  define f4f(rd,op3,rs1,rs3,op5,rs2)	_f4f(_jit, rd,op3,rs1,rs3,op5,rs2)
+static void
+_f4f(jit_state_t*,jit_int32_t,jit_int32_t,
+     jit_int32_t, jit_int32_t,jit_int32_t,jit_int32_t);
 #  define FITOS(rs2, rd)		FPop1(rd, 0, 196, rs2)
 #  define FITOD(rs2, rd)		FPop1(rd, 0, 200, rs2)
 #  define FITOQ(rs2, rd)		FPop1(rd, 0, 204, rs2)
@@ -125,6 +130,14 @@ _f3f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t, jit_int32_t,jit_int32_t);
 #  define FSQRTS(rs2, rd)		FPop1(rd, 0,  41, rs2)
 #  define FSQRTD(rs2, rd)		FPop1(rd, 0,  42, rs2)
 #  define FSQRTQ(rs2, rd)		FPop1(rd, 0,  43, rs2)
+#  define FMADDS(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMADDS, rs2)
+#  define FMADDD(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMADDD, rs2)
+#  define FMSUBS(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMSUBS, rs2)
+#  define FMSUBD(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMSUBD, rs2)
+#  define FNMSUBS(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMSUBS,rs2)
+#  define FNMSUBD(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMSUBD,rs2)
+#  define FNMADDS(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMADDS,rs2)
+#  define FNMADDD(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMADDD,rs2)
 #  define SPARC_FADDS			65
 #  define SPARC_FADDD			66
 #  define SPARC_FADDQ			67
@@ -139,6 +152,14 @@ _f3f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t, jit_int32_t,jit_int32_t);
 #  define SPARC_FDIVS			77
 #  define SPARC_FDIVD			78
 #  define SPARC_FDIVQ			79
+#  define SPARC_FMADDS			1
+#  define SPARC_FMADDD			2
+#  define SPARC_FMSUBS			5
+#  define SPARC_FMSUBD			6
+#  define SPARC_FNMSUBS			9
+#  define SPARC_FNMSUBD			10
+#  define SPARC_FNMADDS			13
+#  define SPARC_FNMADDD			14
 #  define FADDS(rs1, rs2, rd)		FPop1(rd, rs1,  SPARC_FADDS, rs2)
 #  define FADDD(rs1, rs2, rd)		FPop1(rd, rs1,  SPARC_FADDD, rs2)
 #  define FADDQ(rs1, rs2, rd)		FPop1(rd, rs1,  SPARC_FADDQ, rs2)
@@ -209,6 +230,20 @@ static void _negr_f(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _absr_f(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define sqrtr_f(r0, r1)		_sqrtr_f(_jit, r0, r1)
 static void _sqrtr_f(jit_state_t*, jit_int32_t, jit_int32_t);
+#  endif
+#  if __WORDSIZE == 32
+#    define fmar_f(r0, r1, r2, r3)	FMADDS(r1, r2, r3, r0)
+#    define fmsr_f(r0, r1, r2, r3)	FMSUBS(r1, r2, r3, r0)
+#    define fmar_d(r0, r1, r2, r3)	FMADDD(r1, r2, r3, r0)
+#    define fmsr_d(r0, r1, r2, r3)	FMSUBD(r1, r2, r3, r0)
+#  else
+#    define fop3f(op, r0, r1, r2, r3)	_fop3f(_jit, op, r0, r1, r2, r3)
+static void _fop3f(jit_state_t*, jit_int32_t, jit_int32_t,
+		   jit_int32_t, jit_int32_t, jit_int32_t);
+#    define fmar_f(r0, r1, r2, r3)	fop3f(SPARC_FMADDS, r0, r1, r2, r3)
+#    define fmsr_f(r0, r1, r2, r3)	fop3f(SPARC_FMSUBS, r0, r1, r2, r3)
+#    define fmar_d(r0, r1, r2, r3)	fop3f(SPARC_FMADDD, r0, r1, r2, r3)
+#    define fmsr_d(r0, r1, r2, r3)	fop3f(SPARC_FMSUBD, r0, r1, r2, r3)
 #  endif
 #  define extr_d(r0, r1)		_extr_d(_jit, r0, r1)
 static void _extr_d(jit_state_t*, jit_int32_t, jit_int32_t);
@@ -499,6 +534,45 @@ _f3f(jit_state_t *_jit, jit_int32_t rd,
     v.op3.b   = op3;
     v.rs1.b   = rs1;
     v.opf.b   = opf;
+    v.rs2.b   = rs2;
+    ii(v.v);
+}
+
+static void
+_f4f(jit_state_t *_jit, jit_int32_t rd, jit_int32_t op3,
+     jit_int32_t rs1, jit_int32_t rs3, jit_int32_t op5, jit_int32_t rs2)
+{
+    jit_instr_t		v;
+#  if __WORDSIZE == 64
+    if (rd > 31) {
+	assert(rd <= 63 && (rd & 1) == 0);
+	rd -= 31;
+    }
+    if (rs1 > 31) {
+	assert(rs1 <= 63 && (rs1 & 1) == 0);
+	rs1 -= 31;
+    }
+    if (rs2 > 31) {
+	assert(rs2 <= 63 && (rs2 & 1) == 0);
+	rs2 -= 31;
+    }
+    if (rs3 > 31) {
+	assert(rs3 <= 63 && (rs3 & 1) == 0);
+	rs3 -= 31;
+    }
+#  endif
+    assert(!(rd  & 0xffffffe0));
+    assert(!(op3 & 0xffffffc0));
+    assert(!(rs1 & 0xffffffe0));
+    assert(!(rs3 & 0xffffffe0));
+    assert(!(op5 & 0xfffffff0));
+    assert(!(rs2 & 0xffffffe0));
+    v.op.b    = 2;
+    v.rd.b    = rd;
+    v.op3.b   = op3;
+    v.rs1.b   = rs1;
+    v.rs3.b   = rs3;
+    v.op5.b   = op5;
     v.rs2.b   = rs2;
     ii(v.v);
 }
@@ -931,6 +1005,83 @@ _fop2f(jit_state_t *_jit, jit_int32_t op,
 	jit_unget_reg(t1);
     if (mask & 4)
 	jit_unget_reg(t2);
+}
+
+static void
+_fop3f(jit_state_t *_jit, jit_int32_t op,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		x0, t0, x1, t1, x2, t2, x3, t3, mask = 0;
+    if (!single_precision_p(r0)) {
+	mask |= 1;
+	t0 = jit_get_reg(CLASS_SNG);
+	x0 = rn(t0);
+	if (r0 == r1) {
+	    x1 = x0;
+	    movr_d(x1, r1);
+	    if (r0 == r2)
+		x2 = x0;
+	    if (r0 == r3)
+		x3 = x0;
+	}
+	else if (r0 == r2) {
+	    x2 = x0;
+	    movr_d(x2, r2);
+	}
+	else if (r0 == r3) {
+	    x3 = x0;
+	    movr_d(x3, r3);
+	}
+    }
+    else
+	x0 = r0;
+    if (!single_precision_p(r1)) {
+	if (r0 != r1) {
+	    mask |= 2;
+	    t1 = jit_get_reg(CLASS_SNG);
+	    x1 = rn(t1);
+	    movr_d(x1, r1);
+	    if (r1 == r2)
+		x2 = x1;
+	    if (r1 == r3)
+		x3 = x1;
+	}
+    }
+    else
+	x1 = r1;
+    if (!single_precision_p(r2)) {
+	if (r0 != r2 && r1 != r2) {
+	    mask |= 4;
+	    t2 = jit_get_reg(CLASS_SNG);
+	    x2 = rn(t2);
+	    movr_d(x2, r2);
+	    if (r2 == r3)
+		x3 = x2;
+	}
+    }
+    else
+	x2 = r2;
+    if (!single_precision_p(r3)) {
+	if (r0 != r3 && r1 != r3 && r2 != r3) {
+	    mask |= 8;
+	    t3 = jit_get_reg(CLASS_SNG);
+	    x3 = rn(t3);
+	    movr_d(x3, r3);
+	}
+    }
+    else
+	x3 = r3;
+    FPop3(x0, x1,  x3, op, x2);
+    if (mask & 1) {
+	movr_d(r0, x0);
+	jit_unget_reg(t0);
+    }
+    if (mask & 2)
+	jit_unget_reg(t1);
+    if (mask & 4)
+	jit_unget_reg(t2);
+    if (mask & 8)
+	jit_unget_reg(t3);
 }
 #  endif
 
