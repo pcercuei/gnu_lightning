@@ -353,7 +353,19 @@ static void _movi_d(jit_state_t*,jit_int32_t,jit_float64_t*);
 #  define negr_f(r0,r1)			LCEBR(r0,r1)
 #  define negr_d(r0,r1)			LCDBR(r0,r1)
 #  define sqrtr_f(r0,r1)		SQEBR(r0,r1)
+#  define fmar_f(r0,r1,r2,r3)		_fmar_f(_jit,r0,r1,r2,r3)
+static void _fmar_f(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fmsr_f(r0,r1,r2,r3)		_fmsr_f(_jit,r0,r1,r2,r3)
+static void _fmsr_f(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define sqrtr_d(r0,r1)		SQDBR(r0,r1)
+#  define fmar_d(r0,r1,r2,r3)		_fmar_d(_jit,r0,r1,r2,r3)
+static void _fmar_d(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fmsr_d(r0,r1,r2,r3)		_fmsr_d(_jit,r0,r1,r2,r3)
+static void _fmsr_d(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define truncr_f_i(r0,r1)		CFEBR(r0,RND_ZERO,r1)
 #  define truncr_d_i(r0,r1)		CFDBR(r0,RND_ZERO,r1)
 #  if __WORDSIZE == 64
@@ -968,6 +980,66 @@ _movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     jit_unget_reg(reg);
 }
 #endif
+
+static void
+_fmar_f(jit_state_t* _jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    if (r0 == r3)
+	MAER(r0, r2, r1);
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	movr_f(rn(t0), r3);
+	MAER(rn(t0), r2, r1);
+	movr_f(r0, rn(t0));
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fmsr_f(jit_state_t* _jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    if (r0 == r3)
+	MSER(r0, r2, r1);
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	movr_f(rn(t0), r3);
+	MSER(rn(t0), r2, r1);
+	movr_f(r0, rn(t0));
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fmar_d(jit_state_t* _jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    if (r0 == r3)
+	MADR(r0, r2, r1);
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	movr_f(rn(t0), r3);
+	MADR(rn(t0), r2, r1);
+	movr_f(r0, rn(t0));
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fmsr_d(jit_state_t* _jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    if (r0 == r3)
+	MSDR(r0, r2, r1);
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	movr_f(rn(t0), r3);
+	MSDR(rn(t0), r2, r1);
+	movr_f(r0, rn(t0));
+	jit_unget_reg(t0);
+    }
+}
 
 static void
 _addr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
