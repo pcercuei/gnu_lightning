@@ -49,7 +49,7 @@ typedef struct udiv {
 #define ii(v)			*_jit->pc.ui++ = v
 #define ldr(r0,r1)		ldr_ui(r0,r1)
 #define ldi(r0,i0)		ldi_ui(r0,i0)
-#define ldxi(r0,r1,r2)		ldxr_ui(r0,r1,r2)
+#define ldxr(r0,r1,r2)		ldxr_ui(r0,r1,r2)
 #define ldxi(r0,r1,i0)		ldxi_ui(r0,r1,i0)
 #define str(r0,r1)		str_i(r0,r1)
 #define sti(i0,r0)		sti_i(i0,r0)
