@@ -271,7 +271,11 @@ static void _f54(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,
 #define negr_f(r0,r1)			FNEG_S(r1,r0)
 #define negr_d(r0,r1)			FNEG_D(r1,r0)
 #define sqrtr_f(r0,r1)			FSQRT_S(r1,r0)
+#define fmar_f(r0,r1,r2,r3)		FMPYFADD_S(r1,r2,r3,r0)
+#define fmsr_f(r0,r1,r2,r3)		FMPYFSUB_S(r1,r2,r3,r0)
 #define sqrtr_d(r0,r1)			FSQRT_D(r1,r0)
+#define fmar_d(r0,r1,r2,r3)		FMPYFADD_D(r1,r2,r3,r0)
+#define fmsr_d(r0,r1,r2,r3)		FMPYFSUB_D(r1,r2,r3,r0)
 #define extr_f(r0,r1)			_extr_f(_jit,r0,r1)
 static void _extr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #define extr_d(r0,r1)			_extr_d(_jit,r0,r1)
