@@ -160,6 +160,10 @@ extern double sqrt(double);
 #    define sqrtr_d(r0,r1)		_sqrtr_d(_jit,r0,r1)
 static void _sqrtr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  endif
+#  define fmar_f(r0,r1,r2,r3)		FMADDS(r0,r1,r3,r2)
+#  define fmar_d(r0,r1,r2,r3)		FMADD(r0,r1,r3,r2)
+#  define fmsr_f(r0,r1,r2,r3)		FMSUBS(r0,r1,r3,r2)
+#  define fmsr_d(r0,r1,r2,r3)		FMSUB(r0,r1,r3,r2)
 #  define addr_f(r0,r1,r2)		FADDS(r0,r1,r2)
 #  define addr_d(r0,r1,r2)		FADD(r0,r1,r2)
 #  define addi_f(r0,r1,i0)		_addi_f(_jit,r0,r1,i0)
