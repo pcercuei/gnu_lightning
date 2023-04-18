@@ -215,6 +215,8 @@ static void _divi_f(jit_state_t*, jit_int32_t, jit_int32_t, jit_float32_t);
 # define absr_f(r0, r1)			FABS_S(r0, r1)
 # define negr_f(r0, r1)			FNEG_S(r0, r1)
 # define sqrtr_f(r0, r1)		FSQRT_S(r0, r1)
+# define fmar_f(r0, r1, r2, r3)		FMADD_S(r0, r1, r2, r3)
+# define fmsr_f(r0, r1, r2, r3)		FMSUB_S(r0, r1, r2, r3)
 # define extr_f(r0, r1)			_extr_f(_jit, r0, r1)
 static void _extr_f(jit_state_t*, jit_int32_t, jit_int32_t);
 # define ldr_f(r0, r1)			FLD_S(r0, r1, 0)
@@ -375,6 +377,8 @@ static void _divi_d(jit_state_t*, jit_int32_t, jit_int32_t, jit_float64_t);
 # define absr_d(r0, r1)			FABS_D(r0, r1)
 # define negr_d(r0, r1)			FNEG_D(r0, r1)
 # define sqrtr_d(r0, r1)		FSQRT_D(r0, r1)
+# define fmar_d(r0, r1, r2, r3)		FMADD_D(r0, r1, r2, r3)
+# define fmsr_d(r0, r1, r2, r3)		FMSUB_D(r0, r1, r2, r3)
 # define extr_d(r0, r1)			_extr_d(_jit, r0, r1)
 static void _extr_d(jit_state_t*, jit_int32_t, jit_int32_t);
 # define ldr_d(r0, r1)			FLD_D(r0, r1, 0)
