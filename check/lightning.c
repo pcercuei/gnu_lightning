@@ -474,6 +474,8 @@ static void divr_f(void);	static void divi_f(void);
 static void negr_f(void);	static void negi_f(void);
 static void absr_f(void);	static void absi_f(void);
 static void sqrtr_f(void);	static void sqrti_f(void);
+static void fmar_f(void);	static void fmai_f(void);
+static void fmsr_f(void);	static void fmsi_f(void);
 static void ltr_f(void);	static void lti_f(void);
 static void ler_f(void);	static void lei_f(void);
 static void eqr_f(void);	static void eqi_f(void);
@@ -531,6 +533,8 @@ static void divr_d(void);	static void divi_d(void);
 static void negr_d(void);	static void negi_d(void);
 static void absr_d(void);	static void absi_d(void);
 static void sqrtr_d(void);	static void sqrti_d(void);
+static void fmar_d(void);	static void fmai_d(void);
+static void fmsr_d(void);	static void fmsi_d(void);
 static void ltr_d(void);	static void lti_d(void);
 static void ler_d(void);	static void lei_d(void);
 static void eqr_d(void);	static void eqi_d(void);
@@ -869,6 +873,8 @@ static instr_t		  instr_vector[] = {
     entry(negr_f),	entry(negi_f),
     entry(absr_f),	entry(absi_f),
     entry(sqrtr_f),	entry(sqrti_f),
+    entry(fmar_f),	entry(fmai_f),
+    entry(fmsr_f),	entry(fmsi_f),
     entry(ltr_f),	entry(lti_f),
     entry(ler_f),	entry(lei_f),
     entry(eqr_f),	entry(eqi_f),
@@ -925,6 +931,8 @@ static instr_t		  instr_vector[] = {
     entry(negr_d),	entry(negi_d),
     entry(absr_d),	entry(absi_d),
     entry(sqrtr_d),	entry(sqrti_d),
+    entry(fmar_d),	entry(fmai_d),
+    entry(fmsr_d),	entry(fmsi_d),
     entry(ltr_d),	entry(lti_d),
     entry(ler_d),	entry(lei_d),
     entry(eqr_d),	entry(eqi_d),
@@ -1346,6 +1354,14 @@ name(void)								\
     jit_fpr_t	r0 = get_freg(), r1 = get_freg(), r2 = get_freg();	\
     jit_##name(r0, r1, r2);						\
 }
+#define entry_fr_fr_fr_fr(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_fpr_t	r0 = get_freg(), r1 = get_freg(),			\
+		r2 = get_freg(), r3 = get_freg();			\
+    jit_##name(r0, r1, r2, r3);						\
+}
 #define entry_fr_fr_fm(name)						\
 static void								\
 name(void)								\
@@ -1354,6 +1370,15 @@ name(void)								\
     jit_float64_t	im = get_float(skip_ws);			\
     jit_##name(r0, r1, make_float(im));					\
 }
+#define entry_fr_fr_fr_fm(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_fpr_t		r0 = get_freg(), r1 = get_freg(),		\
+			r2 = get_freg();				\
+    jit_float64_t	im = get_float(skip_ws);			\
+    jit_##name(r0, r1, r2, make_float(im));				\
+}
 #define entry_fr_fr_dm(name)						\
 static void								\
 name(void)								\
@@ -1361,6 +1386,15 @@ name(void)								\
     jit_fpr_t		r0 = get_freg(), r1 = get_freg();		\
     jit_float64_t	im = get_float(skip_ws);			\
     jit_##name(r0, r1, im);						\
+}
+#define entry_fr_fr_fr_dm(name)						\
+static void								\
+name(void)								\
+{									\
+    jit_fpr_t		r0 = get_freg(), r1 = get_freg(),		\
+			r2 = get_freg();				\
+    jit_float64_t	im = get_float(skip_ws);			\
+    jit_##name(r0, r1, r2, im);						\
 }
 #define entry_fr_fr(name)						\
 static void								\
@@ -1897,6 +1931,8 @@ entry_fr_fr_fr(divr_f)		entry_fr_fr_fm(divi_f)
 entry_fr_fr(negr_f)		entry_fr_fm(negi_f)
 entry_fr_fr(absr_f)		entry_fr_fm(absi_f)
 entry_fr_fr(sqrtr_f)		entry_fr_fm(sqrti_f)
+entry_fr_fr_fr_fr(fmar_f)	entry_fr_fr_fr_fm(fmai_f)
+entry_fr_fr_fr_fr(fmsr_f)	entry_fr_fr_fr_fm(fmsi_f)
 entry_ir_fr_fr(ltr_f)		entry_ir_fr_fm(lti_f)
 entry_ir_fr_fr(ler_f)		entry_ir_fr_fm(lei_f)
 entry_ir_fr_fr(eqr_f)		entry_ir_fr_fm(eqi_f)
@@ -1953,6 +1989,8 @@ entry_fr_fr_fr(divr_d)		entry_fr_fr_dm(divi_d)
 entry_fr_fr(negr_d)		entry_fr_fm(negi_d)
 entry_fr_fr(absr_d)		entry_fr_fm(absi_d)
 entry_fr_fr(sqrtr_d)		entry_fr_fm(sqrti_d)
+entry_fr_fr_fr_fr(fmar_d)	entry_fr_fr_fr_dm(fmai_d)
+entry_fr_fr_fr_fr(fmsr_d)	entry_fr_fr_fr_dm(fmsi_d)
 entry_ir_fr_fr(ltr_d)		entry_ir_fr_dm(lti_d)
 entry_ir_fr_fr(ler_d)		entry_ir_fr_dm(lei_d)
 entry_ir_fr_fr(eqr_d)		entry_ir_fr_dm(eqi_d)
