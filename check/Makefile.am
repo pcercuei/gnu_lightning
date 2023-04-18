@@ -122,6 +122,7 @@ EXTRA_DIST =				\
 	carry.tst	carry.ok	\
 	call.tst	call.ok		\
 	float.tst	float.ok	\
+	fma.tst		fma.ok		\
 	jmpr.tst	jmpr.ok		\
 	live.tst	live.ok		\
 	put.tst		put.ok		\
@@ -164,7 +165,7 @@ base_TESTS =				\
 	alu_and alu_or alu_xor		\
 	alu_lsh alu_rsh			\
 	alu_com alu_neg	alu_rot		\
-	movzr				\
+	movzr fma			\
 	fop_abs fop_sqrt		\
 	varargs stack			\
 	clobber carry call		\
@@ -194,7 +195,7 @@ x87_TESTS =					\
 	alu_and.x87 alu_or.x87 alu_xor.x87	\
 	alu_lsh.x87 alu_rsh.x87 alu_rot.x87	\
 	alu_com.x87 alu_neg.x87			\
-	movzr.x87				\
+	movzr.x87 fma.x87			\
 	fop_abs.x87 fop_sqrt.x87		\
 	varargs.x87 stack.x87			\
 	clobber.x87 carry.x87 call.x87		\
@@ -218,7 +219,7 @@ x87_nodata_TESTS =							\
 	alu_and.x87.nodata alu_or.x87.nodata alu_xor.x87.nodata		\
 	alu_lsh.x87.nodata alu_rsh.x87.nodata alu_rot.x87.nodata	\
 	alu_com.x87.nodata alu_neg.x87.nodata				\
-	movzr.x87.nodata						\
+	movzr.x87.nodata fma.x87.nodata					\
 	fop_abs.x87.nodata fop_sqrt.x87.nodata				\
 	varargs.x87.nodata stack.x87.nodata				\
 	clobber.x87.nodata carry.x87.nodata call.x87.nodata		\
@@ -244,7 +245,7 @@ arm_TESTS =					\
 	alu_and.arm alu_or.arm alu_xor.arm	\
 	alu_lsh.arm alu_rsh.arm alu_rot.arm	\
 	alu_com.arm alu_neg.arm			\
-	movzr.arm				\
+	movzr.arm fma.arm			\
 	fop_abs.arm fop_sqrt.arm		\
 	varargs.arm stack.arm			\
 	clobber.arm carry.arm call.arm		\
@@ -271,7 +272,7 @@ swf_TESTS =					\
 	alu_and.swf alu_or.swf alu_xor.swf	\
 	alu_lsh.swf alu_rsh.swf alu_rot.swf	\
 	alu_com.swf alu_neg.swf			\
-	movzr.swf				\
+	movzr.swf fma.swf			\
 	fop_abs.swf fop_sqrt.swf		\
 	varargs.swf stack.swf			\
 	clobber.swf carry.swf call.swf		\
@@ -296,7 +297,7 @@ arm_swf_TESTS =							\
 	alu_and.arm.swf alu_or.arm.swf alu_xor.arm.swf		\
 	alu_lsh.arm.swf alu_rsh.arm.swf alu_rot.arm.swf		\
 	alu_com.arm.swf alu_neg.arm.swf				\
-	movzr.arm.swf						\
+	movzr.arm.swf fma.arm.swf				\
 	fop_abs.arm.swf fop_sqrt.arm.swf			\
 	varargs.arm.swf stack.arm.swf				\
 	clobber.arm.swf carry.arm.swf call.arm.swf		\
@@ -322,7 +323,7 @@ arm4_swf_TESTS =						\
 	alu_and.arm4.swf alu_or.arm4.swf alu_xor.arm4.swf	\
 	alu_lsh.arm4.swf alu_rsh.arm4.swf alu_rot.arm4.swf	\
 	alu_com.arm4.swf alu_neg.arm4.swf			\
-	movzr.arm4.swf						\
+	movzr.arm4.swf fma.arm4.swf				\
 	fop_abs.arm4.swf fop_sqrt.arm4.swf			\
 	varargs.arm4.swf stack.arm4.swf				\
 	clobber.arm4.swf carry.arm4.swf call.arm4.swf		\
@@ -351,7 +352,7 @@ nodata_TESTS =						\
 	alu_and.nodata alu_or.nodata alu_xor.nodata	\
 	alu_lsh.nodata alu_rsh.nodata alu_rot.nodata	\
 	alu_com.nodata alu_neg.nodata			\
-	movzr.nodata					\
+	movzr.nodata fma.nodata				\
 	fop_abs.nodata fop_sqrt.nodata			\
 	varargs.nodata stack.nodata			\
 	clobber.nodata carry.nodata call.nodata		\
