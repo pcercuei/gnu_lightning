@@ -27,6 +27,7 @@ typedef union {
     struct {	jit_uint32_t _:26;	jit_uint32_t b :  6; } hc;
     struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } rs;
     struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } fm;
+    struct {	jit_uint32_t _:21;	jit_uint32_t b :  5; } fr;
     struct {	jit_uint32_t _:18;	jit_uint32_t b :  3; } pD;
     struct {	jit_uint32_t _:19;	jit_uint32_t b :  2; } pW;
     struct {	jit_uint32_t _:16;	jit_uint32_t b :  5; } rt;
@@ -47,6 +48,7 @@ typedef union {
     struct {				jit_uint32_t b :  6; } hc;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } rs;
     struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } fm;
+    struct {	jit_uint32_t _: 6;	jit_uint32_t b :  5; } fr;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  3; } pD;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  2; } pW;
     struct {	jit_uint32_t _:11;	jit_uint32_t b :  5; } rt;
@@ -996,7 +998,7 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 			    jit_int32_t reg0, jit_int32_t reg1)
 {
     jit_instr_t		i;
-    jit_int32_t		reg, r0, r1, r2, regs[3];
+    jit_int32_t		reg, r0, r1, r2/*, xreg*/, regs[3];
     /* If will emit a pending instruction */
     if (_jitc->inst.pend)
 	i.op = _jitc->inst.op;
@@ -1006,7 +1008,7 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
     /* Else, a nop */
     else
 	i.op = 0;
-    regs[0] = regs[1] = regs[2] = -1;
+    regs[0] = regs[1] = regs[2]/* = xreg*/ = -1;
     switch (i.hc.b) {
 	case MIPS_SPECIAL:		/* 00 */
 	    switch (i.tc.b) {
@@ -1296,6 +1298,9 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 			    goto three_fprs;
 		    }
 		    break;
+		case MIPS_MADDF:	/* 18 */
+		case MIPS_MSUBF:	/* 19 */
+		    assert(jit_mips6_p());
 		case MIPS_SUB_fmt:	/* 01 */
 		case MIPS_MUL_fmt:	/* 02 */
 		case MIPS_DIV_fmt:	/* 03 */
@@ -1434,6 +1439,29 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 			    abort();
 		    }
 		    break;
+	    }
+	    break;
+	case MIPS_COP1X:		/* 13 */
+	    switch (i.tc.b) {
+		case MIPS_MADD_fmt_S:
+		case MIPS_MADD_fmt_D:
+		case MIPS_MSUB_fmt_S:
+		case MIPS_MSUB_fmt_D:
+		    assert(!jit_mips6_p());
+		    if (mask & jit_class_gpr)
+			regs[0] = regs[1] = regs[2] = 0;
+		    else {
+			regs[0] = i.ft.b;
+			regs[1] = i.fs.b;
+			regs[2] = i.fd.b;
+			/* FIXME No need to compute and check it.
+			 * If asking for a tmeporary fpr, code will
+			 * be flushed. */
+			/* xreg = i.fr.b; */
+		    }
+		    break;
+		default:
+		    abort();
 	    }
 	    break;
 	case MIPS_DAUI:	/* JALX */	/* 1d */
