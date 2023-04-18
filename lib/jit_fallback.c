@@ -2593,7 +2593,7 @@ _ubqlshr_u(jit_state_t *_jit, jit_int32_t r0,
     if (r0 == r3 || r1 == r3) {
 	s2 = fallback_jit_get_reg(jit_class_gpr);
 	t2 = rn(s2);
-	movr(t2, rr);
+	movr(t2, r2);
     }
     else
 	t2 = r2;
@@ -2677,9 +2677,9 @@ _fallback_unstr(jit_state_t *_jit,
 	lshi(rn(t2), rn(t2), 3);
 	/* Split values to store (assume will need two stores) */
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	ubqlshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
+	qlshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
 #else
-	ubqrshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
+	qrshr_u(rn(t0), rn(t1), rn(t3), rn(t2));
 #endif
 	/* Generate masks for values in memory */
 	if (i0 == sizeof(jit_word_t))
@@ -2693,9 +2693,9 @@ _fallback_unstr(jit_state_t *_jit,
 #endif
 	}
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	ubqlshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
+	qlshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
 #else
-	ubqrshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
+	qrshr_u(rn(t2), rn(t3), rn(t3), rn(t2));
 #endif
 	comr(rn(t2), rn(t2));
 	comr(rn(t3), rn(t3));
