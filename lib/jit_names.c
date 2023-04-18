@@ -287,4 +287,8 @@ static char *code_name[] = {
     "unstr_x",		"unsti_x",
     "movi_w_f",
     "movi_w_d",		"movi_ww_d",
+    "fmar_f",		"fmai_f",
+    "fmsr_f",		"fmsi_f",
+    "fmar_d",		"fmai_d",
+    "fmsr_d",		"fmsi_d",
 };

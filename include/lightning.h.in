@@ -1184,6 +1184,19 @@ typedef enum {
     jit_code_movi_w_f,
     jit_code_movi_w_d,		jit_code_movi_ww_d,
 
+#define jit_fmar_f(u,v,w,x)	jit_new_node_wqw(jit_code_fmar_f, u, v, w, x)
+#define jit_fmai_f(u,v,w,x)	_jit_fmai_f(_jit, u, v, w, x)
+    jit_code_fmar_f,		jit_code_fmai_f,
+#define jit_fmsr_f(u,v,w,x)	jit_new_node_wqw(jit_code_fmsr_f, u, v, w, x)
+#define jit_fmsi_f(u,v,w,x)	_jit_fmsi_f(_jit, u, v, w, x)
+    jit_code_fmsr_f,		jit_code_fmsi_f,
+#define jit_fmar_d(u,v,w,x)	jit_new_node_wqw(jit_code_fmar_d, u, v, w, x)
+#define jit_fmai_d(u,v,w,x)	_jit_fmai_d(_jit, u, v, w, x)
+    jit_code_fmar_d,		jit_code_fmai_d,
+#define jit_fmsr_d(u,v,w,x)	jit_new_node_wqw(jit_code_fmsr_d, u, v, w, x)
+#define jit_fmsi_d(u,v,w,x)	_jit_fmsi_d(_jit, u, v, w, x)
+    jit_code_fmsr_d,		jit_code_fmsi_d,
+
     jit_code_last_code
 } jit_code_t;
 
@@ -1304,9 +1317,13 @@ extern void _jit_pushargi_f(jit_state_t*, jit_float32_t);
 extern void _jit_retr_f(jit_state_t*, jit_fpr_t);
 extern void _jit_reti_f(jit_state_t*, jit_float32_t);
 extern void _jit_retval_f(jit_state_t*, jit_fpr_t);
-extern void _jit_negi_f(jit_state_t*, jit_int32_t, jit_float32_t);
-extern void _jit_absi_f(jit_state_t*, jit_int32_t, jit_float32_t);
-extern void _jit_sqrti_f(jit_state_t*, jit_int32_t, jit_float32_t);
+extern void _jit_negi_f(jit_state_t*, jit_fpr_t, jit_float32_t);
+extern void _jit_absi_f(jit_state_t*, jit_fpr_t, jit_float32_t);
+extern void _jit_sqrti_f(jit_state_t*, jit_fpr_t, jit_float32_t);
+extern void _jit_fmai_f(jit_state_t*,
+			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float32_t);
+extern void _jit_fmsi_f(jit_state_t*,
+			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float32_t);
 
 extern jit_node_t *_jit_arg_d(jit_state_t*);
 extern void _jit_getarg_d(jit_state_t*, jit_fpr_t, jit_node_t*);
@@ -1317,9 +1334,13 @@ extern void _jit_pushargi_d(jit_state_t*, jit_float64_t);
 extern void _jit_retr_d(jit_state_t*, jit_fpr_t);
 extern void _jit_reti_d(jit_state_t*, jit_float64_t);
 extern void _jit_retval_d(jit_state_t*, jit_fpr_t);
-extern void _jit_negi_d(jit_state_t*, jit_int32_t, jit_float64_t);
-extern void _jit_absi_d(jit_state_t*, jit_int32_t, jit_float64_t);
-extern void _jit_sqrti_d(jit_state_t*, jit_int32_t, jit_float64_t);
+extern void _jit_negi_d(jit_state_t*, jit_fpr_t, jit_float64_t);
+extern void _jit_absi_d(jit_state_t*, jit_fpr_t, jit_float64_t);
+extern void _jit_sqrti_d(jit_state_t*, jit_fpr_t, jit_float64_t);
+extern void _jit_fmai_d(jit_state_t*,
+			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float64_t);
+extern void _jit_fmsi_d(jit_state_t*,
+			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float64_t);
 
 #define jit_get_reg(s)		_jit_get_reg(_jit,s)
 extern jit_int32_t _jit_get_reg(jit_state_t*, jit_int32_t);
@@ -1369,6 +1390,10 @@ extern jit_node_t *_jit_new_node_www(jit_state_t*, jit_code_t,
 extern jit_node_t *_jit_new_node_qww(jit_state_t*, jit_code_t,
 				     jit_int32_t, jit_int32_t,
 				     jit_word_t, jit_word_t);
+#define jit_new_node_wqw(c,u,l,h,w) _jit_new_node_wqw(_jit,c,u,l,h,w)
+extern jit_node_t *_jit_new_node_wqw(jit_state_t*, jit_code_t,
+				     jit_word_t, jit_int32_t,
+				     jit_int32_t, jit_word_t);
 #define jit_new_node_wwq(c,u,v,l,h) _jit_new_node_wwq(_jit,c,u,v,l,h)
 extern jit_node_t *_jit_new_node_wwq(jit_state_t*, jit_code_t,
 				     jit_word_t, jit_word_t,
@@ -1376,9 +1401,17 @@ extern jit_node_t *_jit_new_node_wwq(jit_state_t*, jit_code_t,
 #define jit_new_node_wwf(c,u,v,w) _jit_new_node_wwf(_jit,c,u,v,w)
 extern jit_node_t *_jit_new_node_wwf(jit_state_t*, jit_code_t,
 				     jit_word_t, jit_word_t, jit_float32_t);
+#define jit_new_node_wqf(c,u,l,h,w) _jit_new_node_wqf(_jit,c,u,l,h,w)
+extern jit_node_t *_jit_new_node_wqf(jit_state_t*, jit_code_t,
+				     jit_word_t, jit_int32_t,
+				     jit_int32_t, jit_float32_t);
 #define jit_new_node_wwd(c,u,v,w) _jit_new_node_wwd(_jit,c,u,v,w)
 extern jit_node_t *_jit_new_node_wwd(jit_state_t*, jit_code_t,
 				     jit_word_t, jit_word_t, jit_float64_t);
+#define jit_new_node_wqd(c,u,l,h,w) _jit_new_node_wqd(_jit,c,u,l,h,w)
+extern jit_node_t *_jit_new_node_wqd(jit_state_t*, jit_code_t,
+				     jit_word_t, jit_int32_t,
+				     jit_int32_t, jit_float64_t);
 #define jit_new_node_pww(c,u,v,w) _jit_new_node_pww(_jit,c,u,v,w)
 extern jit_node_t *_jit_new_node_pww(jit_state_t*, jit_code_t,
 				     jit_pointer_t, jit_word_t, jit_word_t);

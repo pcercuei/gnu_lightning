@@ -1,3 +1,20 @@
+2023-04-18 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning.h.in: Define new fmar_f, fmai_f, fmsr_f,
+	fmsi_f, fmar_d, fmai_d, fmsr_d and fmsi_d instructions, that
+	add support for fused multiply add/sub, in the format
+	r0 = r1 * r2 +/- r3.
+	* include/lightning/jit_private.h: Add helper macros for debug
+	output.
+	* lib/jit_names.c: Add strings for debug output.
+	* lib/jit_print.c: Print debug output for the new instructions.
+	* lib/lightning.c: Add logic for the new register pair in the
+	'v' (second) field of jit_node_t. The new pattern is required
+	to allow having a 'double' immediate in the last argument, for
+	the versions with immediates. The versions with immediates are
+	added for consistency, as they should be very rarely used in
+	common usage of fused multiply add/sub.
+
 2023-04-06 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning.h.in: Define new movi_w_f, movi_w_d and
