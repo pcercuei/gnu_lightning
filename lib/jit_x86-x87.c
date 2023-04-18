@@ -120,6 +120,18 @@ static void _x87_negr_d(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define x87_sqrtr_f(r0, r1)		_x87_sqrtr_d(_jit, r0, r1)
 #  define x87_sqrtr_d(r0, r1)		_x87_sqrtr_d(_jit, r0, r1)
 static void _x87_sqrtr_d(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define x87_fmar_f(r0, r1, r2, r3)	_x87_fmar_f(_jit, r0, r1, r2, r3)
+static void _x87_fmar_f(jit_state_t*,
+			jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define x87_fmar_d(r0, r1, r2, r3)	_x87_fmar_d(_jit, r0, r1, r2, r3)
+static void _x87_fmar_d(jit_state_t*,
+			jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define x87_fmsr_f(r0, r1, r2, r3)	_x87_fmsr_f(_jit, r0, r1, r2, r3)
+static void _x87_fmsr_f(jit_state_t*,
+			jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define x87_fmsr_d(r0, r1, r2, r3)	_x87_fmsr_d(_jit, r0, r1, r2, r3)
+static void _x87_fmsr_d(jit_state_t*,
+			jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define x87_truncr_f_i(r0, r1)	_x87_truncr_d_i(_jit, r0, r1)
 #  define x87_truncr_d_i(r0, r1)	_x87_truncr_d_i(_jit, r0, r1)
 static void _x87_truncr_d_i(jit_state_t*, jit_int32_t, jit_int32_t);
@@ -685,6 +697,78 @@ _x87_sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	fldr(r1);
 	fsqrt_();
 	fstpr(r0 + 1);
+    }
+}
+
+static void
+_x87_fmar_f(jit_state_t *_jit,
+	    jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (r0 != r3) {
+	x87_mulr_f(r0, r1, r2);
+	x87_addr_f(r0, r0, r3);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	assert(jit_x87_reg_p(t0));
+	x87_mulr_f(rn(t0), r1, r2);
+	x87_addr_f(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_x87_fmar_d(jit_state_t *_jit,
+	    jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (r0 != r3) {
+	x87_mulr_d(r0, r1, r2);
+	x87_addr_d(r0, r0, r3);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	assert(jit_x87_reg_p(t0));
+	x87_mulr_d(rn(t0), r1, r2);
+	x87_addr_d(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_x87_fmsr_f(jit_state_t *_jit,
+	    jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (r0 != r3) {
+	x87_mulr_f(r0, r1, r2);
+	x87_subr_f(r0, r0, r3);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	assert(jit_x87_reg_p(t0));
+	x87_mulr_f(rn(t0), r1, r2);
+	x87_subr_f(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_x87_fmsr_d(jit_state_t *_jit,
+	    jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (r0 != r3) {
+	x87_mulr_d(r0, r1, r2);
+	x87_subr_d(r0, r0, r3);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	assert(jit_x87_reg_p(t0));
+	x87_mulr_d(rn(t0), r1, r2);
+	x87_subr_d(r0, rn(t0), r3);
+	jit_unget_reg(t0);
     }
 }
 
