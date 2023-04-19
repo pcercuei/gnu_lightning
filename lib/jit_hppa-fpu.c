@@ -271,11 +271,19 @@ static void _f54(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,
 #define negr_f(r0,r1)			FNEG_S(r1,r0)
 #define negr_d(r0,r1)			FNEG_D(r1,r0)
 #define sqrtr_f(r0,r1)			FSQRT_S(r1,r0)
-#define fmar_f(r0,r1,r2,r3)		FMPYFADD_S(r1,r2,r3,r0)
-#define fmsr_f(r0,r1,r2,r3)		FMPYFSUB_S(r1,r2,r3,r0)
+#define fmar_f(r0,r1,r2,r3)		_fmar_f(_jit,r0,r1,r2,r3)
+static void _fmar_f(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#define fmsr_f(r0,r1,r2,r3)		_fmsr_f(_jit,r0,r1,r2,r3)
+static void _fmsr_f(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #define sqrtr_d(r0,r1)			FSQRT_D(r1,r0)
-#define fmar_d(r0,r1,r2,r3)		FMPYFADD_D(r1,r2,r3,r0)
-#define fmsr_d(r0,r1,r2,r3)		FMPYFSUB_D(r1,r2,r3,r0)
+#define fmar_d(r0,r1,r2,r3)		_fmar_d(_jit,r0,r1,r2,r3)
+static void _fmar_d(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#define fmsr_d(r0,r1,r2,r3)		_fmsr_d(_jit,r0,r1,r2,r3)
+static void _fmsr_d(jit_state_t*,
+		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #define extr_f(r0,r1)			_extr_f(_jit,r0,r1)
 static void _extr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #define extr_d(r0,r1)			_extr_d(_jit,r0,r1)
@@ -704,6 +712,51 @@ _truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
+_fmar_f(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+#if 1
+    jit_int32_t		reg;
+    if (r0 != r3) {
+	mulr_f(r0, r1, r2);
+	addr_f(r0, r0, r3);
+    }
+    else {
+	reg = jit_get_reg(jit_class_fpr);
+	mulr_f(rn(reg), r1, r2);
+	addr_f(r0, rn(reg), r3);
+	jit_unget_reg(reg);
+    }
+#else
+    FMPYFADD_S(r1, r2, r3, r0);
+#endif
+}
+
+static void
+_fmsr_f(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		reg;
+#if 1
+    if (r0 != r3) {
+	mulr_f(r0, r1, r2);
+	subr_f(r0, r0, r3);
+    }
+    else {
+	reg = jit_get_reg(jit_class_fpr);
+	mulr_f(rn(reg), r1, r2);
+	subr_f(r0, rn(reg), r3);
+	jit_unget_reg(reg);
+    }
+#else
+    reg = jit_get_reg(jit_class_fpr);
+    negr_f(rn(reg), r3);
+    fmar_f(r0, r1, r2, rn(reg));
+    jit_unget_reg(reg);
+#endif
+}
+
+static void
 _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 {
     union {
@@ -732,6 +785,51 @@ _movi_w_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     movi(rn(reg), i0);
     movr_w_f(r0, rn(reg));
     jit_unget_reg(reg);
+}
+
+static void
+_fmar_d(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+#if 1
+    jit_int32_t		reg;
+    if (r0 != r3) {
+	mulr_d(r0, r1, r2);
+	addr_d(r0, r0, r3);
+    }
+    else {
+	reg = jit_get_reg(jit_class_fpr);
+	mulr_d(rn(reg), r1, r2);
+	addr_d(r0, rn(reg), r3);
+	jit_unget_reg(reg);
+    }
+#else
+    FMPYFADD_D(r1, r2, r3, r0);
+#endif
+}
+
+static void
+_fmsr_d(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		reg;
+#if 1
+    if (r0 != r3) {
+	mulr_d(r0, r1, r2);
+	subr_d(r0, r0, r3);
+    }
+    else {
+	reg = jit_get_reg(jit_class_fpr);
+	mulr_d(rn(reg), r1, r2);
+	subr_d(r0, rn(reg), r3);
+	jit_unget_reg(reg);
+    }
+#else
+    reg = jit_get_reg(jit_class_fpr);
+    negr_d(rn(reg), r3);
+    fmar_d(r0, r1, r2, rn(reg));
+    jit_unget_reg(reg);
+#endif
 }
 
 static void
