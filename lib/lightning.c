@@ -1714,14 +1714,18 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    break;
 	case jit_code_fmar_f:	case jit_code_fmar_d:
 	case jit_code_fmsr_f:	case jit_code_fmsr_d:
+	case jit_code_fnmar_f:	case jit_code_fnmar_d:
+	case jit_code_fnmsr_f:	case jit_code_fnmsr_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|
 		   jit_cc_a1_reg|jit_cc_a1_rlh|jit_cc_a2_reg;
 	    break;
 	case jit_code_fmai_f:	case jit_code_fmsi_f:
+	case jit_code_fnmai_f:	case jit_code_fnmsi_f:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|
 		   jit_cc_a1_reg|jit_cc_a1_rlh|jit_cc_a2_flt;
 	    break;
 	case jit_code_fmai_d:	case jit_code_fmsi_d:
+	case jit_code_fnmai_d:	case jit_code_fnmsi_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|
 		   jit_cc_a1_reg|jit_cc_a1_rlh|jit_cc_a2_dbl;
 	    break;
@@ -4607,6 +4611,44 @@ _jit_fmsi_f(jit_state_t *_jit,
 }
 
 void
+_jit_fnmai_f(jit_state_t *_jit,
+	     jit_fpr_t u, jit_fpr_t v, jit_fpr_t w, jit_float32_t x)
+{
+    jit_int32_t		y;
+    jit_inc_synth_wqf(fmai_f, u, v, w, x);
+    if (u != v && u != w) {
+	jit_movi_f(u, x);
+	jit_fnmar_f(u, v, w, u);
+    }
+    else {
+	y = jit_get_reg(jit_class_fpr);
+	jit_movi_f(y, x);
+	jit_fnmar_f(u, v, w, y);
+	jit_unget_reg(y);
+    }
+    jit_dec_synth();
+}
+
+void
+_jit_fnmsi_f(jit_state_t *_jit,
+	     jit_fpr_t u, jit_fpr_t v, jit_fpr_t w, jit_float32_t x)
+{
+    jit_int32_t		y;
+    jit_inc_synth_wqf(fmai_f, u, v, w, x);
+    if (u != v && u != w) {
+	jit_movi_f(u, x);
+	jit_fnmsr_f(u, v, w, u);
+    }
+    else {
+	y = jit_get_reg(jit_class_fpr);
+	jit_movi_f(y, x);
+	jit_fnmsr_f(u, v, w, y);
+	jit_unget_reg(y);
+    }
+    jit_dec_synth();
+}
+
+void
 _jit_negi_d(jit_state_t *_jit, jit_fpr_t u, jit_float64_t v)
 {
     jit_inc_synth_wd(negi_d, u, v);
@@ -4666,6 +4708,44 @@ _jit_fmsi_d(jit_state_t *_jit,
 	y = jit_get_reg(jit_class_fpr);
 	jit_movi_d(y, x);
 	jit_fmsr_d(u, v, w, y);
+	jit_unget_reg(y);
+    }
+    jit_dec_synth();
+}
+
+void
+_jit_fnmai_d(jit_state_t *_jit,
+	     jit_fpr_t u, jit_fpr_t v, jit_fpr_t w, jit_float64_t x)
+{
+    jit_int32_t		y;
+    jit_inc_synth_wqd(fmai_d, u, v, w, x);
+    if (u != v && u != w) {
+	jit_movi_d(u, x);
+	jit_fnmar_d(u, v, w, u);
+    }
+    else {
+	y = jit_get_reg(jit_class_fpr);
+	jit_movi_d(y, x);
+	jit_fnmar_d(u, v, w, y);
+	jit_unget_reg(y);
+    }
+    jit_dec_synth();
+}
+
+void
+_jit_fnmsi_d(jit_state_t *_jit,
+	     jit_fpr_t u, jit_fpr_t v, jit_fpr_t w, jit_float64_t x)
+{
+    jit_int32_t		y;
+    jit_inc_synth_wqd(fmai_d, u, v, w, x);
+    if (u != v && u != w) {
+	jit_movi_d(u, x);
+	jit_fnmsr_d(u, v, w, u);
+    }
+    else {
+	y = jit_get_reg(jit_class_fpr);
+	jit_movi_d(y, x);
+	jit_fnmsr_d(u, v, w, y);
 	jit_unget_reg(y);
     }
     jit_dec_synth();

@@ -178,6 +178,18 @@ static void _sse_fmsr_f(jit_state_t*,
 #  define sse_fmsr_d(r0, r1, r2, r3)	_sse_fmsr_d(_jit, r0, r1, r2, r3)
 static void _sse_fmsr_d(jit_state_t*,
 			jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define sse_fnmar_f(r0, r1, r2, r3)	_sse_fnmar_f(_jit, r0, r1, r2, r3)
+static void _sse_fnmar_f(jit_state_t*,
+			 jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define sse_fnmar_d(r0, r1, r2, r3)	_sse_fnmar_d(_jit, r0, r1, r2, r3)
+static void _sse_fnmar_d(jit_state_t*,
+			 jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define sse_fnmsr_f(r0, r1, r2, r3)	_sse_fnmsr_f(_jit, r0, r1, r2, r3)
+static void _sse_fnmsr_f(jit_state_t*,
+			 jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define sse_fnmsr_d(r0, r1, r2, r3)	_sse_fnmsr_d(_jit, r0, r1, r2, r3)
+static void _sse_fnmsr_d(jit_state_t*,
+			 jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define ssecmpf(code, r0, r1, r2)	_ssecmp(_jit, 0, code, r0, r1, r2)
 #  define ssecmpd(code, r0, r1, r2)	_ssecmp(_jit, 1, code, r0, r1, r2)
 static void
@@ -997,6 +1009,114 @@ _sse_fmsr_d(jit_state_t *_jit,
 	    sse_subr_d(r0, rn(t0), r3);
 	    jit_unget_reg(t0);
 	}
+    }
+}
+
+static void
+_sse_fnmar_f(jit_state_t *_jit,
+	     jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_cpu.fma) {
+	if (r0 != r2 && r0 != r3) {
+	    sse_negr_f(r0, r1);
+	    vfmsub213ss(r0, r2, r3);
+	}
+	else {
+	    t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	    sse_negr_f(rn(t0), r1);
+	    vfmsub213ss(rn(t0), r2, r3);
+	    sse_movr_f(r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	sse_negr_f(rn(t0), r1);
+	sse_mulr_f(rn(t0), rn(t0), r2);
+	sse_subr_f(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_sse_fnmar_d(jit_state_t *_jit,
+	     jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_cpu.fma) {
+	if (r0 != r2 && r0 != r3) {
+	    sse_negr_d(r0, r1);
+	    vfmsub213sd(r0, r2, r3);
+	}
+	else {
+	    t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	    sse_negr_d(rn(t0), r1);
+	    vfmsub213sd(rn(t0), r2, r3);
+	    sse_movr_d(r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	sse_negr_d(rn(t0), r1);
+	sse_mulr_d(rn(t0), rn(t0), r2);
+	sse_subr_d(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_sse_fnmsr_f(jit_state_t *_jit,
+	     jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_cpu.fma) {
+	if (r0 != r2 && r0 != r3) {
+	    sse_negr_f(r0, r1);
+	    vfmadd213ss(r0, r2, r3);
+	}
+	else {
+	    t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	    sse_negr_f(rn(t0), r1);
+	    vfmadd213ss(rn(t0), r2, r3);
+	    sse_movr_f(r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	sse_negr_f(rn(t0), r1);
+	sse_mulr_f(rn(t0), rn(t0), r2);
+	sse_addr_f(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_sse_fnmsr_d(jit_state_t *_jit,
+	     jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_cpu.fma) {
+	if (r0 != r2 && r0 != r3) {
+	    sse_negr_d(r0, r1);
+	    vfmadd213sd(r0, r2, r3);
+	}
+	else {
+	    t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	    sse_negr_d(rn(t0), r1);
+	    vfmadd213sd(rn(t0), r2, r3);
+	    sse_movr_d(r0, rn(t0));
+	    jit_unget_reg(t0);
+	}
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr|jit_class_xpr);
+	sse_negr_d(rn(t0), r1);
+	sse_mulr_d(rn(t0), rn(t0), r2);
+	sse_addr_d(r0, rn(t0), r3);
+	jit_unget_reg(t0);
     }
 }
 

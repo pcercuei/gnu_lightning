@@ -1557,6 +1557,27 @@ _emit_code(jit_state_t *_jit)
 		name##r##type(rn(node->u.q.l), rn(node->u.q.h),		\
 			      rn(node->v.w), rn(node->w.w));		\
 		break
+#define case_rqr(name, type)						\
+	    case jit_code_##name##r##type:				\
+		if (jit_x87_reg_p(node->u.w) &&				\
+		    jit_x87_reg_p(node->v.q.l) &&			\
+		    jit_x87_reg_p(node->v.q.h) &&			\
+		    jit_x87_reg_p(node->w.w))				\
+		    x87_##name##r##type(rn(node->u.w),			\
+					rn(node->v.q.l),		\
+					rn(node->v.q.h),		\
+					rn(node->w.w));			\
+		else {							\
+		    assert(jit_sse_reg_p(node->u.w) &&			\
+			   jit_sse_reg_p(node->v.q.l) &&		\
+			   jit_sse_reg_p(node->v.q.h) &&		\
+			   jit_sse_reg_p(node->w.w));			\
+		    sse_##name##r##type(rn(node->u.w),			\
+					rn(node->v.q.l),		\
+					rn(node->v.q.h),		\
+					rn(node->w.w));			\
+		}							\
+		break;
 #define case_frr(name, type)						\
 	    case jit_code_##name##r##type:				\
 		if (jit_x87_reg_p(node->u.w))				\
@@ -2038,36 +2059,10 @@ _emit_code(jit_state_t *_jit)
 		case_ff(abs, _f);
 		case_ff(neg, _f);
 		case_ff(sqrt, _f);
-	    case jit_code_fmar_f:
-		if (jit_x87_reg_p(node->u.w) &&
-		    jit_x87_reg_p(node->v.q.l) &&
-		    jit_x87_reg_p(node->v.q.h) &&
-		    jit_x87_reg_p(node->w.w))
-		    x87_fmar_f(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		else {
-		    assert(jit_sse_reg_p(node->u.w) &&
-			   jit_sse_reg_p(node->v.q.l) &&
-			   jit_sse_reg_p(node->v.q.h) &&
-			   jit_sse_reg_p(node->w.w));
-		    sse_fmar_f(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		}
-		break;
-	    case jit_code_fmsr_f:
-		if (jit_x87_reg_p(node->u.w) && jit_x87_reg_p(node->v.q.l) &&
-		    jit_x87_reg_p(node->v.q.h) && jit_x87_reg_p(node->w.w))
-		    x87_fmsr_f(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		else {
-		    assert(jit_sse_reg_p(node->u.w) &&
-			   jit_sse_reg_p(node->v.q.l) &&
-			   jit_sse_reg_p(node->v.q.h) &&
-			   jit_sse_reg_p(node->w.w));
-		    sse_fmsr_f(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		}
-		break;
+		case_rqr(fma, _f);
+		case_rqr(fms, _f);
+		case_rqr(fnma, _f);
+		case_rqr(fnms, _f);
 		case_fr(ext, _f);
 		case_fr(ext, _d_f);
 		case_rff(lt, _f);
@@ -2191,36 +2186,10 @@ _emit_code(jit_state_t *_jit)
 		case_ff(abs, _d);
 		case_ff(neg, _d);
 		case_ff(sqrt, _d);
-	    case jit_code_fmar_d:
-		if (jit_x87_reg_p(node->u.w) &&
-		    jit_x87_reg_p(node->v.q.l) &&
-		    jit_x87_reg_p(node->v.q.h) &&
-		    jit_x87_reg_p(node->w.w))
-		    x87_fmar_d(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		else {
-		    assert(jit_sse_reg_p(node->u.w) &&
-			   jit_sse_reg_p(node->v.q.l) &&
-			   jit_sse_reg_p(node->v.q.h) &&
-			   jit_sse_reg_p(node->w.w));
-		    sse_fmar_d(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		}
-		break;
-	    case jit_code_fmsr_d:
-		if (jit_x87_reg_p(node->u.w) && jit_x87_reg_p(node->v.q.l) &&
-		    jit_x87_reg_p(node->v.q.h) && jit_x87_reg_p(node->w.w))
-		    x87_fmsr_d(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		else {
-		    assert(jit_sse_reg_p(node->u.w) &&
-			   jit_sse_reg_p(node->v.q.l) &&
-			   jit_sse_reg_p(node->v.q.h) &&
-			   jit_sse_reg_p(node->w.w));
-		    sse_fmsr_d(rn(node->u.w), rn(node->v.q.l),
-			       rn(node->v.q.h), rn(node->w.w));
-		}
-		break;
+		case_rqr(fma, _d);
+		case_rqr(fms, _d);
+		case_rqr(fnma, _d);
+		case_rqr(fnms, _d);
 		case_fr(ext, _d);
 		case_fr(ext, _f_d);
 		case_rff(lt, _d);
@@ -2568,6 +2537,8 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_absi_d:		case jit_code_sqrti_d:
 	    case jit_code_fmai_f:		case jit_code_fmsi_f:
 	    case jit_code_fmai_d:		case jit_code_fmsi_d:
+	    case jit_code_fnmai_f:		case jit_code_fnmsi_f:
+	    case jit_code_fnmai_d:		case jit_code_fnmsi_d:
 		break;
 	    case jit_code_retval_f:
 #if __X32

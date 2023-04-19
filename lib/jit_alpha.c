@@ -911,6 +911,12 @@ _emit_code(jit_state_t *_jit)
 		name##i##type(rn(node->u.w), rn(node->v.w),		\
 			      (jit_float##size##_t *)node->w.n->u.w);	\
 		break
+#define case_rqr(name, type)						\
+	    case jit_code_##name##r##type:				\
+		name##r##type(rn(node->u.w), rn(node->v.q.l),		\
+			      rn(node->v.q.h), rn(node->w.w));		\
+	    case jit_code_##name##i##type:				\
+		break;
 #define case_rrrr(name, type)						\
 	    case jit_code_##name##r##type:				\
 		name##r##type(rn(node->u.q.l), rn(node->u.q.h),		\
@@ -1256,16 +1262,10 @@ _emit_code(jit_state_t *_jit)
 		case_rr(abs, _f);
 		case_rr(neg, _f);
 		case_rr(sqrt, _f);
-	    case jit_code_fmar_f:
-		fmar_f(rn(node->u.w), rn(node->v.q.l),
-		       rn(node->v.q.h), rn(node->w.w));
-	    case jit_code_fmai_f:
-		break;
-	    case jit_code_fmsr_f:
-		fmsr_f(rn(node->u.w), rn(node->v.q.l),
-		       rn(node->v.q.h), rn(node->w.w));
-	    case jit_code_fmsi_f:
-		break;
+		case_rqr(fma, _f);
+		case_rqr(fms, _f);
+		case_rqr(fnma, _f);
+		case_rqr(fnms, _f);
 		case_rr(ext, _f);
 		case_rr(ld, _f);
 		case_rw(ld, _f);
@@ -1369,16 +1369,10 @@ _emit_code(jit_state_t *_jit)
 		case_rr(abs, _d);
 		case_rr(neg, _d);
 		case_rr(sqrt, _d);
-	    case jit_code_fmar_d:
-		fmar_d(rn(node->u.w), rn(node->v.q.l),
-		       rn(node->v.q.h), rn(node->w.w));
-	    case jit_code_fmai_d:
-		break;
-	    case jit_code_fmsr_d:
-		fmsr_d(rn(node->u.w), rn(node->v.q.l),
-		       rn(node->v.q.h), rn(node->w.w));
-	    case jit_code_fmsi_d:
-		break;
+		case_rqr(fma, _d);
+		case_rqr(fms, _d);
+		case_rqr(fnma, _d);
+		case_rqr(fnms, _d);
 		case_rr(ext, _d);
 		case_rr(ld, _d);
 		case_rw(ld, _d);

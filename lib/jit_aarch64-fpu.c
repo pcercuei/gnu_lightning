@@ -33,6 +33,8 @@
 #  define A64_FSQRT			0x1e21c000
 #  define A64_FMADD			0x1f000000
 #  define A64_FMSUB			0x1f008000
+#  define A64_FNMADD			0x1f200000
+#  define A64_FNMSUB			0x1f208000
 #  define A64_FCVTS			0x1e224000
 #  define A64_FCVTD			0x1e22c000
 #  define A64_FMUL			0x1e200800
@@ -63,10 +65,18 @@
 #  define FNEGD(Rd,Rn)			osvv_(A64_FNEG,1,Rd,Rn)
 #  define FSQRTS(Rd,Rn)			osvv_(A64_FSQRT,0,Rd,Rn)
 #  define FSQRTD(Rd,Rn)			osvv_(A64_FSQRT,1,Rd,Rn)
+/* Vd = Va + Vn*Vm */
 #  define FMADDS(Rd,Rn,Rm,Ra)		osvvvv(A64_FMADD,0,Rd,Rn,Rm,Ra)
 #  define FMADDD(Rd,Rn,Rm,Ra)		osvvvv(A64_FMADD,1,Rd,Rn,Rm,Ra)
+/* Vd = Va + (-Vn)*Vm */
 #  define FMSUBS(Rd,Rn,Rm,Ra)		osvvvv(A64_FMSUB,0,Rd,Rn,Rm,Ra)
 #  define FMSUBD(Rd,Rn,Rm,Ra)		osvvvv(A64_FMSUB,1,Rd,Rn,Rm,Ra)
+/* Vd = (-Va) + (-Vn)*Vm */
+#  define FNMADDS(Rd,Rn,Rm,Ra)		osvvvv(A64_FNMADD,0,Rd,Rn,Rm,Ra)
+#  define FNMADDD(Rd,Rn,Rm,Ra)		osvvvv(A64_FNMADD,1,Rd,Rn,Rm,Ra)
+/* Vd = (-Va) + Vn*Vm */
+#  define FNMSUBS(Rd,Rn,Rm,Ra)		osvvvv(A64_FNMSUB,0,Rd,Rn,Rm,Ra)
+#  define FNMSUBD(Rd,Rn,Rm,Ra)		osvvvv(A64_FNMSUB,1,Rd,Rn,Rm,Ra)
 #  define FADDS(Rd,Rn,Rm)		osvvv(A64_FADD,0,Rd,Rn,Rm)
 #  define FADDD(Rd,Rn,Rm)		osvvv(A64_FADD,1,Rd,Rn,Rm)
 #  define FADDV(Rd,Rn,Rm)		osvvv(A64_FADD,0,Rd,Rn,Rm)
@@ -118,9 +128,9 @@ static void _divi_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_float32_t);
 #  define negr_f(r0,r1)			FNEGS(r0,r1)
 #  define sqrtr_f(r0,r1)		FSQRTS(r0,r1)
 #  define fmar_f(r0,r1,r2,r3)		FMADDS(r0,r1,r2,r3)
-#  define fmsr_f(r0,r1,r2,r3)		_fmsr_f(_jit,r0,r1,r2,r3)
-static void _fmsr_f(jit_state_t*,
-		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fmsr_f(r0,r1,r2,r3)		FNMSUBS(r0,r1,r2,r3)
+#  define fnmar_f(r0,r1,r2,r3)		FNMADDS(r0,r1,r2,r3)
+#  define fnmsr_f(r0,r1,r2,r3)		FMSUBS(r0,r1,r2,r3)
 #  define extr_f(r0,r1)			SCVTFS(r0,r1)
 #  define ldr_f(r0,r1)			_ldr_f(_jit,r0,r1)
 static void _ldr_f(jit_state_t*,jit_int32_t,jit_int32_t);
@@ -245,9 +255,9 @@ static void _divi_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_float64_t);
 #  define negr_d(r0,r1)			FNEGD(r0,r1)
 #  define sqrtr_d(r0,r1)		FSQRTD(r0,r1)
 #  define fmar_d(r0,r1,r2,r3)		FMADDD(r0,r1,r2,r3)
-#  define fmsr_d(r0,r1,r2,r3)		_fmsr_d(_jit,r0,r1,r2,r3)
-static void _fmsr_d(jit_state_t*,
-		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fmsr_d(r0,r1,r2,r3)		FNMSUBD(r0,r1,r2,r3)
+#  define fnmar_d(r0,r1,r2,r3)		FNMADDD(r0,r1,r2,r3)
+#  define fnmsr_d(r0,r1,r2,r3)		FMSUBD(r0,r1,r2,r3)
 #  define extr_d(r0,r1)			SCVTFD(r0,r1)
 #  define ldr_d(r0,r1)			_ldr_d(_jit,r0,r1)
 static void _ldr_d(jit_state_t*,jit_int32_t,jit_int32_t);
@@ -382,7 +392,7 @@ _osvvvv(jit_state_t *_jit, jit_int32_t Op, jit_int32_t Sz,
     assert(!(Rm &       ~0x1f));
     assert(!(Ra &       ~0x1f));
     assert(!(Sz &        ~0x3));
-    assert(!(Op & ~0xff008000));
+    assert(!(Op & ~0xff208000));
     i.w = Op;
     i.size.b = Sz;
     i.Rd.b = Rd;
@@ -518,15 +528,6 @@ fopi(sub)
 fopi(rsb)
 fopi(mul)
 fopi(div)
-
-static void
-_fmsr_f(jit_state_t *_jit,
-	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
-{
-    /* r0 = r3 + (-r2) * r1 */
-    FMSUBS(r0, r1, r2, r3);
-    negr_f(r0, r0);
-}
 
 static void
 _ldr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
@@ -754,15 +755,6 @@ dopi(sub)
 dopi(rsb)
 dopi(mul)
 dopi(div)
-
-static void
-_fmsr_d(jit_state_t *_jit,
-	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
-{
-    /* r0 = r3 + (-r2) * r1 */
-    FMSUBD(r0, r1, r2, r3);
-    negr_d(r0, r0);
-}
 
 static void
 _ldr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)

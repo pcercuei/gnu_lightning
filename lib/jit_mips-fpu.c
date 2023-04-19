@@ -150,8 +150,14 @@
 #  define MADD_D(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_MADD_fmt_D)
 #  define MSUB_S(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_MSUB_fmt_S)
 #  define MSUB_D(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_MSUB_fmt_D)
+#  define NMADD_S(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_NMADD_fmt_S)
+#  define NMADD_D(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_NMADD_fmt_D)
+#  define NMSUB_S(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_NMSUB_fmt_S)
+#  define NMSUB_D(fd,fr,fs,ft)		hrrrit(MIPS_COP1X,fr,ft,fs,fd,MIPS_NMSUB_fmt_D)
+/* fd = fd + (fs * ft) */
 #  define MADDF_S(fd,fs,ft)		hrrrit(MIPS_COP1,MIPS_fmt_S,ft,fs,fd,MIPS_MADDF)
 #  define MADDF_D(fd,fs,ft)		hrrrit(MIPS_COP1,MIPS_fmt_D,ft,fs,fd,MIPS_MADDF)
+/* fd = fd - (fs * ft) */
 #  define MSUBF_S(fd,fs,ft)		hrrrit(MIPS_COP1,MIPS_fmt_S,ft,fs,fd,MIPS_MSUBF)
 #  define MSUBF_D(fd,fs,ft)		hrrrit(MIPS_COP1,MIPS_fmt_D,ft,fs,fd,MIPS_MSUBF)
 #  define LWC1(rt, of, rb)		hrri(MIPS_LWC1, rb, rt, of)
@@ -319,9 +325,9 @@ static void _sti_f(jit_state_t*,jit_word_t,jit_int32_t);
 static void _stxr_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define stxi_f(i0, r0, r1)		_stxi_f(_jit, i0, r0, r1)
 static void _stxi_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#define unstr_x(r0, r1, i0)		_unstr_x(_jit, r0, r1, i0)
+#  define unstr_x(r0, r1, i0)		_unstr_x(_jit, r0, r1, i0)
 static void _unstr_x(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
-#define unsti_x(i0, r0, i1)		_unsti_x(_jit, i0, r0, i1)
+#  define unsti_x(i0, r0, i1)		_unsti_x(_jit, i0, r0, i1)
 static void _unsti_x(jit_state_t*, jit_word_t, jit_int32_t, jit_word_t);
 #  define fmar_f(r0, r1, r2, r3)	_fmar_f(_jit, r0, r1, r2, r3)
 static void _fmar_f(jit_state_t*,
@@ -329,6 +335,12 @@ static void _fmar_f(jit_state_t*,
 #  define fmsr_f(r0, r1, r2, r3)	_fmsr_f(_jit, r0, r1, r2, r3)
 static void _fmsr_f(jit_state_t*,
 		    jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
+#  define fnmar_f(r0, r1, r2, r3)	_fnmar_f(_jit, r0, r1, r2, r3)
+static void _fnmar_f(jit_state_t*,
+		     jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
+#  define fnmsr_f(r0, r1, r2, r3)	_fnmsr_f(_jit, r0, r1, r2, r3)
+static void _fnmsr_f(jit_state_t*,
+		     jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define movr_f(r0, r1)		_movr_f(_jit, r0, r1)
 static void _movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_f(r0, i0)		_movi_f(_jit, r0, i0)
@@ -382,6 +394,12 @@ static void _fmar_d(jit_state_t*,
 #  define fmsr_d(r0, r1, r2, r3)	_fmsr_d(_jit, r0, r1, r2, r3)
 static void _fmsr_d(jit_state_t*,
 		    jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
+#  define fnmar_d(r0, r1, r2, r3)	_fnmar_d(_jit, r0, r1, r2, r3)
+static void _fnmar_d(jit_state_t*,
+		     jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
+#  define fnmsr_d(r0, r1, r2, r3)	_fnmsr_d(_jit, r0, r1, r2, r3)
+static void _fnmsr_d(jit_state_t*,
+		     jit_int32_t, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define movr_d(r0, r1)		_movr_d(_jit, r0, r1)
 static void _movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_d(r0, i0)		_movi_d(_jit, r0, i0)
@@ -961,7 +979,6 @@ _fmsr_f(jit_state_t *_jit,
     jit_int32_t		t0;
     if (jit_mips2_p()) {
 	if (jit_mips6_p()) {
-	    /* fd = fd - (fs * ft) */
 	    if (r0 == r3)
 		MSUBF_S(r0, r2, r1);
 	    else {
@@ -987,6 +1004,65 @@ _fmsr_f(jit_state_t *_jit,
 	    subr_f(r0, rn(t0), r3);
 	    jit_unget_reg(t0);
 	}
+    }
+}
+
+static void
+_fnmar_f(jit_state_t *_jit,
+	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_mips2_p()) {
+	if (jit_mips6_p()) {
+	    if (r0 == r3)
+		MADDF_S(r0, r2, r1);
+	    else {
+		t0 = jit_get_reg(jit_class_fpr);
+		movr_f(rn(t0), r3);
+		MADDF_S(rn(t0), r2, r1);
+		movr_f(r0, rn(t0));
+		jit_unget_reg(t0);
+	    }
+	    negr_f(r0, r0);
+	}
+	else
+	    NMADD_S(r0, r3, r2, r1);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	negr_f(rn(t0), r1);
+	mulr_f(rn(t0), rn(t0), r2);
+	subr_f(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fnmsr_f(jit_state_t *_jit,
+	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_mips2_p()) {
+	if (jit_mips6_p()) {
+	    if (r0 == r3)
+		MSUBF_S(r0, r2, r1);
+	    else {
+		t0 = jit_get_reg(jit_class_fpr);
+		movr_f(rn(t0), r3);
+		MSUBF_S(rn(t0), r2, r1);
+		movr_f(r0, rn(t0));
+		jit_unget_reg(t0);
+	    }
+	}
+	else
+	    NMSUB_S(r0, r3, r2, r1);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	negr_f(rn(t0), r1);
+	mulr_f(rn(t0), rn(t0), r2);
+	addr_f(r0, rn(t0), r3);
+	jit_unget_reg(t0);
     }
 }
 
@@ -1347,7 +1423,6 @@ _fmsr_d(jit_state_t *_jit,
     jit_int32_t		t0;
     if (jit_mips2_p()) {
 	if (jit_mips6_p()) {
-	    /* fd = fd - (fs * ft) */
 	    if (r0 == r3)
 		MSUBF_D(r0, r2, r1);
 	    else {
@@ -1373,6 +1448,65 @@ _fmsr_d(jit_state_t *_jit,
 	    subr_d(r0, rn(t0), r3);
 	    jit_unget_reg(t0);
 	}
+    }
+}
+
+static void
+_fnmar_d(jit_state_t *_jit,
+	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_mips2_p()) {
+	if (jit_mips6_p()) {
+	    if (r0 == r3)
+		MADDF_D(r0, r2, r1);
+	    else {
+		t0 = jit_get_reg(jit_class_fpr);
+		movr_d(rn(t0), r3);
+		MADDF_D(rn(t0), r2, r1);
+		movr_d(r0, rn(t0));
+		jit_unget_reg(t0);
+	    }
+	    negr_d(r0, r0);
+	}
+	else
+	    NMADD_D(r0, r3, r2, r1);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	negr_d(rn(t0), r1);
+	mulr_d(rn(t0), rn(t0), r2);
+	subr_d(r0, rn(t0), r3);
+	jit_unget_reg(t0);
+    }
+}
+
+static void
+_fnmsr_d(jit_state_t *_jit,
+	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    if (jit_mips2_p()) {
+	if (jit_mips6_p()) {
+	    if (r0 == r3)
+		MSUBF_D(r0, r2, r1);
+	    else {
+		t0 = jit_get_reg(jit_class_fpr);
+		movr_d(rn(t0), r3);
+		MSUBF_D(rn(t0), r2, r1);
+		movr_d(r0, rn(t0));
+		jit_unget_reg(t0);
+	    }
+	}
+	else
+	    NMSUB_D(r0, r3, r2, r1);
+    }
+    else {
+	t0 = jit_get_reg(jit_class_fpr);
+	negr_d(rn(t0), r1);
+	mulr_d(rn(t0), rn(t0), r2);
+	addr_d(r0, rn(t0), r3);
+	jit_unget_reg(t0);
     }
 }
 

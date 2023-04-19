@@ -130,14 +130,6 @@ _f4f(jit_state_t*,jit_int32_t,jit_int32_t,
 #  define FSQRTS(rs2, rd)		FPop1(rd, 0,  41, rs2)
 #  define FSQRTD(rs2, rd)		FPop1(rd, 0,  42, rs2)
 #  define FSQRTQ(rs2, rd)		FPop1(rd, 0,  43, rs2)
-#  define FMADDS(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMADDS, rs2)
-#  define FMADDD(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMADDD, rs2)
-#  define FMSUBS(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMSUBS, rs2)
-#  define FMSUBD(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMSUBD, rs2)
-#  define FNMSUBS(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMSUBS,rs2)
-#  define FNMSUBD(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMSUBD,rs2)
-#  define FNMADDS(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMADDS,rs2)
-#  define FNMADDD(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMADDD,rs2)
 #  define SPARC_FADDS			65
 #  define SPARC_FADDD			66
 #  define SPARC_FADDQ			67
@@ -160,6 +152,14 @@ _f4f(jit_state_t*,jit_int32_t,jit_int32_t,
 #  define SPARC_FNMSUBD			10
 #  define SPARC_FNMADDS			13
 #  define SPARC_FNMADDD			14
+#  define FMADDS(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMADDS, rs2)
+#  define FMADDD(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMADDD, rs2)
+#  define FMSUBS(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMSUBS, rs2)
+#  define FMSUBD(rs1, rs2, rs3, rd)	f4f(rd, 55, rs1, rs3, SPARC_FMSUBD, rs2)
+#  define FNMSUBS(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMSUBS,rs2)
+#  define FNMSUBD(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMSUBD,rs2)
+#  define FNMADDS(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMADDS,rs2)
+#  define FNMADDD(rs1, rs2, rs3,rd)	f4f(rd, 55, rs1, rs3, SPARC_FNMADDD,rs2)
 #  define FADDS(rs1, rs2, rd)		FPop1(rd, rs1,  SPARC_FADDS, rs2)
 #  define FADDD(rs1, rs2, rd)		FPop1(rd, rs1,  SPARC_FADDD, rs2)
 #  define FADDQ(rs1, rs2, rd)		FPop1(rd, rs1,  SPARC_FADDQ, rs2)
@@ -236,6 +236,10 @@ static void _sqrtr_f(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define fmsr_f(r0, r1, r2, r3)	FMSUBS(r1, r2, r3, r0)
 #    define fmar_d(r0, r1, r2, r3)	FMADDD(r1, r2, r3, r0)
 #    define fmsr_d(r0, r1, r2, r3)	FMSUBD(r1, r2, r3, r0)
+#    define fnmar_f(r0, r1, r2, r3)	FNMADDS(r1, r2, r3, r0)
+#    define fnmsr_f(r0, r1, r2, r3)	FNMSUBS(r1, r2, r3, r0)
+#    define fnmar_d(r0, r1, r2, r3)	FNMADDD(r1, r2, r3, r0)
+#    define fnmsr_d(r0, r1, r2, r3)	FNMSUBD(r1, r2, r3, r0)
 #  else
 #    define fop3f(op, r0, r1, r2, r3)	_fop3f(_jit, op, r0, r1, r2, r3)
 static void _fop3f(jit_state_t*, jit_int32_t, jit_int32_t,
@@ -244,6 +248,10 @@ static void _fop3f(jit_state_t*, jit_int32_t, jit_int32_t,
 #    define fmsr_f(r0, r1, r2, r3)	fop3f(SPARC_FMSUBS, r0, r1, r2, r3)
 #    define fmar_d(r0, r1, r2, r3)	fop3f(SPARC_FMADDD, r0, r1, r2, r3)
 #    define fmsr_d(r0, r1, r2, r3)	fop3f(SPARC_FMSUBD, r0, r1, r2, r3)
+#    define fnmar_f(r0, r1, r2, r3)	fop3f(SPARC_FNMADDS, r0, r1, r2, r3)
+#    define fnmsr_f(r0, r1, r2, r3)	fop3f(SPARC_FNMSUBS, r0, r1, r2, r3)
+#    define fnmar_d(r0, r1, r2, r3)	fop3f(SPARC_FNMADDD, r0, r1, r2, r3)
+#    define fnmsr_d(r0, r1, r2, r3)	fop3f(SPARC_FNMSUBD, r0, r1, r2, r3)
 #  endif
 #  define extr_d(r0, r1)		_extr_d(_jit, r0, r1)
 static void _extr_d(jit_state_t*, jit_int32_t, jit_int32_t);

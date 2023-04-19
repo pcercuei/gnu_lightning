@@ -291,4 +291,8 @@ static char *code_name[] = {
     "fmsr_f",		"fmsi_f",
     "fmar_d",		"fmai_d",
     "fmsr_d",		"fmsi_d",
+    "fnmar_f",		"fnmai_f",
+    "fnmsr_f",		"fnmsi_f",
+    "fnmar_d",		"fnmai_d",
+    "fnmsr_d",		"fnmsi_d",
 };

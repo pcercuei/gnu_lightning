@@ -321,6 +321,12 @@ static void _fmar_f(jit_state_t*,
 #  define fmsr_f(r0,r1,r2,r3)		_fmsr_f(_jit,r0,r1,r2,r3)
 static void _fmsr_f(jit_state_t*,
 		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fnmar_f(r0,r1,r2,r3)		_fnmar_f(_jit,r0,r1,r2,r3)
+static void _fnmar_f(jit_state_t*,
+		     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fnmsr_f(r0,r1,r2,r3)		_fnmsr_f(_jit,r0,r1,r2,r3)
+static void _fnmsr_f(jit_state_t*,
+		     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define sqrtr_d(r0,r1)		_sqrtr_d(_jit,r0,r1)
 static void _sqrtr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define fmar_d(r0,r1,r2,r3)		_fmar_d(_jit,r0,r1,r2,r3)
@@ -329,6 +335,12 @@ static void _fmar_d(jit_state_t*,
 #  define fmsr_d(r0,r1,r2,r3)		_fmsr_d(_jit,r0,r1,r2,r3)
 static void _fmsr_d(jit_state_t*,
 		    jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fnmar_d(r0,r1,r2,r3)		_fnmar_d(_jit,r0,r1,r2,r3)
+static void _fnmar_d(jit_state_t*,
+		     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define fnmsr_d(r0,r1,r2,r3)		_fnmsr_d(_jit,r0,r1,r2,r3)
+static void _fnmsr_d(jit_state_t*,
+		     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define extr_f_d(r0,r1)		movr_d(r0,r1)
 #  define extr_d_f(r0,r1)		movr_f(r0,r1)
 #  define truncr_f_i(r0,r1)		truncr_d_i(r0,r1)
@@ -762,6 +774,30 @@ _fmsr_f(jit_state_t *_jit,
 }
 
 static void
+_fnmar_f(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    t0 = jit_get_reg(jit_class_fpr);
+    negr_f(rn(t0), r1);
+    mulr_f(rn(t0), rn(t0), r2);
+    subr_f(r0, rn(t0), r3);
+    jit_unget_reg(t0);
+}
+
+static void
+_fnmsr_f(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    t0 = jit_get_reg(jit_class_fpr);
+    negr_f(rn(t0), r1);
+    mulr_f(rn(t0), rn(t0), r2);
+    addr_f(r0, rn(t0), r3);
+    jit_unget_reg(t0);
+}
+
+static void
 _sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     SQRTT_SU(r1, r0);
@@ -800,6 +836,30 @@ _fmsr_d(jit_state_t *_jit,
 	subr_d(r0, rn(t0), r3);
 	jit_unget_reg(t0);
     }
+}
+
+static void
+_fnmar_d(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    t0 = jit_get_reg(jit_class_fpr);
+    negr_d(rn(t0), r1);
+    mulr_d(rn(t0), rn(t0), r2);
+    subr_d(r0, rn(t0), r3);
+    jit_unget_reg(t0);
+}
+
+static void
+_fnmsr_d(jit_state_t *_jit,
+	jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
+{
+    jit_int32_t		t0;
+    t0 = jit_get_reg(jit_class_fpr);
+    negr_d(rn(t0), r1);
+    mulr_d(rn(t0), rn(t0), r2);
+    addr_d(r0, rn(t0), r3);
+    jit_unget_reg(t0);
 }
 
 static void

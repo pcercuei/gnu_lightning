@@ -1447,6 +1447,10 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		case MIPS_MADD_fmt_D:
 		case MIPS_MSUB_fmt_S:
 		case MIPS_MSUB_fmt_D:
+		case MIPS_NMADD_fmt_S:
+		case MIPS_NMADD_fmt_D:
+		case MIPS_NMSUB_fmt_S:
+		case MIPS_NMSUB_fmt_D:
 		    assert(!jit_mips6_p());
 		    if (mask & jit_class_gpr)
 			regs[0] = regs[1] = regs[2] = 0;

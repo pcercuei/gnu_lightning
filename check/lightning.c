@@ -476,6 +476,8 @@ static void absr_f(void);	static void absi_f(void);
 static void sqrtr_f(void);	static void sqrti_f(void);
 static void fmar_f(void);	static void fmai_f(void);
 static void fmsr_f(void);	static void fmsi_f(void);
+static void fnmar_f(void);	static void fnmai_f(void);
+static void fnmsr_f(void);	static void fnmsi_f(void);
 static void ltr_f(void);	static void lti_f(void);
 static void ler_f(void);	static void lei_f(void);
 static void eqr_f(void);	static void eqi_f(void);
@@ -535,6 +537,8 @@ static void absr_d(void);	static void absi_d(void);
 static void sqrtr_d(void);	static void sqrti_d(void);
 static void fmar_d(void);	static void fmai_d(void);
 static void fmsr_d(void);	static void fmsi_d(void);
+static void fnmar_d(void);	static void fnmai_d(void);
+static void fnmsr_d(void);	static void fnmsi_d(void);
 static void ltr_d(void);	static void lti_d(void);
 static void ler_d(void);	static void lei_d(void);
 static void eqr_d(void);	static void eqi_d(void);
@@ -875,6 +879,8 @@ static instr_t		  instr_vector[] = {
     entry(sqrtr_f),	entry(sqrti_f),
     entry(fmar_f),	entry(fmai_f),
     entry(fmsr_f),	entry(fmsi_f),
+    entry(fnmar_f),	entry(fnmai_f),
+    entry(fnmsr_f),	entry(fnmsi_f),
     entry(ltr_f),	entry(lti_f),
     entry(ler_f),	entry(lei_f),
     entry(eqr_f),	entry(eqi_f),
@@ -933,6 +939,8 @@ static instr_t		  instr_vector[] = {
     entry(sqrtr_d),	entry(sqrti_d),
     entry(fmar_d),	entry(fmai_d),
     entry(fmsr_d),	entry(fmsi_d),
+    entry(fnmar_d),	entry(fnmai_d),
+    entry(fnmsr_d),	entry(fnmsi_d),
     entry(ltr_d),	entry(lti_d),
     entry(ler_d),	entry(lei_d),
     entry(eqr_d),	entry(eqi_d),
@@ -1933,6 +1941,8 @@ entry_fr_fr(absr_f)		entry_fr_fm(absi_f)
 entry_fr_fr(sqrtr_f)		entry_fr_fm(sqrti_f)
 entry_fr_fr_fr_fr(fmar_f)	entry_fr_fr_fr_fm(fmai_f)
 entry_fr_fr_fr_fr(fmsr_f)	entry_fr_fr_fr_fm(fmsi_f)
+entry_fr_fr_fr_fr(fnmar_f)	entry_fr_fr_fr_fm(fnmai_f)
+entry_fr_fr_fr_fr(fnmsr_f)	entry_fr_fr_fr_fm(fnmsi_f)
 entry_ir_fr_fr(ltr_f)		entry_ir_fr_fm(lti_f)
 entry_ir_fr_fr(ler_f)		entry_ir_fr_fm(lei_f)
 entry_ir_fr_fr(eqr_f)		entry_ir_fr_fm(eqi_f)
@@ -1991,6 +2001,8 @@ entry_fr_fr(absr_d)		entry_fr_fm(absi_d)
 entry_fr_fr(sqrtr_d)		entry_fr_fm(sqrti_d)
 entry_fr_fr_fr_fr(fmar_d)	entry_fr_fr_fr_dm(fmai_d)
 entry_fr_fr_fr_fr(fmsr_d)	entry_fr_fr_fr_dm(fmsi_d)
+entry_fr_fr_fr_fr(fnmar_d)	entry_fr_fr_fr_dm(fnmai_d)
+entry_fr_fr_fr_fr(fnmsr_d)	entry_fr_fr_fr_dm(fnmsi_d)
 entry_ir_fr_fr(ltr_d)		entry_ir_fr_dm(lti_d)
 entry_ir_fr_fr(ler_d)		entry_ir_fr_dm(lei_d)
 entry_ir_fr_fr(eqr_d)		entry_ir_fr_dm(eqi_d)

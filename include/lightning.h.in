@@ -1197,6 +1197,19 @@ typedef enum {
 #define jit_fmsi_d(u,v,w,x)	_jit_fmsi_d(_jit, u, v, w, x)
     jit_code_fmsr_d,		jit_code_fmsi_d,
 
+#define jit_fnmar_f(u,v,w,x)	jit_new_node_wqw(jit_code_fnmar_f, u, v, w, x)
+#define jit_fnmai_f(u,v,w,x)	_jit_fnmai_f(_jit, u, v, w, x)
+    jit_code_fnmar_f,		jit_code_fnmai_f,
+#define jit_fnmsr_f(u,v,w,x)	jit_new_node_wqw(jit_code_fnmsr_f, u, v, w, x)
+#define jit_fnmsi_f(u,v,w,x)	_jit_fnmsi_f(_jit, u, v, w, x)
+    jit_code_fnmsr_f,		jit_code_fnmsi_f,
+#define jit_fnmar_d(u,v,w,x)	jit_new_node_wqw(jit_code_fnmar_d, u, v, w, x)
+#define jit_fnmai_d(u,v,w,x)	_jit_fnmai_d(_jit, u, v, w, x)
+    jit_code_fnmar_d,		jit_code_fnmai_d,
+#define jit_fnmsr_d(u,v,w,x)	jit_new_node_wqw(jit_code_fnmsr_d, u, v, w, x)
+#define jit_fnmsi_d(u,v,w,x)	_jit_fnmsi_d(_jit, u, v, w, x)
+    jit_code_fnmsr_d,		jit_code_fnmsi_d,
+
     jit_code_last_code
 } jit_code_t;
 
@@ -1324,6 +1337,10 @@ extern void _jit_fmai_f(jit_state_t*,
 			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float32_t);
 extern void _jit_fmsi_f(jit_state_t*,
 			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float32_t);
+extern void _jit_fnmai_f(jit_state_t*,
+			 jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float32_t);
+extern void _jit_fnmsi_f(jit_state_t*,
+			 jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float32_t);
 
 extern jit_node_t *_jit_arg_d(jit_state_t*);
 extern void _jit_getarg_d(jit_state_t*, jit_fpr_t, jit_node_t*);
@@ -1341,6 +1358,10 @@ extern void _jit_fmai_d(jit_state_t*,
 			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float64_t);
 extern void _jit_fmsi_d(jit_state_t*,
 			jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float64_t);
+extern void _jit_fnmai_d(jit_state_t*,
+			 jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float64_t);
+extern void _jit_fnmsi_d(jit_state_t*,
+			 jit_fpr_t, jit_fpr_t, jit_fpr_t, jit_float64_t);
 
 #define jit_get_reg(s)		_jit_get_reg(_jit,s)
 extern jit_int32_t _jit_get_reg(jit_state_t*, jit_int32_t);
