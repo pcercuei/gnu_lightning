@@ -453,19 +453,19 @@ static void _movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
 #define negr_d(r0,r1)			FNEG(r0,r1)
 #define sqrtr_f(r0,r1)			_sqrtr_f(_jit,r0,r1)
 static void _sqrtr_f(jit_state_t*,jit_int32_t,jit_int32_t);
-#define fmar_f(r0,r1,r2,r3)		FMA_S(r0,r2,r3,r1)
-#define fmsr_f(r0,r1,r2,r3)		FMS_S(r0,r2,r3,r1)
-#define fnmar_f(r0,r1,r2,r3)		FNMA_S(r0,r2,r3,r1)
-#define fnmsr_f(r0,r1,r2,r3)		_fnmsr_f(_jit,r0,r1,r2,r3)
-static void _fnmsr_f(jit_state_t*,
+#define fmar_f(r0,r1,r2,r3)		FMA_S(r0,r1,r2,r3)
+#define fmsr_f(r0,r1,r2,r3)		FMS_S(r0,r1,r2,r3)
+#define fnmsr_f(r0,r1,r2,r3)		FNMA_S(r0,r1,r2,r3)
+#define fnmar_f(r0,r1,r2,r3)		_fnmar_f(_jit,r0,r1,r2,r3)
+static void _fnmar_f(jit_state_t*,
 		     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #define sqrtr_d(r0,r1)			_sqrtr_d(_jit,r0,r1)
 static void _sqrtr_d(jit_state_t*,jit_int32_t,jit_int32_t);
-#define fmar_d(r0,r1,r2,r3)		FMA_D(r0,r2,r3,r1)
-#define fmsr_d(r0,r1,r2,r3)		FMS_D(r0,r2,r3,r1)
-#define fnmar_d(r0,r1,r2,r3)		FNMA_D(r0,r2,r3,r1)
-#define fnmsr_d(r0,r1,r2,r3)		_fnmsr_d(_jit,r0,r1,r2,r3)
-static void _fnmsr_d(jit_state_t*,
+#define fmar_d(r0,r1,r2,r3)		FMA_D(r0,r1,r2,r3)
+#define fmsr_d(r0,r1,r2,r3)		FMS_D(r0,r1,r2,r3)
+#define fnmsr_d(r0,r1,r2,r3)		FNMA_D(r0,r1,r2,r3)
+#define fnmar_d(r0,r1,r2,r3)		_fnmar_d(_jit,r0,r1,r2,r3)
+static void _fnmar_d(jit_state_t*,
 		     jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
 #define extr_f_d(r0,r1)			FNORM_D(r0,r1)
 #define extr_d_f(r0,r1)			FNORM_S(r0,r1)
@@ -1573,10 +1573,10 @@ _sqrtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_fnmsr_f(jit_state_t *_jit,
+_fnmar_f(jit_state_t *_jit,
 	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
 {
-    fmsr_f(r0, r1, r2, r3);
+    fmar_f(r0, r1, r2, r3);
     negr_f(r0, r0);
 }
 
@@ -1589,10 +1589,10 @@ _sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_fnmsr_d(jit_state_t *_jit,
+_fnmar_d(jit_state_t *_jit,
 	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
 {
-    fmsr_d(r0, r1, r2, r3);
+    fmar_d(r0, r1, r2, r3);
     negr_d(r0, r0);
 }
 
