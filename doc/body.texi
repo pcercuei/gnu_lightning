@@ -318,6 +318,31 @@ qrshr    _u       O1 = O3 >> O4, O2 = O3 << (WORDSIZE - O4)
 qrshi    _u       O1 = O3 >> O4, O2 = O3 << (WORDSIZE - O4)
 @end example
 
+These four operand ALU operations are only defined for float operands.
+
+@example
+fmar         _f  _d  O1 =  O2 * O3 + O4
+fmai         _f  _d  O1 =  O2 * O3 + O4
+fmsr         _f  _d  O1 =  O2 * O3 - O4
+fmsi         _f  _d  O1 =  O2 * O3 - O4
+fnmar        _f  _d  O1 = -O2 * O3 - O4
+fnmai        _f  _d  O1 = -O2 * O3 - O4
+fnmsr        _f  _d  O1 = -O2 * O3 + O4
+fnmsi        _f  _d  O1 = -O2 * O3 + O4
+@end example
+
+These are a family of fused multiply-add instructions.
+Note that @lightning{} does not handle rounding modes nor math exceptions.
+Also note that not all backends provide a instruction for the equivalent
+@lightning{} instruction presented above. Some are completely implemented
+as fallbacks and some are composed of one or more instructions. For common
+input this should not cause major issues, but note that when implemented by
+the cpu, these are implemented as the multiplication calculated with infinite
+precision, and after the addition step rounding is done. Due to this, For
+specially crafted input different ports might show different output. When
+implemented by the CPU, it is also possible to have exceptions that do
+not happen if implemented as a fallback.
+
 @item Unary ALU operations
 These accept two operands, the first must be a register and the
 second is a register if the @code{r} modifier is used, otherwise,
