@@ -634,6 +634,12 @@ struct jit_compiler {
 #endif
     jit_uint32_t	  no_data : 1;
     jit_uint32_t	  no_note : 1;
+    /* FIXME undocumented, might be moved to a jit_cpu field or a better
+     * configuration api.
+     * These are switches to a different unld* or unst*.
+     * Defaults are the algorithms that generate shorter code*/
+    jit_uint32_t	  unld_algorithm : 1;
+    jit_uint32_t	  unst_algorithm : 1;
     jit_int32_t		  framesize;	/* space for callee save registers,
 					 * frame pointer and return address */
     jit_int32_t		  reglen;	/* number of registers */

@@ -3144,9 +3144,13 @@ _unldr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _unldi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
 {
-    jit_int32_t		t0, r2;
-    if (jit_unaligned_p())
-	fallback_unldi(r0, i0, i1);
+    jit_int32_t		t0;
+    if (jit_unaligned_p()) {
+	t0 = jit_get_reg(jit_class_gpr);
+	movi(rn(t0), i0);
+	unldr(r0, rn(t0), i1);
+	jit_unget_reg(t0);
+    }
     else
 	generic_unldi(r0, i0, i1);
 }
@@ -3235,9 +3239,13 @@ _unldr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _unldi_u(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0, jit_word_t i1)
 {
-    jit_int32_t		t0, r2;
-    if (jit_unaligned_p())
-	fallback_unldi_u(r0, i0, i1);
+    jit_int32_t		t0;
+    if (jit_unaligned_p()) {
+	t0 = jit_get_reg(jit_class_gpr);
+	movi(rn(t0), i0);
+	unldr_u(r0, rn(t0), i1);
+	jit_unget_reg(t0);
+    }
     else
 	generic_unldi_u(r0, i0, i1);
 }

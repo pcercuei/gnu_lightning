@@ -1,5 +1,5 @@
 #if __WORDSIZE == 32
-#define JIT_INSTR_MAX 440
+#define JIT_INSTR_MAX 184
     0,	/* data */
     0,	/* live */
     0,	/* align */
@@ -502,12 +502,12 @@
     40, /* unldi */
     76, /* unldr_u */
     40, /* unldi_u */
-    212,	/* unstr */
-    96, /* unsti */
+    84,	/* unstr */
+    44, /* unsti */
     156,	/* unldr_x */
     84, /* unldi_x */
-    440,	/* unstr_x */
-    196,	/* unsti_x */
+    184,	/* unstr_x */
+    100,	/* unsti_x */
     4,	/* fmar_f */
     0,	/* fmai_f */
     4,	/* fmsr_f */
@@ -527,7 +527,7 @@
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 240
+#define JIT_INSTR_MAX 196
     0,	/* data */
     0,	/* live */
     24, /* align */
@@ -1026,16 +1026,16 @@
     8,	/* qrshi */
     72, /* qrshr_u */
     8,	/* qrshi_u */
-    76, /* unldr */
-    64, /* unldi */
-    76, /* unldr_u */
+    76,	/* unldr */
+    64,	/* unldi */
+    76,	/* unldr_u */
     64, /* unldi_u */
-    228,	/* unstr */
-    160,	/* unsti */
-    84, /* unldr_x */
+    84,	/* unstr */
+    44,	/* unsti */
+    84,	/* unldr_x */
     76, /* unldi_x */
-    240,	/* unstr_x */
-    172,	/* unsti_x */
+    196,	/* unstr_x */
+    116,	/* unsti_x */
     20, /* fmar_f */
     0,	/* fmai_f */
     20, /* fmsr_f */

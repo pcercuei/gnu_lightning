@@ -531,7 +531,7 @@
 
 #if __WORDSIZE == 32
 #if defined(__ARM_PCS_VFP)
-#define JIT_INSTR_MAX 276
+#define JIT_INSTR_MAX 144
     0,	/* data */
     0,	/* live */
     20, /* align */
@@ -799,7 +799,7 @@
     0,	/* retval_i */
     0,	/* retval_ui */
     0,	/* retval_l */
-    276,	/* epilog */
+    16,	/* epilog */
     0,	/* arg_f */
     0,	/* getarg_f */
     0,	/* putargr_f */
@@ -1036,9 +1036,9 @@
     44, /* unldi_u */
     68, /* unstr */
     44, /* unsti */
-    144,	/* unldr_x */
-    80, /* unldi_x */
-    148,	/* unstr_x */
+    140,	/* unldr_x */
+    76, /* unldi_x */
+    144,	/* unstr_x */
     96, /* unsti_x */
     48, /* fmar_f */
     0,	/* fmai_f */

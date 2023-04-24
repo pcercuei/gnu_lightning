@@ -2,7 +2,7 @@
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
 #if !_CALL_SYSV
-#define JIT_INSTR_MAX 384
+#define JIT_INSTR_MAX 152
     0,	/* data */
     0,	/* live */
     16, /* align */
@@ -505,12 +505,12 @@
     32, /* unldi */
     68, /* unldr_u */
     32, /* unldi_u */
-    176,	/* unstr */
-    80, /* unsti */
+    68,	/* unstr */
+    32, /* unsti */
     140,	/* unldr_x */
     68, /* unldi_x */
-    384,	/* unstr_x */
-    164,	/* unsti_x */
+    152,	/* unstr_x */
+    76,	/* unsti_x */
     4,	/* fmar_f */
     0,	/* fmai_f */
     4,	/* fmsr_f */
@@ -536,7 +536,7 @@
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
 #if _CALL_SYSV
-#define JIT_INSTR_MAX 384
+#define JIT_INSTR_MAX 152
     0,	/* data */
     0,	/* live */
     28, /* align */
@@ -1039,12 +1039,12 @@
     32, /* unldi */
     68, /* unldr_u */
     32, /* unldi_u */
-    176,	/* unstr */
-    80, /* unsti */
+    68,	/* unstr */
+    32, /* unsti */
     140,	/* unldr_x */
     68, /* unldi_x */
-    384,	/* unstr_x */
-    164,	/* unsti_x */
+    152,	/* unstr_x */
+    76,	/* unsti_x */
     4,	/* fmar_f */
     0,	/* fmai_f */
     4,	/* fmsr_f */
@@ -1069,7 +1069,7 @@
 #if __WORDSIZE == 64
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __BIG_ENDIAN
-#define JIT_INSTR_MAX 208
+#define JIT_INSTR_MAX 176
     0,	/* data */
     0,	/* live */
     28, /* align */
@@ -1572,12 +1572,12 @@
     64, /* unldi */
     72, /* unldr_u */
     64, /* unldi_u */
-    200,	/* unstr */
-    164,	/* unsti */
+    168,	/* unstr */
+    108,	/* unsti */
     76, /* unldr_x */
     72, /* unldi_x */
-    208,	/* unstr_x */
-    172,	/* unsti_x */
+    176,	/* unstr_x */
+    116,	/* unsti_x */
     4,	/* fmar_f */
     0,	/* fmai_f */
     4,	/* fmsr_f */
@@ -1601,7 +1601,7 @@
 #if __WORDSIZE == 64
 #if defined(__powerpc__)
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-#define JIT_INSTR_MAX 208
+#define JIT_INSTR_MAX 176
     0,	/* data */
     0,	/* live */
     20, /* align */
@@ -2104,12 +2104,12 @@
     68, /* unldi */
     76, /* unldr_u */
     68, /* unldi_u */
-    204,	/* unstr */
-    168,	/* unsti */
+    168,	/* unstr */
+    108,	/* unsti */
     76, /* unldr_x */
     72, /* unldi_x */
-    208,	/* unstr_x */
-    172,	/* unsti_x */
+    176,	/* unstr_x */
+    116,	/* unsti_x */
     4,	/* fmar_f */
     0,	/* fmai_f */
     4,	/* fmsr_f */

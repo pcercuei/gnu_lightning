@@ -1,5 +1,5 @@
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 204
+#define JIT_INSTR_MAX 140
     0,	/* data */
     0,	/* live */
     4,	/* align */
@@ -502,8 +502,8 @@
     60,	/* unldi */
     36,	/* unldr_u */
     60,	/* unldi_u */
-    176,	/* unstr */
-    204,	/* unsti */
+    120,	/* unstr */
+    140,	/* unsti */
     40,	/* unldr_x */
     68,	/* unldi_x */
     52,	/* unstr_x */
