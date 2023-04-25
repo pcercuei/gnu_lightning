@@ -367,7 +367,7 @@ endif
 
 TESTS += ccall self setcode nodata ctramp carg cva_list catomic \
          protect riprel cbit
-CLEANFILES = $(TESTS) gen_cbit
+CLEANFILES = $(TESTS) gen_cbit cbit.c
 
 #TESTS_ENVIRONMENT=$(srcdir)/run-test;
 
