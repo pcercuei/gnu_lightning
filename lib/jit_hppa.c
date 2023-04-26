@@ -49,6 +49,7 @@ extern void __clear_cache(void *, void *);
 /*
  * Initialization
  */
+jit_cpu_t		jit_cpu;
 jit_register_t		_rvs[] = {
     { 0,			"r0" },		/* Zero */
     /* Not register starved, so, avoid allocating r1 and rp
@@ -135,6 +136,12 @@ void
 jit_get_cpu(void)
 {
     /* FIXME Expecting PARISC 2.0, for PARISC 1.0 should not use fr16-fr31 */
+
+    /* Set to zero to pass all tests in unldst.tst */
+    /* Note that it only fails for instructions with an immediate, and
+     * it does not look like an encoding error, as even if only generating
+     * the encoding if ((immediate & 3) == 0) it still fails. */
+    jit_cpu.imm_idx = 1;
 }
 
 void
