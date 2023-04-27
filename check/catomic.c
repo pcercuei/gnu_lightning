@@ -143,11 +143,7 @@ main(int argc, char *argv[])
      * while holding the lock */				\
     jit_pushargi(10000);					\
     jit_finishi(usleep);					\
-    jit_prepare();						\
-    /* for make check, just print "ok" */			\
-    jit_pushargi((jit_word_t)"ok");				\
-    /*jit_pushargi((jit_word_t)#name);*/			\
-    jit_finishi(puts);						\
+    PRINT_OK();							\
     /* release lock */						\
     DEBUG_UNLOCK();						\
     jit_movi(JIT_V1, 0);					\
@@ -201,9 +197,7 @@ main(int argc, char *argv[])
     join(2);
     join(3);
 
-    jit_prepare();
-    jit_pushargi((jit_word_t)"ok");
-    jit_finishi(puts);
+    PRINT_OK();
 
     jit_ret();
     jit_epilog();
