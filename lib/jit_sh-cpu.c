@@ -1629,6 +1629,9 @@ emit_shllr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 	SHLD(r0, r1);
 #else
 	movr(_R0, r1);
+
+	TST(_R0, _R0);
+	BTS(2);
 	DT(_R0);
 	BFS(-3);
 	SHLL(r0);
@@ -1662,6 +1665,9 @@ _rshr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 #else
 	movr(_R0, r2);
 	movr(r0, r1);
+
+	TST(_R0, _R0);
+	BTS(2);
 	DT(_R0);
 	BFS(-3);
 	SHAR(r0);
@@ -1680,6 +1686,9 @@ _rshr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 #else
 	movr(_R0, r2);
 	movr(r0, r1);
+
+	TST(_R0, _R0);
+	BTS(2);
 	DT(_R0);
 	BFS(-3);
 	SHLR(r0);
@@ -1717,6 +1726,8 @@ _rshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg;
 
+	assert(i0 > 0);
+
 	reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
 
 	movr(r0, r1);
@@ -1738,6 +1749,8 @@ static void
 _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg;
+
+	assert(i0 > 0);
 
 	movr(r0, r1);
 
