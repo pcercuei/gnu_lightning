@@ -454,7 +454,7 @@ typedef struct jit_value	jit_value_t;
 typedef struct jit_compiler	jit_compiler_t;
 typedef struct jit_function	jit_function_t;
 typedef struct jit_register	jit_register_t;
-#if __arm__
+#if __arm__ || __sh__
 #  if DISASSEMBLER
 typedef struct jit_data_info	jit_data_info_t;
 #  endif
@@ -529,7 +529,7 @@ typedef struct {
     jit_node_t		*node;
 } jit_patch_t;
 
-#if __arm__ && DISASSEMBLER
+#if (__arm__ || __sh__) && DISASSEMBLER
 struct jit_data_info {
     jit_uword_t		  code;		/* pointer in code buffer */
     jit_word_t		  length;	/* length of constant vector */
@@ -756,7 +756,22 @@ struct jit_compiler {
 	} vector;
     } consts;
 #elif defined(__sh__)
+#  if DISASSEMBLER
+    struct {
+	jit_data_info_t	 *ptr;
+	jit_word_t	  offset;
+	jit_word_t	  length;
+    } data_info;			/* constant pools information */
+#  endif
     jit_bool_t mode_d;
+    struct {
+	jit_uint8_t	 *data;		/* pointer to code */
+	jit_word_t	  size;		/* size data */
+	jit_word_t	  offset;	/* pending patches */
+	jit_word_t	  length;	/* number of pending constants */
+	jit_int32_t	  values[1024];	/* pending constants */
+	jit_word_t	  patches[2048];
+    } consts;
 #endif
 #if GET_JIT_SIZE
     /* Temporary storage to calculate instructions length */

@@ -732,8 +732,10 @@ _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 	} else if (is_high_mask(i0)) {
 		MOVI(r0, -1);
 		lshi(r0, r0, unmasked_bits_count(i0));
-	} else {
+	} else if (i0 >= -32768 && i0 < 32768) {
 		movi_loop(_jit, r0, i0);
+	} else {
+		load_const(0, r0, i0);
 	}
 }
 
@@ -758,7 +760,10 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 		NOP();
 #endif
 	} else {
-		movi_p(_R0, i0);
+		if (force_patchable)
+			movi_p(_R0, i0);
+		else
+			movi(_R0, i0);
 		if (t_set)
 			BF(0);
 		else
@@ -2418,14 +2423,7 @@ _movi_p(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 {
 	jit_word_t w = _jit->pc.w;
 
-	MOVI(_R0, (i0 >> 24) & 0xff);
-	SHLL8(_R0);
-	ORI((i0 >> 16) & 0xff);
-	SHLL8(_R0);
-	ORI((i0 >> 8) & 0xff);
-	SHLL8(_R0);
-	ORI(i0 & 0xff);
-	movr(r0, _R0);
+	load_const(1, r0, 0);
 
 	return (w);
 }
@@ -2490,6 +2488,18 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 			break;
 		default:
 			assert(!"unhandled branch opcode");
+		}
+		break;
+	case 0xd:
+		if (ptr->op & 0xff) {
+			/* TODO: Fix the mess. patch_at() gets called with 'instr' pointing
+			 * to the mov.l opcode and 'label' being the value that should be
+			 * loaded into the register. So we read the address at which the mov.l
+			 * points to, and write the label there. */
+			*(jit_uint32_t *)((instr & ~0x3) + 4 + (ptr->op & 0xff) * 4) = label;
+		} else {
+			disp = ((label - instr) >> 2) - 1 + !!(instr & 0x3);
+			ptr->op = (ptr->op & 0xff00) | disp;
 		}
 		break;
 	default:

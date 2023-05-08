@@ -42,6 +42,12 @@ static jit_node_t *_jit_make_arg(jit_state_t*,jit_node_t*,jit_code_t);
 static jit_node_t *_jit_make_arg_f(jit_state_t*,jit_node_t*);
 #define jit_make_arg_d(node)		_jit_make_arg_d(_jit,node)
 static jit_node_t *_jit_make_arg_d(jit_state_t*,jit_node_t*);
+#define load_const(uniq,r0,i0)		_load_const(_jit,uniq,r0,i0)
+static void _load_const(jit_state_t*,jit_bool_t,jit_int32_t,jit_word_t);
+#define flush_consts()			_flush_consts(_jit)
+static void _flush_consts(jit_state_t*);
+#define invalidate_consts()		_invalidate_consts(_jit)
+static void _invalidate_consts(jit_state_t*);
 #define patch(instr, node)		_patch(_jit, instr, node)
 static void _patch(jit_state_t*,jit_word_t,jit_node_t*);
 
@@ -293,6 +299,9 @@ _emit_code(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
 	jit_word_t	 prevw;
 #endif
+#if DISASSEMBLER
+	jit_int32_t	 info_offset;
+#endif
 	jit_int32_t	 const_offset;
 	jit_int32_t	 patch_offset;
     } undo;
@@ -304,8 +313,15 @@ _emit_code(jit_state_t *_jit)
 
     jit_reglive_setup();
 
+    _jitc->consts.data = NULL;
+    _jitc->consts.offset = _jitc->consts.length = 0;
+
     undo.word = 0;
     undo.node = NULL;
+    undo.data = NULL;
+#if DISASSEMBLER
+    undo.info_offset =
+#endif
     undo.const_offset = undo.patch_offset = 0;
 #  define assert_data(node)		/**/
 #define case_rr(name, type)						\
@@ -785,6 +801,7 @@ _emit_code(jit_state_t *_jit)
 		case_brd(bunord);
 	    case jit_code_jmpr:
 		jmpr(rn(node->u.w));
+		flush_consts();
 		break;
 	    case jit_code_jmpi:
 		if (node->flag & jit_flag_node) {
@@ -800,6 +817,7 @@ _emit_code(jit_state_t *_jit)
 		}
 		else
 		    jmpi(node->u.w);
+		flush_consts();
 		break;
 	    case jit_code_callr:
 		callr(rn(node->u.w));
@@ -826,7 +844,13 @@ _emit_code(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
 		undo.prevw = prevw;
 #endif
+		undo.data = _jitc->consts.data;
+		undo.const_offset = _jitc->consts.offset;
 		undo.patch_offset = _jitc->patches.offset;
+#if DISASSEMBLER
+		if (_jitc->data_info.ptr)
+		    undo.info_offset = _jitc->data_info.offset;
+#endif
 	    restart_function:
 		_jitc->again = 0;
 		prolog(node);
@@ -846,7 +870,14 @@ _emit_code(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
 		    prevw = undo.prevw;
 #endif
+		    invalidate_consts();
+		    _jitc->consts.data = undo.data;
+		    _jitc->consts.offset = undo.const_offset;
 		    _jitc->patches.offset = undo.patch_offset;
+#if DISASSEMBLER
+		    if (_jitc->data_info.ptr)
+			_jitc->data_info.offset = undo.info_offset;
+#endif
 		    goto restart_function;
 		}
 		/* remember label is defined */
@@ -854,6 +885,7 @@ _emit_code(jit_state_t *_jit)
 		node->u.w = _jit->pc.w;
 		epilog(node);
 		_jitc->function = NULL;
+		flush_consts();
 		break;
 #if 0
 	    case jit_code_movr_w_f:
@@ -936,6 +968,25 @@ _emit_code(jit_state_t *_jit)
 	assert(_jitc->synth == 0);
 	/* update register live state */
 	jit_reglive(node);
+
+	if (_jitc->consts.length &&
+	    (_jit->pc.uc - _jitc->consts.data >= 450 ||
+	     (jit_uword_t)_jit->pc.uc -
+	     (jit_uword_t)_jitc->consts.patches[0] >= 450)) {
+	    /* longest sequence should be 64 bytes, but preventively
+	     * do not let it go past 128 remaining bytes before a flush */
+	    if (node->next &&
+		node->next->code != jit_code_jmpi &&
+		node->next->code != jit_code_jmpr &&
+		node->next->code != jit_code_epilog) {
+		/* insert a jump, flush constants and continue */
+		word = _jit->pc.w;
+		BRA(0);
+		NOP();
+		flush_consts();
+		patch_at(word, _jit->pc.w);
+	    }
+	}
     }
 #undef case_brw
 #undef case_brr
@@ -945,6 +996,8 @@ _emit_code(jit_state_t *_jit)
 #undef case_wr
 #undef case_rw
 #undef case_rr
+
+    flush_consts();
 
     for (offset = 0; offset < _jitc->patches.offset; offset++) {
 	node = _jitc->patches.ptr[offset].node;
@@ -1001,6 +1054,92 @@ void
 _emit_stxi_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
 	/* No FPU support */
+}
+
+static void
+_load_const(jit_state_t *_jit, jit_bool_t uniq, jit_int32_t r0, jit_word_t i0)
+{
+    jit_word_t		 w;
+    jit_word_t		 d;
+    jit_word_t		 base;
+    jit_int32_t		*data;
+    jit_int32_t		 size;
+    jit_int32_t		 offset;
+
+    _jitc->consts.patches[_jitc->consts.offset++] = _jit->pc.w;
+    /* positive forward offset */
+    LDPL(r0, 0);
+
+    if (!uniq) {
+	/* search already requested values */
+	for (offset = 0; offset < _jitc->consts.length; offset++) {
+	    if (_jitc->consts.values[offset] == i0) {
+		_jitc->consts.patches[_jitc->consts.offset++] = offset;
+		return;
+	    }
+	}
+    }
+
+#if DEBUG
+    /* cannot run out of space because of limited range
+     * but assert anyway to catch logic errors */
+    assert(_jitc->consts.length < 1024);
+    assert(_jitc->consts.offset < 2048);
+#endif
+    _jitc->consts.patches[_jitc->consts.offset++] = _jitc->consts.length;
+    _jitc->consts.values[_jitc->consts.length++] = i0;
+}
+
+static void
+_flush_consts(jit_state_t *_jit)
+{
+    jit_word_t		 word;
+    jit_int32_t		 offset;
+
+    /* if no forward constants */
+    if (!_jitc->consts.length)
+	return;
+
+    /* Align to 32 bits */
+    if (_jit->pc.w & 0x3)
+	    NOP();
+
+    word = _jit->pc.w;
+    _jitc->consts.data = _jit->pc.uc;
+    _jitc->consts.size = _jitc->consts.length << 2;
+    /* FIXME check will not overrun, otherwise, need to reallocate
+     * code buffer and start over */
+    jit_memcpy(_jitc->consts.data, _jitc->consts.values, _jitc->consts.size);
+    _jit->pc.w += _jitc->consts.size;
+
+#if DISASSEMBLER
+    if (_jitc->data_info.ptr) {
+	if (_jitc->data_info.offset >= _jitc->data_info.length) {
+	    jit_realloc((jit_pointer_t *)&_jitc->data_info.ptr,
+			_jitc->data_info.length * sizeof(jit_data_info_t),
+			(_jitc->data_info.length + 1024) *
+			sizeof(jit_data_info_t));
+	    _jitc->data_info.length += 1024;
+	}
+	_jitc->data_info.ptr[_jitc->data_info.offset].code = word;
+	_jitc->data_info.ptr[_jitc->data_info.offset].length = _jitc->consts.size;
+	++_jitc->data_info.offset;
+    }
+#endif
+
+    for (offset = 0; offset < _jitc->consts.offset; offset += 2)
+	patch_at(_jitc->consts.patches[offset],
+		 word + (_jitc->consts.patches[offset + 1] << 2));
+    _jitc->consts.length = _jitc->consts.offset = 0;
+}
+
+/* to be called if needing to start over a function */
+static void
+_invalidate_consts(jit_state_t *_jit)
+{
+    /* if no forward constants */
+    if (_jitc->consts.length)
+	_jitc->consts.length = _jitc->consts.offset = 0;
 }
 
 static void
