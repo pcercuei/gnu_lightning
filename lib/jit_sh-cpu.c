@@ -1336,6 +1336,9 @@ _andi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 		extr_uc(r0, r1);
 	} else if (i0 == 0xffff) {
 		extr_us(r0, r1);
+	} else if (i0 == 0xffff0000) {
+		SWAPW(r0, r1);
+		SHLL16(r0);
 	} else {
 		assert(r0 != _R0 && r1 != _R0);
 
