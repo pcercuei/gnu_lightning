@@ -1592,9 +1592,15 @@ _lti(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	assert(r1 != _R0);
 
-	movi(_R0, i0);
-	CMPGT(_R0, r1);
-	MOVT(r0);
+	if (i0 == 0) {
+		movr(r0, r1);
+		ROTCL(r0);
+		MOVT(r0);
+	} else {
+		movi(_R0, i0);
+		CMPGT(_R0, r1);
+		MOVT(r0);
+	}
 }
 
 static void
