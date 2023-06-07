@@ -4861,7 +4861,7 @@ static void _exti_u(jit_state_t *_jit,
 #endif
     if (i1)
 	i0 >>= __WORDSIZE - i2;
-#if __WORDSIZE == 64 && _WIN32
+#if __WORDSIZE == 64 && !_WIN32
     i0 &= (1L << i2) - 1;
 #else
     i0 &= (1LL << i2) - 1;
