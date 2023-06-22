@@ -3585,11 +3585,21 @@ _simplify_movr(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node,
 {
     jit_int32_t		 regno;
     jit_int32_t		 right;
+    jit_int32_t		 spec;
     jit_value_t		*value;
 
     regno = jit_regno(node->u.w);
     right = jit_regno(node->v.w);
     value = _jitc->values + regno;
+
+    spec = jit_class(_rvs[regno].spec);
+    if (!(spec & (jit_class_gpr | jit_class_xpr | jit_class_fpr))) {
+	/* reserved register */
+	value->kind = 0;
+	++_jitc->gen[regno];
+	return (0);
+    }
+
     if ((value->kind == jit_kind_register &&
 	 jit_regno(value->base.q.l) == right &&
 	 value->base.q.h == _jitc->gen[right]) ||
@@ -3627,12 +3637,18 @@ _simplify_movi(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node,
 	++_jitc->gen[regno];
 	return (0);
     }
+    spec = jit_class(_rvs[regno].spec);
+    if (!(spec & (jit_class_gpr | jit_class_xpr | jit_class_fpr))) {
+	/* reserved register */
+	value->kind = 0;
+	++_jitc->gen[regno];
+	return (0);
+    }
     if (value->kind == kind) {
 	if (memcmp(&node->v.w, &value->base.w, size) == 0) {
 	    del_node(prev, node);
 	    return (1);
 	}
-	spec = jit_class(_rvs[regno].spec);
 	if (kind == jit_kind_word)
 	    spec &= jit_class_gpr;
 	else
