@@ -122,9 +122,9 @@
     8,	/* bswapr_us */
     8,	/* bswapr_ui */
     0,	/* bswapr_ul */
-    20,	/* htonr_us */
-    52,	/* htonr_ui */
-    116,	/* htonr_ul */
+    8,	/* htonr_us */
+    8,	/* htonr_ui */
+    0,	/* htonr_ul */
     4,	/* ldr_c */
     12,	/* ldi_c */
     4,	/* ldr_uc */
