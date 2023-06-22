@@ -627,6 +627,12 @@ static void _epilog(jit_state_t*,jit_node_t*);
 #  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
 #  define masked_bits_count(im)		__builtin_popcountl(im)
 #  define unmasked_bits_count(im)	(__WORDSIZE - masked_bits_count(im))
+
+#  if defined(__SH3__) || defined(__SH4__) || defined(__SH4_NOFPU__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
+#    define jit_sh34_p()	1
+#  else
+#    define jit_sh34_p()	0
+#  endif
 #endif /* PROTO */
 
 #if CODE
@@ -746,19 +752,19 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 	jit_int32_t disp = (i0 - w >> 1) - 2;
 
 	if (!force_patchable && disp >= -128 && disp <= 127) {
-#if defined(__SH3__) || defined(__SH4__)
-		if (t_set)
-			BT(disp);
-		else
-			BF(disp);
-#else
-		/* BT/BF are buggy on SH2 - revert to using BTS/BFS */
-		if (t_set)
-			BTS(disp);
-		else
-			BFS(disp);
-		NOP();
-#endif
+		if (jit_sh34_p()) {
+			if (t_set)
+				BT(disp);
+			else
+				BF(disp);
+		} else {
+			/* BT/BF are buggy on SH2 - revert to using BTS/BFS */
+			if (t_set)
+				BTS(disp);
+			else
+				BFS(disp);
+			NOP();
+		}
 	} else {
 		if (force_patchable)
 			movi_p(_R0, i0);
@@ -778,11 +784,10 @@ static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	TST(r2, r2);
 
-#if defined(__SH3__) || defined(__SH4__)
-	emit_branch_opcode(_jit, 4, 0, set, 0);
-#else
-	emit_branch_opcode(_jit, 6, 0, set, 0);
-#endif
+	if (jit_sh34_p())
+		emit_branch_opcode(_jit, 4, 0, set, 0);
+	else
+		emit_branch_opcode(_jit, 6, 0, set, 0);
 	movr(r0, r1);
 }
 
@@ -1639,17 +1644,17 @@ _lei_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 emit_shllr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
-#if defined(__SH3__) || defined(__SH4__)
-	SHLD(r0, r1);
-#else
-	movr(_R0, r1);
+	if (jit_sh34_p())
+		SHLD(r0, r1);
+	else {
+		movr(_R0, r1);
 
-	TST(_R0, _R0);
-	BTS(2);
-	DT(_R0);
-	BFS(-3);
-	SHLL(r0);
-#endif
+		TST(_R0, _R0);
+		BTS(2);
+		DT(_R0);
+		BFS(-3);
+		SHLL(r0);
+	}
 }
 
 static void
@@ -1672,20 +1677,20 @@ _rshr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	assert(r0 != _R0 && r1 != _R0);
 
-#if defined(__SH3__) || defined(__SH4__)
-	negr(_R0, r2);
-	movr(r0, r1);
-	SHAD(r0, _R0);
-#else
-	movr(_R0, r2);
-	movr(r0, r1);
+	if (jit_sh34_p()) {
+		negr(_R0, r2);
+		movr(r0, r1);
+		SHAD(r0, _R0);
+	} else {
+		movr(_R0, r2);
+		movr(r0, r1);
 
-	TST(_R0, _R0);
-	BTS(2);
-	DT(_R0);
-	BFS(-3);
-	SHAR(r0);
-#endif
+		TST(_R0, _R0);
+		BTS(2);
+		DT(_R0);
+		BFS(-3);
+		SHAR(r0);
+	}
 }
 
 static void
@@ -1693,20 +1698,20 @@ _rshr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	assert(r0 != _R0 && r1 != _R0);
 
-#if defined(__SH3__) || defined(__SH4__)
-	negr(_R0, r2);
-	movr(r0, r1);
-	SHLD(r0, _R0);
-#else
-	movr(_R0, r2);
-	movr(r0, r1);
+	if (jit_sh34_p()) {
+		negr(_R0, r2);
+		movr(r0, r1);
+		SHLD(r0, _R0);
+	} else {
+		movr(_R0, r2);
+		movr(r0, r1);
 
-	TST(_R0, _R0);
-	BTS(2);
-	DT(_R0);
-	BFS(-3);
-	SHLR(r0);
-#endif
+		TST(_R0, _R0);
+		BTS(2);
+		DT(_R0);
+		BFS(-3);
+		SHLR(r0);
+	}
 }
 
 static void
@@ -1745,15 +1750,15 @@ _rshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
 
 	movr(r0, r1);
-#if defined(__SH3__) || defined(__SH4__)
-	movi(rn(reg), -i0);
-	SHAD(r0, rn(reg));
-#else
-	movi(rn(reg), i0);
-	DT(rn(reg));
-	BFS(-3);
-	SHAR(r0);
-#endif
+	if (jit_sh34_p()) {
+		movi(rn(reg), -i0);
+		SHAD(r0, rn(reg));
+	} else {
+		movi(rn(reg), i0);
+		DT(rn(reg));
+		BFS(-3);
+		SHAR(r0);
+	}
 
 	if (r0 == _R0)
 		jit_unget_reg(reg);
@@ -1779,15 +1784,15 @@ _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	} else {
 		reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
 
-#if defined(__SH3__) || defined(__SH4__)
-		movi(rn(reg), -i0);
-		SHLD(r0, rn(reg));
-#else
-		movi(rn(reg), i0);
-		DT(rn(reg));
-		BFS(-3);
-		SHLR(r0);
-#endif
+		if (jit_sh34_p()) {
+			movi(rn(reg), -i0);
+			SHLD(r0, rn(reg));
+		} else {
+			movi(rn(reg), i0);
+			DT(rn(reg));
+			BFS(-3);
+			SHLR(r0);
+		}
 
 		if (r0 == _R0)
 			jit_unget_reg(reg);
