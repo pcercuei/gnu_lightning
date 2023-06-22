@@ -310,6 +310,7 @@ _emit_code(jit_state_t *_jit)
 #endif
 
     _jitc->function = NULL;
+    _jitc->no_flag = 0;
 
     jit_reglive_setup();
 
@@ -968,6 +969,8 @@ _emit_code(jit_state_t *_jit)
 	assert(_jitc->synth == 0);
 	/* update register live state */
 	jit_reglive(node);
+
+        _jitc->no_flag = !(node->flag & jit_flag_patch);
 
 	if (_jitc->consts.length &&
 	    (_jit->pc.uc - _jitc->consts.data >= 450 ||

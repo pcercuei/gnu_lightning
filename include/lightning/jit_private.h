@@ -764,6 +764,7 @@ struct jit_compiler {
     } data_info;			/* constant pools information */
 #  endif
     jit_bool_t mode_d;
+    jit_bool_t no_flag;
     struct {
 	jit_uint8_t	 *data;		/* pointer to code */
 	jit_word_t	  size;		/* size data */

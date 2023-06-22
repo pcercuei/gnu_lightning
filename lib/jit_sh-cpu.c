@@ -779,10 +779,22 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 	}
 }
 
+static void maybe_emit_tst(jit_state_t *_jit, jit_uint16_t r0, jit_bool_t *set)
+{
+	jit_instr_t *instr = (jit_instr_t *)(_jit->pc.w - 2);
+
+	/* If the previous opcode is a MOVT(r0), we can skip the TST opcode,
+	 * but we need to invert the branch condition. */
+	if (_jitc->no_flag && instr->op == (0x29 | (r0 << 8)))
+		*set ^= 1;
+	else
+		TST(r0, r0);
+}
+
 static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 		   jit_uint16_t r2, jit_bool_t set)
 {
-	TST(r2, r2);
+	maybe_emit_tst(_jit, r2, &set);
 
 	if (jit_sh34_p())
 		emit_branch_opcode(_jit, 4, 0, set, 0);
@@ -2147,11 +2159,16 @@ static jit_word_t
 _bmsr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
       jit_uint16_t r1, jit_bool_t p)
 {
+	jit_bool_t set = 0;
 	jit_word_t w;
 
-	TST(r0, r1);
+	if (r0 != r1)
+		TST(r0, r1);
+	else
+		maybe_emit_tst(_jit, r0, &set);
+
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, 0, p);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
@@ -2160,11 +2177,16 @@ static jit_word_t
 _bmcr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
       jit_uint16_t r1, jit_bool_t p)
 {
+	jit_bool_t set = 1;
 	jit_word_t w;
 
-	TST(r0, r1);
+	if (r0 != r1)
+		TST(r0, r1);
+	else
+		maybe_emit_tst(_jit, r0, &set);
+
 	w = _jit->pc.w;
-	emit_branch_opcode(_jit, i0, w, 1, p);
+	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
 }
@@ -2216,7 +2238,7 @@ _bgti_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_word_t w;
 
 	if (i1 == 0) {
-		TST(r0, r0);
+		maybe_emit_tst(_jit, r0, &set);
 	} else {
 		assert(r0 != _R0);
 
@@ -2251,7 +2273,7 @@ static jit_word_t _beqi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_word_t w;
 
 	if (i1 == 0) {
-		TST(r0, r0);
+		maybe_emit_tst(_jit, r0, &set);
 	} else if (i1 >= -128 && i1 < 128) {
 		movr(_R0, r0);
 		CMPEQI(i1);
