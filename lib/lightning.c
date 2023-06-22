@@ -3593,7 +3593,7 @@ _simplify_movr(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node,
     value = _jitc->values + regno;
 
     spec = jit_class(_rvs[regno].spec);
-    if (!(spec & (jit_class_gpr | jit_class_xpr | jit_class_fpr))) {
+    if (!(spec & (jit_class_gpr | jit_class_fpr))) {
 	/* reserved register */
 	value->kind = 0;
 	++_jitc->gen[regno];
@@ -3638,7 +3638,7 @@ _simplify_movi(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node,
 	return (0);
     }
     spec = jit_class(_rvs[regno].spec);
-    if (!(spec & (jit_class_gpr | jit_class_xpr | jit_class_fpr))) {
+    if (!(spec & (jit_class_gpr | jit_class_fpr))) {
 	/* reserved register */
 	value->kind = 0;
 	++_jitc->gen[regno];
