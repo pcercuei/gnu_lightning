@@ -23,6 +23,8 @@
 #  include <dis-asm.h>
 #endif
 
+#include <inttypes.h>
+
 /*
  * Prototypes
  */
@@ -249,11 +251,12 @@ disasm_compare_symbols(const void *ap, const void *bp)
 
 #if __WORDSIZE == 32
 #  define address_buffer_length		16
-#  define address_buffer_format		"%llx"
+#define address_buffer_format		"%" PRIx32
 #else
 #  define address_buffer_length		32
-#  define address_buffer_format		"%lx"
+#define address_buffer_format		"%" PRIx64
 #endif
+
 static void
 disasm_print_address(bfd_vma addr, struct disassemble_info *info)
 {
