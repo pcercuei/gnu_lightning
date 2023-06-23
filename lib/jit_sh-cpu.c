@@ -2452,8 +2452,16 @@ _callr(jit_state_t *_jit, jit_int16_t r0)
 static void
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
-	movi(_R0, i0);
-	callr(_R0);
+	jit_word_t w = _jit->pc.w;
+	jit_int32_t disp = (i0 - w >> 1) - 2;
+
+	if (disp >= -2048 && disp <= 2046) {
+		BSR(disp);
+		NOP();
+	} else {
+		movi(_R0, i0);
+		callr(_R0);
+	}
 }
 
 static jit_word_t
