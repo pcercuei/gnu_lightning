@@ -467,12 +467,13 @@ _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
     jit_int32_t		 reg;
 
     if (_jitc->no_data) {
+	CHECK_CVT_OFFSET();
 	data.f = *i0;
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), data.i & 0xffffffff);
-	stxi_i(alloca_offset - 4, _FP_REGNO, rn(reg));
+	stxi_i(CVT_OFFSET + 4, _FP_REGNO, rn(reg));
 	jit_unget_reg(reg);
-	ldxi_f(r0, _FP_REGNO, alloca_offset - 4);
+	ldxi_f(r0, _FP_REGNO, CVT_OFFSET + 4);
     }
     else
 	ldi_f(r0, (jit_word_t)i0);
@@ -499,19 +500,20 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
     jit_int32_t		 reg;
 
     if (_jitc->no_data) {
+	CHECK_CVT_OFFSET();
 	data.d = *i0;
 	reg = jit_get_reg(jit_class_gpr);
 #  if __WORDSIZE == 32
 	movi(rn(reg), data.i[0]);
-	stxi(alloca_offset - 8, _FP_REGNO, rn(reg));
+	stxi(CVT_OFFSET, _FP_REGNO, rn(reg));
 	movi(rn(reg), data.i[1]);
-	stxi(alloca_offset - 4, _FP_REGNO, rn(reg));
+	stxi(CVT_OFFSET + 4, _FP_REGNO, rn(reg));
 #  else
 	movi(rn(reg), data.w);
-	stxi(alloca_offset - 8, _FP_REGNO, rn(reg));
+	stxi(CVT_OFFSET, _FP_REGNO, rn(reg));
 #  endif
 	jit_unget_reg(reg);
-	ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
+	ldxi_d(r0, _FP_REGNO, CVT_OFFSET);
     }
     else
 	ldi_d(r0, (jit_word_t)i0);
@@ -547,13 +549,13 @@ _extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
 #  if __WORDSIZE == 32
     jit_int32_t		reg, freg, off1, off2;
-
+    CHECK_CVT_OFFSET();
 #  if __BYTE_ORDER == __BIG_ENDIAN
-    off1 = alloca_offset - 8;
-    off2 = alloca_offset - 4;
+    off1 = CVT_OFFSET;
+    off2 = CVT_OFFSET + 4;
 #  else
-    off1 = alloca_offset - 4;
-    off2 = alloca_offset - 8;
+    off1 = CVT_OFFSET + 4;
+    off2 = CVT_OFFSET;
 #  endif
 
     reg = jit_get_reg(jit_class_gpr);
@@ -563,17 +565,17 @@ _extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     stxi_i(off1, _FP_REGNO, rn(reg));
     movi(rn(reg), 0x80000000);
     stxi_i(off2, _FP_REGNO, rn(reg));
-    ldxi_d(rn(freg), _FP_REGNO, alloca_offset - 8);
+    ldxi_d(rn(freg), _FP_REGNO, CVT_OFFSET);
     xorr(rn(reg), r1, rn(reg));
     stxi_i(off2, _FP_REGNO, rn(reg));
-    ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
+    ldxi_d(r0, _FP_REGNO, CVT_OFFSET);
     subr_d(r0, r0, rn(freg));
 
     jit_unget_reg(reg);
     jit_unget_reg(freg);
 #  else
-    stxi(alloca_offset - 8, _FP_REGNO, r1);
-    ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
+    stxi(CVT_OFFSET, _FP_REGNO, r1);
+    ldxi_d(r0, _FP_REGNO, CVT_OFFSET);
     FCFID(r0, r0);
 #  endif
 }
@@ -584,12 +586,12 @@ _truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_int32_t		reg;
     reg = jit_get_reg(jit_class_fpr);
     FCTIWZ(rn(reg), r1);
-    /* use reserved 8 bytes area */
-    stxi_d(alloca_offset - 8, _FP_REGNO, rn(reg));
+    CHECK_CVT_OFFSET();
+    stxi_d(CVT_OFFSET, _FP_REGNO, rn(reg));
 #  if __BYTE_ORDER == __BIG_ENDIAN
-    ldxi_i(r0, _FP_REGNO, alloca_offset - 4);
+    ldxi_i(r0, _FP_REGNO, CVT_OFFSET + 4);
 #  else
-    ldxi_i(r0, _FP_REGNO, alloca_offset - 8);
+    ldxi_i(r0, _FP_REGNO, CVT_OFFSET);
 #  endif
     jit_unget_reg(reg);
 }
@@ -601,9 +603,9 @@ _truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_int32_t		reg;
     reg = jit_get_reg(jit_class_fpr);
     FCTIDZ(rn(reg), r1);
-    /* use reserved 8 bytes area */
-    stxi_d(alloca_offset - 8, _FP_REGNO, rn(reg));
-    ldxi(r0, _FP_REGNO, alloca_offset - 8);
+    CHECK_CVT_OFFSET();
+    stxi_d(CVT_OFFSET, _FP_REGNO, rn(reg));
+    ldxi(r0, _FP_REGNO, CVT_OFFSET);
     jit_unget_reg(reg);
 }
 #  endif

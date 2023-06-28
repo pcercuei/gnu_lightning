@@ -47,6 +47,15 @@
 #  define I_DISP			(__WORDSIZE >> 3) - sizeof(jit_int32_t)
 #  define F_DISP			(__WORDSIZE >> 3) - sizeof(jit_float32_t)
 #endif
+#define CVT_OFFSET			_jitc->function->cvt_offset
+#define CHECK_CVT_OFFSET()						\
+    do {								\
+	if (!_jitc->function->cvt_offset) {				\
+	    _jitc->again = 1;						\
+	    _jitc->function->cvt_offset =				\
+		 jit_allocai(sizeof(jit_float64_t));			\
+	}								\
+    } while (0)
 
 /*
  * Types
@@ -783,14 +792,13 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
 			  + 1
 #  endif
 			   )) {
-	/* use reserved 8 bytes area */
-	jit_stxi_d(alloca_offset - 8, JIT_FP, u);
-	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		 alloca_offset - 8);
+	CHECK_CVT_OFFSET();
+	jit_stxi_d(CVT_OFFSET, JIT_FP, u);
+	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP, CVT_OFFSET);
 	_jitc->function->call.argi++;
 #  if __WORDSIZE == 32
 	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		 alloca_offset - 4);
+		 CVT_OFFSET + 4);
 	_jitc->function->call.argi++;
 #  endif
     }
@@ -840,14 +848,14 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 			  + 1
 #  endif
 			  )) {
-	    /* use reserved 8 bytes area */
-	    jit_stxi_d(alloca_offset - 8, JIT_FP, regno);
+	    CHECK_CVT_OFFSET();
+	    jit_stxi_d(CVT_OFFSET, JIT_FP, regno);
 	    jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		     alloca_offset - 8);
+		     CVT_OFFSET);
 	    _jitc->function->call.argi++;
 #  if __WORDSIZE == 32
 	    jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		     alloca_offset - 4);
+		     CVT_OFFSET + 4);
 	    _jitc->function->call.argi++;
 #  endif
 	}
@@ -895,14 +903,12 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
 			  + 1
 #  endif
 			   )) {
-	/* use reserved 8 bytes area */
-	jit_stxi_d(alloca_offset - 8, JIT_FP, u);
-	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		 alloca_offset - 8);
+	CHECK_CVT_OFFSET();
+	jit_stxi_d(CVT_OFFSET, JIT_FP, u);
+	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP, CVT_OFFSET);
 	_jitc->function->call.argi++;
 #  if __WORDSIZE == 32
-	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		 alloca_offset - 4);
+	jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP, CVT_OFFSET + 4);
 	_jitc->function->call.argi++;
 #  endif
     }
@@ -966,14 +972,14 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
 			  + 1
 #  endif
 			  )) {
-	    /* use reserved 8 bytes area */
-	    jit_stxi_d(alloca_offset - 8, JIT_FP, regno);
+	    CHECK_CVT_OFFSET();
+	    jit_stxi_d(CVT_OFFSET, JIT_FP, regno);
 	    jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		     alloca_offset - 8);
+		     CVT_OFFSET);
 	    _jitc->function->call.argi++;
 #  if __WORDSIZE == 32
 	    jit_ldxi(JIT_RA0 - _jitc->function->call.argi, JIT_FP,
-		     alloca_offset - 4);
+		     CVT_OFFSET + 4);
 	    _jitc->function->call.argi++;
 #  endif
 	}
