@@ -3728,7 +3728,7 @@ _calli_p(jit_state_t *_jit, jit_word_t i0
 /* order is not guaranteed to be sequential */
 static jit_int32_t save[] = {
     _R14, _R15, _R16, _R17, _R18, _R19, _R20, _R21, _R22,
-    _R23, _R24, _R25, _R26, _R27, _R28, _R29, _R30, _R31,
+    _R23, _R24, _R25, _R26, _R27, _R28, _R29, _R30,
 };
 
 static void
@@ -3739,6 +3739,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 	jit_int32_t	frame = -_jitc->function->frame;
+	jit_check_frame();
 	assert(_jitc->function->self.aoff >= frame);
 	if (_jitc->function->assume_frame)
 	    return;
@@ -3774,9 +3775,10 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 		   _SP_REGNO, rn(_F14 + offset));
     }
 
-    stxi(-(sizeof(void*)), _SP_REGNO, _FP_REGNO);
-
-    movr(_FP_REGNO, _SP_REGNO);
+    if (_jitc->function->need_frame) {
+	stxi(-(sizeof(void*)), _SP_REGNO, _FP_REGNO);
+	movr(_FP_REGNO, _SP_REGNO);
+    }
 #if __WORDSIZE == 32
     STWU(_SP_REGNO, _SP_REGNO, -_jitc->function->stack);
 #else
@@ -3838,7 +3840,8 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
     }
 
     MTLR(_R0_REGNO);
-    ldxi(_FP_REGNO, _SP_REGNO, -(sizeof(void*)));
+    if (_jitc->function->need_frame)
+	ldxi(_FP_REGNO, _SP_REGNO, -(sizeof(void*)));
 
     BLR();
 }

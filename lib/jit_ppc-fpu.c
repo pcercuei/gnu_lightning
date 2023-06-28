@@ -468,6 +468,7 @@ _movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 
     if (_jitc->no_data) {
 	CHECK_CVT_OFFSET();
+	jit_check_frame();
 	data.f = *i0;
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), data.i & 0xffffffff);
@@ -501,6 +502,7 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 
     if (_jitc->no_data) {
 	CHECK_CVT_OFFSET();
+	jit_check_frame();
 	data.d = *i0;
 	reg = jit_get_reg(jit_class_gpr);
 #  if __WORDSIZE == 32
@@ -550,6 +552,7 @@ _extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 #  if __WORDSIZE == 32
     jit_int32_t		reg, freg, off1, off2;
     CHECK_CVT_OFFSET();
+    jit_check_frame();
 #  if __BYTE_ORDER == __BIG_ENDIAN
     off1 = CVT_OFFSET;
     off2 = CVT_OFFSET + 4;
@@ -587,6 +590,7 @@ _truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     reg = jit_get_reg(jit_class_fpr);
     FCTIWZ(rn(reg), r1);
     CHECK_CVT_OFFSET();
+    jit_check_frame();
     stxi_d(CVT_OFFSET, _FP_REGNO, rn(reg));
 #  if __BYTE_ORDER == __BIG_ENDIAN
     ldxi_i(r0, _FP_REGNO, CVT_OFFSET + 4);
@@ -604,6 +608,7 @@ _truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     reg = jit_get_reg(jit_class_fpr);
     FCTIDZ(rn(reg), r1);
     CHECK_CVT_OFFSET();
+    jit_check_frame();
     stxi_d(CVT_OFFSET, _FP_REGNO, rn(reg));
     ldxi(r0, _FP_REGNO, CVT_OFFSET);
     jit_unget_reg(reg);
