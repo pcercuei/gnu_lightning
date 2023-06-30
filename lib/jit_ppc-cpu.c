@@ -19,7 +19,7 @@
 
 #if PROTO
 #  if __WORDSIZE == 32
-#    define gpr_save_area		72	/* r14~r31 = 18 * 4 */
+#    define gpr_save_size		72	/* r14~r31 = 18 * 4 */
 #    if _CALL_SYSV
 #      define params_offset		(sizeof(jit_word_t) << 1)
 #    else
@@ -29,7 +29,7 @@
 #    define can_zero_extend_int_p(im)	1
 #    define fits_uint32_p(im)		1
 #  else
-#    define gpr_save_area		144	/* r14~r31 = 18 * 8 */
+#    define gpr_save_size		144	/* r14~r31 = 18 * 8 */
 #    if _CALL_ELF == 2
 #      define params_offset		32
 #    else
@@ -42,8 +42,8 @@
 	((im) >= 0 && (im) < 0x80000000L)
 #    define fits_uint32_p(im)		((im & 0xffffffff00000000L) == 0)
 #  endif
-#  define fpr_save_area			64
-#  define alloca_offset			-(gpr_save_area + fpr_save_area)
+#  define fpr_save_size			64
+#  define alloca_offset			-(gpr_save_size + fpr_save_size)
 #  define ii(i)				*_jit->pc.ui++ = i
 #  if __WORDSIZE == 32
 #    define iw(i)			*_jit->pc.ui++ = i
@@ -3725,16 +3725,10 @@ _calli_p(jit_state_t *_jit, jit_word_t i0
     return (w);
 }
 
-/* order is not guaranteed to be sequential */
-static jit_int32_t save[] = {
-    _R14, _R15, _R16, _R17, _R18, _R19, _R20, _R21, _R22,
-    _R23, _R24, _R25, _R26, _R27, _R28, _R29, _R30,
-};
-
 static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
 {
-    unsigned long	regno;
+    jit_int32_t		regno;
     jit_word_t		offset;
 
     if (_jitc->function->define_frame || _jitc->function->assume_frame) {
@@ -3764,15 +3758,15 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 #else
     stxi(sizeof(void*) * 2, _SP_REGNO, _R0_REGNO);
 #endif
-    offset = -gpr_save_area;
-    for (regno = 0; regno < jit_size(save); regno++, offset += sizeof(void*)) {
-	if (jit_regset_tstbit(&_jitc->function->regset, save[regno]))
-	    stxi(offset, _SP_REGNO, rn(save[regno]));
+    offset = -gpr_save_size;
+    for (regno = 0; regno < jit_size(iregs); regno++, offset += sizeof(void*)) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
+	    stxi(offset, _SP_REGNO, rn(iregs[regno]));
     }
-    for (offset = 0; offset < 8; offset++) {
-	if (jit_regset_tstbit(&_jitc->function->regset, _F14 + offset))
-	    stxi_d(-(gpr_save_area + 8 + offset * 8),
-		   _SP_REGNO, rn(_F14 + offset));
+    for (offset = 0; offset < jit_size(fregs); offset++) {
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
+	    stxi_d(-(gpr_save_size + 8 + offset * 8),
+		   _SP_REGNO, rn(fregs[offset]));
     }
 
     if (_jitc->function->need_frame) {
@@ -3814,7 +3808,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 static void
 _epilog(jit_state_t *_jit, jit_node_t *node)
 {
-    unsigned long	regno;
+    jit_int32_t		regno;
     jit_word_t		offset;
 
     if (_jitc->function->assume_frame)
@@ -3828,15 +3822,15 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 #else
     ldxi(_R0_REGNO, _SP_REGNO, sizeof(void*) * 2);
 #endif
-    offset = -gpr_save_area;
-    for (regno = 0; regno < jit_size(save); regno++, offset += sizeof(void*)) {
-	if (jit_regset_tstbit(&_jitc->function->regset, save[regno]))
-	    ldxi(rn(save[regno]), _SP_REGNO, offset);
+    offset = -gpr_save_size;
+    for (regno = 0; regno < jit_size(iregs); regno++, offset += sizeof(void*)) {
+	if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
+	    ldxi(rn(iregs[regno]), _SP_REGNO, offset);
     }
     for (offset = 0; offset < 8; offset++) {
-	if (jit_regset_tstbit(&_jitc->function->regset, _F14 + offset))
-	    ldxi_d(rn(_F14 + offset), _SP_REGNO,
-		   -(gpr_save_area + 8 + offset * 8));
+	if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
+	    ldxi_d(rn(fregs[offset]), _SP_REGNO,
+		   -(gpr_save_size + 8 + offset * 8));
     }
 
     MTLR(_R0_REGNO);

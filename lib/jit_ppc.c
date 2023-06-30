@@ -188,6 +188,15 @@ jit_register_t		_rvs[] = {
     { _NOREG,				"<none>" },
 };
 
+static jit_int32_t iregs[] = {
+    _R14, _R15, _R16, _R17, _R18, _R19, _R20, _R21, _R22,
+    _R23, _R24, _R25, _R26, _R27, _R28, _R29, _R30
+};
+
+static jit_int32_t fregs[] = {
+    _F14, _F15, _F16, _F17, _F18, _F19, _F20, _F21,
+};
+
 /*
  * Implementation
  */
