@@ -1205,7 +1205,7 @@ _f2c1(jit_state_t *_jit, jit_int32_t op, jit_int32_t rd,
     jit_instr_t		v;
     assert(!(op  & 0xfffffffc));
     assert(!(rd  & 0xffffffe0));
-    assert(!(res & 0xffffffc0));
+    assert(!(op3 & 0xffffffc0));
     assert(!(rs1 & 0xffffffe0));
     assert(!(opf & 0xfffffe00));
     assert(!(rs2 & 0xfffffe00));
