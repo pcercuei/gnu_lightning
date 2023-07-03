@@ -20,6 +20,10 @@ main(int argc, char *argv[])
     /* Create a simple function that changes all available JIT_Vx */
     inner = jit_label();
     jit_prolog();
+    for (off = JIT_R_NUM - 1; off >= 0; --off) {
+	if (jit_callee_save_p(JIT_R(off)))
+	    jit_movi(JIT_R(off), (off + 1) * 2);
+    }
     for (off = JIT_V_NUM - 1; off >= 0; --off)
 	jit_movi(JIT_V(off), -(off + 1));
     /* If fprs are callee save, also test them */
@@ -82,6 +86,10 @@ main(int argc, char *argv[])
     jit_patch(jmp);
     jit_prolog();
 
+    for (off = JIT_R_NUM - 1; off >= 0; --off) {
+	if (jit_callee_save_p(JIT_R(off)))
+	    jit_movi(JIT_R(off), -(off + 1) * 2);
+    }
     for (off = JIT_V_NUM - 1; off >= 0; --off)
 	jit_movi(JIT_V(off), 0x7fffffff - (off + 1));
     /* If fprs are callee save, also test them */
@@ -93,6 +101,18 @@ main(int argc, char *argv[])
 
     /* Now validate no register has been clobbered */
     fail = jit_forward();
+
+    for (off = JIT_R_NUM - 1; off >= 0; --off) {
+	if (jit_callee_save_p(JIT_R(off))) {
+#if DEBUG
+	    jmp = jit_beqi(JIT_R(off), -(off + 1) * 2);
+	    jit_calli(abort);
+	    jit_patch(jmp);
+#else
+	    jit_patch_at(jit_bnei(JIT_R(off), -(off + 1) * 2), fail);
+#endif
+	}
+    }
     for (off = JIT_V_NUM - 1; off >= 0; --off) {
 #if DEBUG
 	jmp = jit_beqi(JIT_V(off), 0x7fffffff - (off + 1));
