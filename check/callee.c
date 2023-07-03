@@ -35,10 +35,10 @@ main(int argc, char *argv[])
      * a standard C function might clobber registers saved in the stack */
     jit_prepare();
     jit_pushargi((jit_word_t)stderr);
-    jit_ellipsis();
     jit_pushargi((jit_word_t)
 		 "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d "
 		 "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n");
+    jit_ellipsis();
     jit_pushargi(1);
     jit_pushargi(2);
     jit_pushargi(3);
