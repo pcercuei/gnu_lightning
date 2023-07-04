@@ -19,7 +19,7 @@
 
 #if PROTO
 #  if __WORDSIZE == 32
-#    define gpr_save_size		72	/* r14~r31 = 18 * 4 */
+#    define gpr_save_area		72	/* r14~r31 = 18 * 4 */
 #    if _CALL_SYSV
 #      define params_offset		(sizeof(jit_word_t) << 1)
 #    else
@@ -29,7 +29,7 @@
 #    define can_zero_extend_int_p(im)	1
 #    define fits_uint32_p(im)		1
 #  else
-#    define gpr_save_size		144	/* r14~r31 = 18 * 8 */
+#    define gpr_save_area		144	/* r14~r31 = 18 * 8 */
 #    if _CALL_ELF == 2
 #      define params_offset		32
 #    else
@@ -42,8 +42,8 @@
 	((im) >= 0 && (im) < 0x80000000L)
 #    define fits_uint32_p(im)		((im & 0xffffffff00000000L) == 0)
 #  endif
-#  define fpr_save_size			64
-#  define alloca_offset			-(gpr_save_size + fpr_save_size)
+#  define fpr_save_area			64
+#  define alloca_offset			-(gpr_save_area + fpr_save_area)
 #  define ii(i)				*_jit->pc.ui++ = i
 #  if __WORDSIZE == 32
 #    define iw(i)			*_jit->pc.ui++ = i
@@ -3758,14 +3758,14 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 #else
     stxi(sizeof(void*) * 2, _SP_REGNO, _R0_REGNO);
 #endif
-    offset = -gpr_save_size;
+    offset = -gpr_save_area;
     for (regno = 0; regno < jit_size(iregs); regno++, offset += sizeof(void*)) {
 	if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
 	    stxi(offset, _SP_REGNO, rn(iregs[regno]));
     }
     for (offset = 0; offset < jit_size(fregs); offset++) {
 	if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
-	    stxi_d(-(gpr_save_size + 8 + offset * 8),
+	    stxi_d(-(gpr_save_area + 8 + offset * 8),
 		   _SP_REGNO, rn(fregs[offset]));
     }
 
@@ -3822,7 +3822,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 #else
     ldxi(_R0_REGNO, _SP_REGNO, sizeof(void*) * 2);
 #endif
-    offset = -gpr_save_size;
+    offset = -gpr_save_area;
     for (regno = 0; regno < jit_size(iregs); regno++, offset += sizeof(void*)) {
 	if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
 	    ldxi(rn(iregs[regno]), _SP_REGNO, offset);
@@ -3830,7 +3830,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
     for (offset = 0; offset < 8; offset++) {
 	if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
 	    ldxi_d(rn(fregs[offset]), _SP_REGNO,
-		   -(gpr_save_size + 8 + offset * 8));
+		   -(gpr_save_area + 8 + offset * 8));
     }
 
     MTLR(_R0_REGNO);
