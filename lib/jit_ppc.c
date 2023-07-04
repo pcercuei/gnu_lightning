@@ -1862,6 +1862,7 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_calli:
 		value = !!(node->flag & jit_flag_varargs);
 		if (node->flag & jit_flag_node) {
+		    _jitc->function->need_return = 1;
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
@@ -1938,6 +1939,8 @@ _emit_code(jit_state_t *_jit)
 		    undo.func.self.aoff = _jitc->function->frame +
 			_jitc->function->self.aoff;
 		    undo.func.need_frame = _jitc->function->need_frame;
+		    undo.func.need_stack = _jitc->function->need_stack;
+		    undo.func.need_return = _jitc->function->need_return;
 		    jit_regset_set(&undo.func.regset, &_jitc->function->regset);
 		    /* allocar information also does not need to be undone */
 		    undo.func.aoffoff = _jitc->function->aoffoff;

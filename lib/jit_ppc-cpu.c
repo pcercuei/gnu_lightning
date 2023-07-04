@@ -3747,37 +3747,66 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 			      _jitc->function->self.size -
 			      _jitc->function->self.aoff) + 15) & -16;
 
-    /* return address */
-    MFLR(_R0_REGNO);
+    if (_jitc->function->need_frame)
+	_jitc->function->need_stack = _jitc->function->need_return = 1;
+
+    if (!_jitc->function->need_stack) {
+	for (regno = 0; regno < jit_size(iregs); regno++) {
+	    if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno])) {
+		_jitc->function->need_stack =
+		    _jitc->function->need_return = 1;
+		break;
+	    }
+	}
+	if (!_jitc->function->need_stack) {
+	    for (offset = 0; offset < jit_size(fregs); offset++) {
+		if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset])) {
+		    _jitc->function->need_stack =
+			_jitc->function->need_return = 1;
+		    break;
+		}
+	    }
+	}
+    }
 
     /* params >= %r31+params_offset+(8*sizeof(jit_word_t))
      * alloca <  %r31-80 */
 
+    /* return address */
+    if (_jitc->function->need_return) {
+	MFLR(_R0_REGNO);
 #if _CALL_SYSV
-    stxi(sizeof(jit_word_t), _SP_REGNO, _R0_REGNO);
+	stxi(sizeof(jit_word_t), _SP_REGNO, _R0_REGNO);
 #else
-    stxi(sizeof(void*) * 2, _SP_REGNO, _R0_REGNO);
+	stxi(sizeof(void*) * 2, _SP_REGNO, _R0_REGNO);
 #endif
-    offset = -gpr_save_area;
-    for (regno = 0; regno < jit_size(iregs); regno++, offset += sizeof(void*)) {
-	if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
-	    stxi(offset, _SP_REGNO, rn(iregs[regno]));
     }
-    for (offset = 0; offset < jit_size(fregs); offset++) {
-	if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
-	    stxi_d(-(gpr_save_area + 8 + offset * 8),
-		   _SP_REGNO, rn(fregs[offset]));
+
+    if (_jitc->function->need_stack) {
+	offset = -gpr_save_area;
+	for (regno = 0; regno < jit_size(iregs);
+	     regno++, offset += sizeof(void*)) {
+	    if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
+		stxi(offset, _SP_REGNO, rn(iregs[regno]));
+	}
+	for (offset = 0; offset < jit_size(fregs); offset++) {
+	    if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
+		stxi_d(-(gpr_save_area + 8 + offset * 8),
+		       _SP_REGNO, rn(fregs[offset]));
+	}
     }
 
     if (_jitc->function->need_frame) {
 	stxi(-(sizeof(void*)), _SP_REGNO, _FP_REGNO);
 	movr(_FP_REGNO, _SP_REGNO);
     }
+    if (_jitc->function->need_stack) {
 #if __WORDSIZE == 32
-    STWU(_SP_REGNO, _SP_REGNO, -_jitc->function->stack);
+	STWU(_SP_REGNO, _SP_REGNO, -_jitc->function->stack);
 #else
-    STDU(_SP_REGNO, _SP_REGNO, -_jitc->function->stack);
+	STDU(_SP_REGNO, _SP_REGNO, -_jitc->function->stack);
 #endif
+    }
 
     if (_jitc->function->allocar) {
 	regno = jit_get_reg(jit_class_gpr);
@@ -3813,27 +3842,37 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 
     if (_jitc->function->assume_frame)
 	return;
-    if (_jitc->function->allocar)
-	ldr(_SP_REGNO, _SP_REGNO);
-    else
-	addi(_SP_REGNO, _SP_REGNO, _jitc->function->stack);
-#if _CALL_SYSV
-    ldxi(_R0_REGNO, _SP_REGNO, sizeof(jit_word_t));
-#else
-    ldxi(_R0_REGNO, _SP_REGNO, sizeof(void*) * 2);
-#endif
-    offset = -gpr_save_area;
-    for (regno = 0; regno < jit_size(iregs); regno++, offset += sizeof(void*)) {
-	if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
-	    ldxi(rn(iregs[regno]), _SP_REGNO, offset);
-    }
-    for (offset = 0; offset < 8; offset++) {
-	if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
-	    ldxi_d(rn(fregs[offset]), _SP_REGNO,
-		   -(gpr_save_area + 8 + offset * 8));
+    if (_jitc->function->need_stack) {
+	if (_jitc->function->allocar)
+	    ldr(_SP_REGNO, _SP_REGNO);
+	else
+	    addi(_SP_REGNO, _SP_REGNO, _jitc->function->stack);
     }
 
-    MTLR(_R0_REGNO);
+    if (_jitc->function->need_return) {
+#if _CALL_SYSV
+	ldxi(_R0_REGNO, _SP_REGNO, sizeof(jit_word_t));
+#else
+	ldxi(_R0_REGNO, _SP_REGNO, sizeof(void*) * 2);
+#endif
+    }
+
+    if (_jitc->function->need_stack) {
+	offset = -gpr_save_area;
+	for (regno = 0; regno < jit_size(iregs);
+	     regno++, offset += sizeof(void*)) {
+	    if (jit_regset_tstbit(&_jitc->function->regset, iregs[regno]))
+		ldxi(rn(iregs[regno]), _SP_REGNO, offset);
+	}
+	for (offset = 0; offset < 8; offset++) {
+	    if (jit_regset_tstbit(&_jitc->function->regset, fregs[offset]))
+		ldxi_d(rn(fregs[offset]), _SP_REGNO,
+		       -(gpr_save_area + 8 + offset * 8));
+	}
+    }
+
+    if (_jitc->function->need_return)
+	MTLR(_R0_REGNO);
     if (_jitc->function->need_frame)
 	ldxi(_FP_REGNO, _SP_REGNO, -(sizeof(void*)));
 
