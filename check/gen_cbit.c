@@ -546,7 +546,7 @@ main(int argc, char *argv[])\n\
     for (i = 1; i < 64; i++) {
 	printf("    /* Call C functions for signed bitfields at offset %d */\n", i);
 	for (j = 1; j <= 64 - i; j++) {
-	    if (i + i > 32)
+	    if (i + j > 32)
 		printf("\
     jit_patch_at(jit_movi(JIT_R0, 0), nS%d_%d);\n\
     jit_prepare();\n\
