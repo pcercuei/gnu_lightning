@@ -346,16 +346,20 @@ static void _movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_f(r0, i0)		_movi_f(_jit, r0, i0)
 static void _movi_f(jit_state_t*,jit_int32_t,jit_float32_t*);
 #  if NEW_ABI && __WORDSIZE == 32
-#      define movi64(r0, i0)		_movi64(_jit, r0, i0)
+#    define movi64(r0, i0)		_movi64(_jit, r0, i0)
 static void _movi64(jit_state_t*,jit_int32_t,jit_int64_t);
-#  endif
-#  if __WORDSIZE == 64
+#    define movi_d_w(r0, i0)		_movi_d_w(_jit, r0, i0)
+static void _movi_d_w(jit_state_t*,jit_int32_t,jit_int64_t);
+#  elif __WORDSIZE == 64
 #    define movi64(r0, i0)		movi(r0, i0)
+#  endif
+#  if __WORDSIZE == 64 || NEW_ABI
 #    define movr_w_d(r0, r1)		DMTC1(r1, r0)
 #    define movr_d_w(r0, r1)		DMFC1(r0, r1)
 #    define movi_w_d(r0, i0)		_movi_w_d(_jit, r0, i0)
 static void _movi_w_d(jit_state_t*, jit_int32_t, jit_word_t);
-#  else
+#  endif
+#  if __WORDSIZE == 32
 #    define movr_ww_d(r0, r1, r2)	_movr_ww_d(_jit, r0, r1, r2)
 static void _movr_ww_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #    define movr_d_ww(r0, r1, r2)	_movr_d_ww(_jit, r0, r1, r2)
@@ -1146,9 +1150,20 @@ _movi64(jit_state_t *_jit, jit_int32_t r0, jit_int64_t i0)
 	    ORI(r0, r0, (jit_word_t)i0 & 0xffff);
     }
 }
+
+static void
+_movi_d_w(jit_state_t *_jit, jit_int32_t r0, jit_int64_t i0)
+{
+    union {
+	jit_int64_t	l;
+	jit_float64_t	d;
+    } data;
+    data.d = i0;
+    movi64(r0, data.l);
+}
 #endif
 
-#if __WORDSIZE == 64
+#if __WORDSIZE == 64 || NEW_ABI
 static void
 _movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
@@ -1158,8 +1173,9 @@ _movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     movr_w_d(r0, rn(reg));
     jit_unget_reg(reg);
 }
+#endif
 
-#else
+#if __WORDSIZE == 32
 static void
 _movr_ww_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
