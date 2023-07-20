@@ -2111,7 +2111,7 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_movi_w_f:
 		movi_w_f(rn(node->u.w), node->v.w);
 		break;
-#if NEW_ABI
+#if __WORDSIZE == 64
 	    case jit_code_movr_d_w:
 		movr_d_w(rn(node->u.w), rn(node->v.w));
 		break;

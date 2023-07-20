@@ -345,13 +345,12 @@ static void _fnmsr_f(jit_state_t*,
 static void _movr_f(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_f(r0, i0)		_movi_f(_jit, r0, i0)
 static void _movi_f(jit_state_t*,jit_int32_t,jit_float32_t*);
-#  if NEW_ABI
-#    if __WORDSIZE == 32
+#  if NEW_ABI && __WORDSIZE == 32
 #      define movi64(r0, i0)		_movi64(_jit, r0, i0)
 static void _movi64(jit_state_t*,jit_int32_t,jit_int64_t);
-#    else
-#      define movi64(r0, i0)		movi(r0, i0)
-#    endif
+#  endif
+#  if __WORDSIZE == 64
+#    define movi64(r0, i0)		movi(r0, i0)
 #    define movr_w_d(r0, r1)		DMTC1(r1, r0)
 #    define movr_d_w(r0, r1)		DMFC1(r0, r1)
 #    define movi_w_d(r0, i0)		_movi_w_d(_jit, r0, i0)
@@ -1113,7 +1112,7 @@ dopi(rsb)
 dopi(mul)
 dopi(div)
 
-#if NEW_ABI
+#if NEW_ABI && __WORDSIZE == 32
 /* n32 abi requires 64 bit cpu */
 static void
 _movi64(jit_state_t *_jit, jit_int32_t r0, jit_int64_t i0)
@@ -1147,7 +1146,9 @@ _movi64(jit_state_t *_jit, jit_int32_t r0, jit_int64_t i0)
 	    ORI(r0, r0, (jit_word_t)i0 & 0xffff);
     }
 }
+#endif
 
+#if __WORDSIZE == 64
 static void
 _movi_w_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
