@@ -4020,7 +4020,9 @@ _patch_registers(jit_state_t *_jit)
     jit_int32_t		 spec;
     jit_int32_t		 regno;
     jit_int32_t		 value;
+    jit_block_t		*block;
 
+    block = NULL;
     _jitc->function = NULL;
 
     jit_reglive_setup();
@@ -4048,6 +4050,9 @@ _patch_registers(jit_state_t *_jit)
 			    ((jit_class(_rvs[value].spec) & spec) &
 			     ~jit_class_arg) == spec &&
 			    !jit_regset_tstbit(&_jitc->regarg, value) &&
+			    (block == NULL ||
+			     !(jit_regset_tstbit(&block->reglive, value) ||
+			       jit_regset_tstbit(&block->regmask, value))) &&
 			    !spill_reglive_p(node, value))
 			    break;
 		    }
@@ -4113,10 +4118,15 @@ _patch_registers(jit_state_t *_jit)
 		node->w.w = _jitc->function->regoff[regno];
 		node->link = NULL;
 		break;
+	    case jit_code_label:
+		block = _jitc->blocks.ptr + node->v.w;
+		break;
 	    case jit_code_prolog:
+		block = _jitc->blocks.ptr + node->v.w;
 		_jitc->function = _jitc->functions.ptr + node->w.w;
 		break;
 	    case jit_code_epilog:
+		block = _jitc->blocks.ptr + node->v.w;
 		_jitc->function = NULL;
 		break;
 	    default:
