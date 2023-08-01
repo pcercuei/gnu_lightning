@@ -1963,11 +1963,11 @@ _jit_optimize(jit_state_t *_jit)
     }
 
     /* Figure out labels that are only reached with a jump */
-    jump = 0;
+    jump = 1;
     for (node = _jitc->head; node; node = node->next) {
 	switch (node->code) {
 	    case jit_code_label:
-		if (jump) {
+		if (!jump) {
 		    node->flag |= jit_flag_head;
 		    if (!node->link) {
 			/* Block is dead code or only reachable with an
