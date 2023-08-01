@@ -1951,10 +1951,6 @@ _jit_optimize(jit_state_t *_jit)
     do_setup();
     do_follow(1);
 
-    patch_registers();
-    if (simplify())
-	todo = 1;
-
     jit_regset_set_ui(&regmask, 0);
     for (offset = 0; offset < _jitc->reglen; offset++) {
 	if ((jit_class(_rvs[offset].spec) & (jit_class_gpr|jit_class_fpr)) &&
@@ -1992,6 +1988,10 @@ _jit_optimize(jit_state_t *_jit)
 		break;
 	}
     }
+
+    patch_registers();
+    if (simplify())
+	todo = 1;
 
     for (node = _jitc->head; node; node = node->next) {
 	mask = jit_classify(node->code);
@@ -3981,8 +3981,9 @@ _register_change_p(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 		    }
 		}
 		else if ((value & jit_cc_a0_reg) && node->u.w == regno) {
-		    use = 1;
-		    change = !!(value & jit_cc_a0_chg);
+		    if (value & jit_cc_a0_chg)
+			change = 1;
+		    use = !change;
 		}
 		if (!use &&
 		    (value & jit_cc_a1_reg) && node->v.w == regno) {
@@ -4037,9 +4038,7 @@ _patch_registers(jit_state_t *_jit)
     jit_int32_t		 spec;
     jit_int32_t		 regno;
     jit_int32_t		 value;
-    jit_block_t		*block;
 
-    block = NULL;
     _jitc->function = NULL;
 
     jit_reglive_setup();
@@ -4067,9 +4066,6 @@ _patch_registers(jit_state_t *_jit)
 			    ((jit_class(_rvs[value].spec) & spec) &
 			     ~jit_class_arg) == spec &&
 			    !jit_regset_tstbit(&_jitc->regarg, value) &&
-			    (block == NULL ||
-			     !(jit_regset_tstbit(&block->reglive, value) ||
-			       jit_regset_tstbit(&block->regmask, value))) &&
 			    !spill_reglive_p(node, value))
 			    break;
 		    }
@@ -4135,15 +4131,10 @@ _patch_registers(jit_state_t *_jit)
 		node->w.w = _jitc->function->regoff[regno];
 		node->link = NULL;
 		break;
-	    case jit_code_label:
-		block = _jitc->blocks.ptr + node->v.w;
-		break;
 	    case jit_code_prolog:
-		block = _jitc->blocks.ptr + node->v.w;
 		_jitc->function = _jitc->functions.ptr + node->w.w;
 		break;
 	    case jit_code_epilog:
-		block = _jitc->blocks.ptr + node->v.w;
 		_jitc->function = NULL;
 		break;
 	    default:
