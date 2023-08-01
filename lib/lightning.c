@@ -3959,33 +3959,50 @@ _register_change_p(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 		   jit_int32_t regno)
 {
     jit_int32_t		value;
+    jit_bool_t		use, change;
 
     for (; node != link; node = node->next) {
 	switch (node->code) {
 	    case jit_code_label:	case jit_code_prolog:
-		/* lack of extra information so cannot say it is undefined */
-		return (jit_reg_change);
+		/* lack of extra information so assume it is live */
+		return (jit_reg_static);
 	    case jit_code_callr:	case jit_code_calli:
 		if (!(jit_class(_rvs[regno].spec) & jit_class_sav))
 		    return (jit_reg_undef);
 		break;
 	    default:
 		value = jit_classify(node->code);
+		use = change = 0;
+		if (value & jit_cc_a0_rlh) {
+		    if (node->u.q.l == regno || node->u.q.h == regno) {
+			if (value & jit_cc_a0_chg)
+			    change = 1;
+			use = !change;
+		    }
+		}
+		else if ((value & jit_cc_a0_reg) && node->u.w == regno) {
+		    use = 1;
+		    change = !!(value & jit_cc_a0_chg);
+		}
+		if (!use &&
+		    (value & jit_cc_a1_reg) && node->v.w == regno) {
+		    if (value & jit_cc_a1_chg)
+			change = 1;
+		    use = !change;
+		}
+		if (!use &&
+		    (value & jit_cc_a2_reg) && node->w.w == regno) {
+		    if (value & jit_cc_a2_chg)
+			change = 1;
+		    use = !change;
+		}
 		/* lack of extra information */
-		if (value & (jit_cc_a0_jmp|jit_cc_a0_cnd))
-		    return (jit_reg_change);
-		else if ((value & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
-			 (jit_cc_a0_reg|jit_cc_a0_chg) &&
-			 (((value & jit_cc_a0_rlh) &&
-			   (node->u.q.l == regno || node->u.q.h == regno)) ||
-			  (!(value & jit_cc_a0_rlh) &&
-			   node->u.w == regno)))
-		    return (jit_reg_change);
-		else if ((value & jit_cc_a1_reg) && node->v.w == regno &&
-			 (value & jit_cc_a1_chg))
-		    return (jit_reg_change);
-		else if ((value & jit_cc_a2_reg) && node->w.w == regno &&
-			 (value & jit_cc_a2_chg))
+		if (!use && (value & (jit_cc_a0_jmp|jit_cc_a0_cnd)) &&
+		    /* In case of indirect branches, always consider
+		     * callee save registers as live. */
+		    !(jit_class(_rvs[regno].spec) & jit_class_sav))
+		    change = 1;
+		if (!use && change)
 		    return (jit_reg_change);
 	}
     }
