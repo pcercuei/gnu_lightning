@@ -44,8 +44,8 @@ static jit_node_t *_jit_make_arg_f(jit_state_t*,jit_node_t*);
 static jit_node_t *_jit_make_arg_d(jit_state_t*,jit_node_t*);
 #define load_const(uniq,r0,i0)		_load_const(_jit,uniq,r0,i0)
 static void _load_const(jit_state_t*,jit_bool_t,jit_int32_t,jit_word_t);
-#define flush_consts()			_flush_consts(_jit)
-static void _flush_consts(jit_state_t*);
+#define flush_consts(force)		_flush_consts(_jit,force)
+static void _flush_consts(jit_state_t*,jit_bool_t);
 #define invalidate_consts()		_invalidate_consts(_jit)
 static void _invalidate_consts(jit_state_t*);
 #define patch(instr, node)		_patch(_jit, instr, node)
@@ -816,7 +816,7 @@ _emit_code(jit_state_t *_jit)
 		case_brd(bunord);
 	    case jit_code_jmpr:
 		jmpr(rn(node->u.w));
-		flush_consts();
+		flush_consts(0);
 		break;
 	    case jit_code_jmpi:
 		if (node->flag & jit_flag_node) {
@@ -832,7 +832,7 @@ _emit_code(jit_state_t *_jit)
 		}
 		else
 		    jmpi(node->u.w);
-		flush_consts();
+		flush_consts(0);
 		break;
 	    case jit_code_callr:
 		callr(rn(node->u.w));
@@ -900,7 +900,7 @@ _emit_code(jit_state_t *_jit)
 		node->u.w = _jit->pc.w;
 		epilog(node);
 		_jitc->function = NULL;
-		flush_consts();
+		flush_consts(0);
 		break;
 #if 0
 	    case jit_code_movr_w_f:
@@ -1000,7 +1000,7 @@ _emit_code(jit_state_t *_jit)
 		word = _jit->pc.w;
 		BRA(0);
 		NOP();
-		flush_consts();
+		flush_consts(1);
 		patch_at(word, _jit->pc.w);
 	    }
 	}
@@ -1014,7 +1014,7 @@ _emit_code(jit_state_t *_jit)
 #undef case_rw
 #undef case_rr
 
-    flush_consts();
+    flush_consts(1);
 
     for (offset = 0; offset < _jitc->patches.offset; offset++) {
 	node = _jitc->patches.ptr[offset].node;
@@ -1108,13 +1108,18 @@ _load_const(jit_state_t *_jit, jit_bool_t uniq, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
-_flush_consts(jit_state_t *_jit)
+_flush_consts(jit_state_t *_jit, jit_bool_t force)
 {
     jit_word_t		 word;
     jit_int32_t		 offset;
 
     /* if no forward constants */
     if (!_jitc->consts.length)
+	return;
+
+    word = _jit->code.length - (_jit->pc.uc - _jit->code.ptr)
+	    - (_jitc->consts.length << 1);
+    if (!force && word < 1024)
 	return;
 
     /* Align to 32 bits */
