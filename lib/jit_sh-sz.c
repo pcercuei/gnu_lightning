@@ -8,7 +8,7 @@
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
-    114,	/* prolog */
+    40,	/* prolog */
     0,	/* ellipsis */
     0,	/* va_push */
     0,	/* allocai */
@@ -252,7 +252,7 @@
     0,	/* retval_i */
     0,	/* retval_ui */
     0,	/* retval_l */
-    112,	/* epilog */
+    22,	/* epilog */
     0,	/* arg_f */
     0,	/* getarg_f */
     0,	/* putargr_f */
