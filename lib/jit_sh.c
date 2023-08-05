@@ -379,9 +379,16 @@ _emit_code(jit_state_t *_jit)
 		    name##r##type(temp->u.w, rn(node->v.w),		\
 				  rn(node->w.w));			\
 		else {							\
-		    word = name##r##type##_p(_jit->pc.w,		\
-					     rn(node->v.w),		\
-					     rn(node->w.w), 1);		\
+		    word = _jit->code.length				\
+			- (_jit->pc.uc - _jit->code.ptr);		\
+		    if (word < 4094) {					\
+			word = name##r##type(0, rn(node->v.w),		\
+					     rn(node->w.w));		\
+		    } else {						\
+			word = name##r##type##_p(_jit->pc.w,		\
+						 rn(node->v.w),		\
+						 rn(node->w.w), 1);	\
+		    }							\
 		    patch(word, node);					\
 		}							\
 		break
@@ -394,9 +401,16 @@ _emit_code(jit_state_t *_jit)
 		    name##i##type(temp->u.w,				\
 				  rn(node->v.w), node->w.w);		\
 		else {							\
-		    word = name##i##type##_p(_jit->pc.w,		\
-					   rn(node->v.w),		\
-					   node->w.w, 1);		\
+		    word = _jit->code.length				\
+			- (_jit->pc.uc - _jit->code.ptr);		\
+		    if (word < 4094) {					\
+			word = name##i##type(0, rn(node->v.w),		\
+					     node->w.w);		\
+		    } else {						\
+			word = name##i##type##_p(_jit->pc.w,		\
+						 rn(node->v.w),		\
+						 node->w.w, 1);		\
+		    }							\
 		    patch(word, node);					\
 		}							\
 		break;

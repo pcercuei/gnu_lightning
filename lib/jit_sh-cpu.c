@@ -753,7 +753,21 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 {
 	jit_int32_t disp = (i0 - w >> 1) - 2;
 
-	if (!force_patchable && disp >= -128 && disp <= 127) {
+	if (!force_patchable && i0 == 0) {
+		/* Positive displacement - we don't know the target yet. */
+		if (t_set)
+			BT(0);
+		else
+			BF(0);
+
+		/* Leave space after the BF/BT in case we need to add a
+		 * BRA opcode. */
+		w = _jit->code.length - (_jit->pc.uc - _jit->code.ptr);
+		if (w > 254) {
+			NOP();
+			NOP();
+		}
+	} else if (!force_patchable && disp >= -128) {
 		if (jit_sh34_p()) {
 			if (t_set)
 				BT(disp);
@@ -2529,8 +2543,15 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 		case 0xd:
 		case 0xf:
 			disp = ((label - instr) >> 1) - 2;
-			assert(disp >= -128 && disp <= 127);
-			ptr->ni.i = disp;
+			if (disp >= -128 && disp <= 127) {
+				ptr->ni.i = disp;
+			} else {
+				/* Invert bit 1: BT(S) <-> BF(S) */
+				ptr->ni.n ^= 1 << 1;
+
+				/* Opcode 2 is now a BRA opcode */
+				ptr[1].d = (struct jit_instr_d){ .c = 0xa, .d = disp - 1 };
+			}
 			break;
 		default:
 			assert(!"unhandled branch opcode");
