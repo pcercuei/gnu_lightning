@@ -593,8 +593,8 @@ static jit_word_t _bosubi_u(jit_state_t*,jit_word_t,jit_uint16_t,
 #    define bxsubi_u_p(i0,r0,i1,p)	_bosubi_u(_jit,i0,r0,i1,0,p)
 static void _jmpr(jit_state_t*,jit_int16_t);
 #  define jmpr(r0)			_jmpr(_jit,r0)
-static jit_word_t _jmpi(jit_state_t*,jit_word_t);
-#  define jmpi(i0)			_jmpi(_jit,i0)
+static jit_word_t _jmpi(jit_state_t*,jit_word_t,jit_bool_t);
+#  define jmpi(i0)			_jmpi(_jit,i0,0)
 static void _callr(jit_state_t*,jit_int16_t);
 #  define callr(r0)			_callr(_jit,r0)
 static void _calli(jit_state_t*,jit_word_t);
@@ -2148,7 +2148,10 @@ _beqr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_word_t w;
 
 	if (r0 == r1) {
-		w = jmpi(i0);
+		if (p)
+			w = jmpi_p(i0);
+		else
+			w = _jmpi(_jit, i0, i0 == 0);
 	} else {
 		CMPEQ(r0, r1);
 		w = _jit->pc.w;
@@ -2435,12 +2438,12 @@ _jmpr(jit_state_t *_jit, jit_int16_t r0)
 }
 
 static jit_word_t
-_jmpi(jit_state_t *_jit, jit_word_t i0)
+_jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 {
 	jit_word_t w = _jit->pc.w;
 	jit_int32_t disp = (i0 - w >> 1) - 2;
 
-	if (disp >= -2048 && disp <= 2046) {
+	if (force || (disp >= -2048 && disp <= 2046)) {
 		BRA(disp);
 		NOP();
 	} else if (0) {
