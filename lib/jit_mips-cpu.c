@@ -124,7 +124,7 @@ typedef union {
 #  define can_relative_jump_p(im)	((im) >= -130712 && (im) <= 131068)
 /* can_compact_jump_p(im) => can_sign_extend_i26_p(im << 2) */
 #  define can_compact_jump_p(im)	((im) >= -268435456 && (im) <= 268435452)
-#  define can_sign_extend_short_p(im)	((im) >= -32678 && (im) <= 32767)
+#  define can_sign_extend_short_p(im)	((im) >= -32768 && (im) <= 32767)
 #  define can_zero_extend_short_p(im)	((im) >= 0 && (im) <= 65535)
 #  define can_sign_extend_i18_p(im)	((im) >= -262144 && (im) <= 262143)
 #  define can_sign_extend_i19_p(im)	((im) >= -524288 && (im) <= 524287)
