@@ -1776,18 +1776,24 @@ _rshr_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _lshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	jit_uint32_t reg;
+	jit_uint32_t reg, mask = 0x00838387;
+
+	assert(i0 > 0);
 
 	movr(r0, r1);
 
-	if (i0 == 16) {
-		SHLL16(r0);
-	} else if (i0 == 8) {
-		SHLL8(r0);
-	} else if (i0 == 2) {
+	if (i0 == 4) {
 		SHLL2(r0);
-	} else if (i0 == 1) {
-		SHLL(r0);
+		SHLL2(r0);
+	} else if (mask & (1 << (i0 - 1))) {
+		if (i0 & 0x10)
+			SHLL16(r0);
+		if (i0 & 0x8)
+			SHLL8(r0);
+		if (i0 & 0x2)
+			SHLL2(r0);
+		if (i0 & 0x1)
+			SHLL(r0);
 	} else {
 		reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
 
@@ -1826,20 +1832,24 @@ _rshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	jit_uint32_t reg;
+	jit_uint32_t reg, mask = 0x00838387;
 
 	assert(i0 > 0);
 
 	movr(r0, r1);
 
-	if (i0 == 16) {
-		SHLR16(r0);
-	} else if (i0 == 8) {
-		SHLR8(r0);
-	} else if (i0 == 2) {
+	if (i0 == 4) {
 		SHLR2(r0);
-	} else if (i0 == 1) {
-		SHLR(r0);
+		SHLR2(r0);
+	} else if (mask & (1 << (i0 - 1))) {
+		if (i0 & 0x10)
+			SHLR16(r0);
+		if (i0 & 0x8)
+			SHLR8(r0);
+		if (i0 & 0x2)
+			SHLR2(r0);
+		if (i0 & 0x1)
+			SHLR(r0);
 	} else {
 		reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
 
