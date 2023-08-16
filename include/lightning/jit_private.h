@@ -773,7 +773,7 @@ struct jit_state {
 	jit_uint8_t	*ptr;
 	jit_word_t	 length;
         /* PROTECTED bytes starting at PTR are mprotect'd. */
-        jit_word_t       protected;
+        jit_word_t       protect;
     } code;
     struct {
 	jit_uint8_t	*ptr;

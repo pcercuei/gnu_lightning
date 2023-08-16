@@ -50,8 +50,8 @@
 #    define stxr(u, v, w)		stxr_l(u, v, w)
 #    define stxi(u, v, w)		stxi_l(u, v, w)
 #    define can_sign_extend_int_p(im)					\
-	(((im) >= 0 && (long long)(im) <=  0x7fffffffLL) ||		\
-	 ((im) <  0 && (long long)(im) >  -0x80000000LL))
+	(((long long)(im) >= 0 && (long long)(im) <=  0x7fffffffLL) ||	\
+	 ((long long)(im) <  0 && (long long)(im) >  -0x80000000LL))
 #    define can_zero_extend_int_p(im)					\
 	((im) >= 0 && (im) < 0x80000000LL)
 #    define fits_uint32_p(im)		(((im) & 0xffffffff00000000LL) == 0)
