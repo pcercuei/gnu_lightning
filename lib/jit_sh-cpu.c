@@ -724,6 +724,27 @@ movi_loop(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 	}
 }
 
+static jit_word_t
+movi_loop_cnt(jit_word_t i0)
+{
+	jit_word_t tmp, cnt = 0;
+
+	if (i0 >= -128 && i0 < 128) {
+		cnt = 1;
+	} else {
+		tmp = (i0 >> 8) + !!(i0 & 0x80);
+		if (tmp & 0xff) {
+			cnt += !!tmp + movi_loop_cnt(tmp);
+		} else {
+			tmp = (i0 >> 16) + !!(i0 & 0x80);
+			cnt += !!tmp + movi_loop_cnt(tmp);
+		}
+		cnt += !!(i0 & 0xff);
+	}
+
+	return cnt;
+}
+
 static void
 _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 {
@@ -740,7 +761,7 @@ _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 	} else if (is_high_mask(i0)) {
 		MOVI(r0, -1);
 		lshi(r0, r0, unmasked_bits_count(i0));
-	} else if (i0 >= -32768 && i0 < 32768) {
+	} else if (movi_loop_cnt(i0) < 4) {
 		movi_loop(_jit, r0, i0);
 	} else {
 		load_const(0, r0, i0);
