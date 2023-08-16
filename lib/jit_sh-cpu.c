@@ -1372,11 +1372,13 @@ _andi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 	} else if (i0 == 0xffff0000) {
 		SWAPW(r0, r1);
 		SHLL16(r0);
+	} else if (r0 != r1) {
+		movi(r0, i0);
+		AND(r0, r1);
 	} else {
-		assert(r0 != _R0 && r1 != _R0);
+		assert(r0 != _R0);
 
 		movi(_R0, i0);
-		movr(r0, r1);
 		AND(r0, _R0);
 	}
 }
@@ -1395,11 +1397,15 @@ _orr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _ori(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	assert(r0 != _R0 && r1 != _R0);
+	if (r0 != r1) {
+		movi(r0, i0);
+		OR(r0, r1);
+	} else {
+		assert(r0 != _R0);
 
-	movi(_R0, i0);
-	movr(r0, r1);
-	OR(r0, _R0);
+		movi(_R0, i0);
+		OR(r0, _R0);
+	}
 }
 
 static void
@@ -1416,11 +1422,15 @@ _xorr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _xori(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	assert(r0 != _R0 && r1 != _R0);
+	if (r0 != r1) {
+		movi(r0, i0);
+		XOR(r0, r1);
+	} else {
+		assert(r0 != _R0);
 
-	movi(_R0, i0);
-	movr(r0, r1);
-	XOR(r0, _R0);
+		movi(_R0, i0);
+		XOR(r0, _R0);
+	}
 }
 
 static void _clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
