@@ -527,6 +527,10 @@
     0,	/* fnmai_d */
     4,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    4,	/* hmulr */
+    12, /* hmuli */
+    4,	/* hmulr_u */
+    12, /* hmuli_u */
 #endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -1061,6 +1065,10 @@
     0,	/* fnmai_d */
     4,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    4,	/* hmulr */
+    12, /* hmuli */
+    4,	/* hmulr_u */
+    12, /* hmuli_u */
 #endif /* _CALL_SYSV */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -1594,6 +1602,10 @@
     0,	/* fnmai_d */
     4,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    4,	/* hmulr */
+    24,	/* hmuli */
+    4,	/* hmulr_u */
+    24,	/* hmuli_u */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */
@@ -2126,6 +2138,10 @@
     0,	/* fnmai_d */
     4,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    4,	/* hmulr */
+    24,	/* hmuli */
+    4,	/* hmulr_u */
+    24,	/* hmuli_u */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
 #endif /* __WORDSIZE */

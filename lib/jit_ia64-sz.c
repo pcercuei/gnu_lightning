@@ -524,4 +524,8 @@
     0,	/* fnmai_d */
     16,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    32, /* hmulr */
+    32, /* hmuli */
+    32, /* hmulr_u */
+    32, /* hmuli_u */
 #endif /* __WORDSIZE */

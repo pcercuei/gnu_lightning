@@ -362,6 +362,10 @@ static void _rsbi(jit_state_t*,jit_int32_t,jit_int32_t, jit_word_t);
 #  define mulr(r0,r1,r2)		MULQ(r1,r2,r0)
 #  define muli(r0,r1,i0)		_muli(_jit,r0,r1,i0)
 static void _muli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define hmulr(r0, r1, r2)		qmulr(JIT_NOREG, r0, r1, r2)
+#  define hmuli(r0, r1, i0)		qmuli(JIT_NOREG, r0, r1, i0)
+#  define hmulr_u(r0, r1, r2)		qmulr_u(JIT_NOREG, r0, r1, r2)
+#  define hmuli_u(r0, r1, i0)		qmuli_u(JIT_NOREG, r0, r1, i0)
 #  define qmulr(r0,r1,r2,r3)		_qmulr(_jit,r0,r1,r2,r3)
 static void _qmulr(jit_state_t*,jit_int32_t,
 		   jit_int32_t,jit_int32_t,jit_int32_t);
@@ -1082,14 +1086,14 @@ _qmulr(jit_state_t *_jit, jit_int32_t r0,
     jit_int32_t		reg;
     /* The only invalid condition is r0 == r1 */
     jit_int32_t		t2, t3, s2, s3;
-    if (r2 == r0 || r2 == r1) {
+    if ((r0 != JIT_NOREG && r2 == r0) || r2 == r1) {
 	s2 = jit_get_reg(jit_class_gpr);
 	t2 = rn(s2);
 	movr(t2, r2);
     }
     else
 	t2 = r2;
-    if (r3 == r0 || r3 == r1) {
+    if ((r0 != JIT_NOREG && r3 == r0) || r3 == r1) {
 	s3 = jit_get_reg(jit_class_gpr);
 	t3 = rn(s3);
 	movr(t3, r3);
@@ -1129,16 +1133,20 @@ _qmulr_u(jit_state_t *_jit, jit_int32_t r0,
 	 jit_int32_t r1, jit_int32_t r2, jit_int32_t r3)
 {
     jit_int32_t		reg;
-    if (r0 == r2 || r0 == r3) {
-	reg = jit_get_reg(jit_class_gpr);
-	mulr(rn(reg), r2, r3);
+    if (r0 != JIT_NOREG) {
+	if (r0 == r2 || r0 == r3) {
+	    reg = jit_get_reg(jit_class_gpr);
+	    mulr(rn(reg), r2, r3);
+	}
+	else
+	    mulr(r0, r2, r3);
     }
-    else
-	mulr(r0, r2, r3);
     UMULH(r2, r3, r1);
-    if (r0 == r2 || r0 == r3) {
-	movr(r0, rn(reg));
-	jit_unget_reg(reg);
+    if (r0 != JIT_NOREG) {
+	if (r0 == r2 || r0 == r3) {
+	    movr(r0, rn(reg));
+	    jit_unget_reg(reg);
+	}
     }
 }
 
@@ -1148,16 +1156,20 @@ _qmuli_u(jit_state_t *_jit, jit_int32_t r0,
 {
     jit_int32_t		reg;
     if (_u8_p(i0)) {
-	if (r0 == r2) {
-	    reg = jit_get_reg(jit_class_gpr);
-	    muli(rn(reg), r2, i0);
+	if (r0 != JIT_NOREG) {
+	    if (r0 == r2) {
+		reg = jit_get_reg(jit_class_gpr);
+		muli(rn(reg), r2, i0);
+	    }
+	    else
+		muli(r0, r2, i0);
 	}
-	else
-	    muli(r0, r2, i0);
 	UMULHi(r2, i0, r1);
-	if (r0 == r2) {
-	    movr(r0, rn(reg));
-	    jit_unget_reg(reg);
+	if (r0 != JIT_NOREG) {
+	    if (r0 == r2) {
+		movr(r0, rn(reg));
+		jit_unget_reg(reg);
+	    }
 	}
     }
     else {

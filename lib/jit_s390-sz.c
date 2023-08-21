@@ -524,6 +524,10 @@
     0,	/* fnmai_d */
     10,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    34, /* hmulr */
+    42, /* hmuli */
+    8,	/* hmulr_u */
+    16, /* hmuli_u */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
@@ -1052,4 +1056,8 @@
     0,	/* fnmai_d */
     10,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    44, /* hmulr */
+    60, /* hmuli */
+    12, /* hmulr_u */
+    28, /* hmuli_u */
 #endif /* __WORDSIZE */

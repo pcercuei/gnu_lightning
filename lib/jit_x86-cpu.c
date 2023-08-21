@@ -256,6 +256,10 @@ static void _imuli(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 static void _mulr(jit_state_t*, jit_int32_t, jit_int32_t, jit_int32_t);
 #  define muli(r0, r1, i0)		_muli(_jit, r0, r1, i0)
 static void _muli(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define hmulr(r0, r1, r2)		_iqmulr(_jit, JIT_NOREG, r0, r1, r2, 1)
+#  define hmulr_u(r0, r1, r2)		_iqmulr(_jit, JIT_NOREG, r0, r1, r2, 0)
+#  define hmuli(r0, r1, i0)		_iqmuli(_jit, JIT_NOREG, r0, r1, i0, 1)
+#  define hmuli_u(r0, r1, i0)		_iqmuli(_jit, JIT_NOREG, r0, r1, i0, 0)
 #  define umulr(r0)			unr(X86_IMUL, r0)
 #  define umulr_u(r0)			unr(X86_MUL, r0)
 #  define qmulr(r0, r1, r2, r3)		_iqmulr(_jit, r0, r1, r2, r3, 1)
@@ -1525,14 +1529,20 @@ _iqmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     else
 	umulr_u(mul);
 
-    if (r0 == _RDX_REGNO && r1 == _RAX_REGNO)
-	xchgr(_RAX_REGNO, _RDX_REGNO);
+    if (r0 != JIT_NOREG) {
+	if (r0 == _RDX_REGNO && r1 == _RAX_REGNO)
+	    xchgr(_RAX_REGNO, _RDX_REGNO);
+	else {
+	    if (r0 != _RDX_REGNO)
+		movr(r0, _RAX_REGNO);
+	    movr(r1, _RDX_REGNO);
+	    if (r0 == _RDX_REGNO)
+		movr(r0, _RAX_REGNO);
+	}
+    }
     else {
-	if (r0 != _RDX_REGNO)
-	    movr(r0, _RAX_REGNO);
+	assert(r1 != JIT_NOREG);
 	movr(r1, _RDX_REGNO);
-	if (r0 == _RDX_REGNO)
-	    movr(r0, _RAX_REGNO);
     }
 
     clear(_RDX_REGNO, _RDX);

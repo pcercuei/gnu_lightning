@@ -600,16 +600,20 @@ static void _rsbi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  if __WORDSIZE == 32
 #    define mulr(r0,r1,r2)		MULLW(r0,r1,r2)
 #    define mullr(r0,r1,r2)		MULLW(r0,r1,r2)
-#    define mulhr(r0,r1,r2)		MULHW(r0,r1,r2)
-#    define mulhr_u(r0,r1,r2)		MULHWU(r0,r1,r2)
+#    define hmulr(r0,r1,r2)		MULHW(r0,r1,r2)
+#    define hmulr_u(r0,r1,r2)		MULHWU(r0,r1,r2)
 #  else
 #    define mulr(r0,r1,r2)		MULLD(r0,r1,r2)
 #    define mullr(r0,r1,r2)		MULLD(r0,r1,r2)
-#    define mulhr(r0,r1,r2)		MULHD(r0,r1,r2)
-#    define mulhr_u(r0,r1,r2)		MULHDU(r0,r1,r2)
+#    define hmulr(r0,r1,r2)		MULHD(r0,r1,r2)
+#    define hmulr_u(r0,r1,r2)		MULHDU(r0,r1,r2)
 #  endif
 #  define muli(r0,r1,i0)		_muli(_jit,r0,r1,i0)
 static void _muli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define hmuli(r0,r1,i0)		_hmuli(_jit,r0,r1,i0)
+static void _hmuli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define hmuli_u(r0,r1,i0)		_hmuli_u(_jit,r0,r1,i0)
+static void _hmuli_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define qmulr(r0,r1,r2,r3)		iqmulr(r0,r1,r2,r3,1)
 #  define qmulr_u(r0,r1,r2,r3)		iqmulr(r0,r1,r2,r3,0)
 #  define iqmulr(r0,r1,r2,r3,cc)	_iqmulr(_jit,r0,r1,r2,r3,cc)
@@ -1535,6 +1539,9 @@ static void
 _muli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
+    /* NOTE verified and overflow is correctly computed.
+     * No need to check for __WORDSIZE == 32.
+     * Documented as a 32 bit instruction. */
     if (can_sign_extend_short_p(i0))
 	MULLI(r0, r1, i0);
     else {
@@ -1543,6 +1550,26 @@ _muli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	mulr(r0, r1, rn(reg));
 	jit_unget_reg(reg);
     }
+}
+
+static void
+_hmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    hmulr(r0, r1, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_hmuli_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    hmulr_u(r0, r1, rn(reg));
+    jit_unget_reg(reg);
 }
 
 static void
@@ -1557,9 +1584,9 @@ _iqmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     else
 	mullr(r0, r2, r3);
     if (sign)
-	mulhr(r1, r2, r3);
+	hmulr(r1, r2, r3);
     else
-	mulhr_u(r1, r2, r3);
+	hmulr_u(r1, r2, r3);
     if (r0 == r2 || r0 == r3) {
 	movr(r0, rn(reg));
 	jit_unget_reg(reg);

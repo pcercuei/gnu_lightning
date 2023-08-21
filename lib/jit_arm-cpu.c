@@ -984,6 +984,16 @@ static void _rsbi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _mulr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define muli(r0,r1,i0)		_muli(_jit,r0,r1,i0)
 static void _muli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define hmulr(r0,r1,r2)		ihmulr(r0,r1,r2,1)
+#  define hmulr_u(r0,r1,r2)		ihmulr(r0,r1,r2,0)
+#  define ihmulr(r0,r1,r2,cc)		_ihmulr(_jit,r0,r1,r2,cc)
+static void _ihmulr(jit_state_t*,jit_int32_t,jit_int32_t,
+		    jit_int32_t,jit_bool_t);
+#  define hmuli(r0,r1,i0)		ihmuli(r0,r1,i0,1)
+#  define hmuli_u(r0,r1,i0)		ihmuli(r0,r1,i0,0)
+#  define ihmuli(r0,r1,i0,cc)		_ihmuli(_jit,r0,r1,i0,cc)
+static void _ihmuli(jit_state_t*,jit_int32_t,jit_int32_t,
+		    jit_word_t,jit_bool_t);
 #  define qmulr(r0,r1,r2,r3)		iqmulr(r0,r1,r2,r3,1)
 #  define qmulr_u(r0,r1,r2,r3)		iqmulr(r0,r1,r2,r3,0)
 #  define iqmulr(r0,r1,r2,r3,cc)	_iqmulr(_jit,r0,r1,r2,r3,cc)
@@ -2319,6 +2329,29 @@ _muli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     movi(rn(reg), i0);
     mulr(r0, r1, rn(reg));
     jit_unget_reg(reg);
+}
+
+static void
+_ihmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+	jit_int32_t r2, jit_bool_t sign)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    iqmulr(rn(reg), r0, r1, r2, sign);
+    jit_unget_reg(reg);
+}
+
+static void
+_ihmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+	jit_word_t i0, jit_bool_t sign)
+{
+    jit_int32_t		t0, t1;
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    movi(rn(t1), i0);
+    iqmulr(rn(t0), r0, r1, rn(t1), sign);
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
 }
 
 static void

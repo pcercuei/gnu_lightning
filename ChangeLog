@@ -1,3 +1,23 @@
+2023-08-21 Paulo Andrade <pcpa@gnu.org>
+
+	* check/Makefile.am, check/lightning.c: Add new hmul tests.
+	* doc/body.texi: Document hmul.
+	* include/lightning.h.in: Create the new hmul codes.
+	* lib/jit_aarch64-cpu.c, lib/jit_aarch64-sz.c, lib/jit_aarch64.c,
+	lib/jit_alpha-cpu.c, lib/jit_alpha-sz.c, lib/jit_alpha.c,
+	lib/jit_arm-cpu.c, lib/jit_arm-sz.c, lib/jit_arm.c,
+	lib/jit_hppa-cpu.c, lib/jit_hppa-sz.c, lib/jit_hppa.c,
+	lib/jit_ia64-cpu.c, lib/jit_ia64-sz.c, lib/jit_ia64.c,
+	lib/jit_loongarch-cpu.c, lib/jit_loongarch-sz.c, lib/jit_loongarch.c,
+	lib/jit_mips-cpu.c, lib/jit_mips-sz.c, lib/jit_mips.c,
+	lib/jit_ppc-cpu.c, lib/jit_ppc-sz.c, lib/jit_ppc.c,
+	lib/jit_riscv-cpu.c, lib/jit_riscv-sz.c, lib/jit_riscv.c,
+	lib/jit_s390-cpu.c, lib/jit_s390-sz.c, lib/jit_s390.c,
+	lib/jit_sparc-cpu.c, lib/jit_sparc-sz.c, lib/jit_sparc.c,
+	lib/jit_x86-cpu.c, lib/jit_x86-sz.c, lib/jit_x86.c: Implement
+	hmul and update the *-sz.c files.
+	* lib/jit_names.c, lib/lightning.c: Add knowledge of hmul.
+
 2023-04-18 Paulo Andrade <pcpa@gnu.org>
 
 	* include/lightning.h.in: Define new fmar_f, fmai_f, fmsr_f,

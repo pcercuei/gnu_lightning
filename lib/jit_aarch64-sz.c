@@ -526,7 +526,12 @@
     0,	/* fnmai_d */
     4,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    4,	/* hmulr */
+    16,	/* hmuli */
+    4,	/* hmulr_u */
+    16,	/* hmuli_u */
 #  else	/* PACKED_STACK */
+
 #define JIT_INSTR_MAX 120
     0,	/* data */
     0,	/* live */
@@ -1052,5 +1057,9 @@
     0,	/* fnmai_d */
     4,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    4,	/* hmulr */
+    16,	/* hmuli */
+    4,	/* hmulr_u */
+    16,	/* hmuli_u */
 #  endif
 #endif /* __WORDSIZE */

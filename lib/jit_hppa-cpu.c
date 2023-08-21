@@ -707,6 +707,10 @@ static void _rsbi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _mulr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define muli(r0,r1,i0)		_muli(_jit,r0,r1,i0)
 static void _muli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#define hmulr(r0, r1, r2)	qmulr(JIT_NOREG, r0, r1, r2)
+#define hmuli(r0, r1, i0)	qmuli(JIT_NOREG, r0, r1, i0)
+#define hmulr_u(r0, r1, r2)	qmulr_u(JIT_NOREG, r0, r1, r2)
+#define hmuli_u(r0, r1, i0)	qmuli_u(JIT_NOREG, r0, r1, i0)
 static long long __llmul(int, int);
 #define qmulr(r0,r1,r2,r3)	_qmulr(_jit,r0,r1,r2,r3)
 static void _qmulr(jit_state_t*,
@@ -1939,7 +1943,8 @@ _qmulr(jit_state_t *_jit,
     movr(_R26_REGNO, r2);
     movr(_R25_REGNO, r3);
     calli((jit_word_t)__llmul);
-    movr(r0, _R29_REGNO);
+    if (r0 != JIT_NOREG)
+	movr(r0, _R29_REGNO);
     movr(r1, _R28_REGNO);
 }
 
@@ -1950,7 +1955,8 @@ _qmuli(jit_state_t *_jit,
     movr(_R26_REGNO, r2);
     movi(_R25_REGNO, i0);
     calli((jit_word_t)__llmul);
-    movr(r0, _R29_REGNO);
+    if (r0 != JIT_NOREG)
+	movr(r0, _R29_REGNO);
     movr(r1, _R28_REGNO);
 }
 
@@ -1967,7 +1973,8 @@ _qmulr_u(jit_state_t *_jit,
     ldxi_f(rn(t1), _FP_REGNO, alloca_offset - 8);
     XMPYU(rn(t0), rn(t1), rn(t0));
     stxi_d(alloca_offset - 8, _FP_REGNO, rn(t0));
-    ldxi(r0, _FP_REGNO, alloca_offset - 4);
+    if (r0 != JIT_NOREG)
+	ldxi(r0, _FP_REGNO, alloca_offset - 4);
     ldxi(r1, _FP_REGNO, alloca_offset - 8);
     jit_unget_reg(t1);
     jit_unget_reg(t0);

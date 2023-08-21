@@ -525,6 +525,10 @@
     0,	/* fnmai_d */
     27,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    18, /* hmulr */
+    23, /* hmuli */
+    18, /* hmulr_u */
+    23, /* hmuli_u */
 #endif /* __X32 */
 
 #if __X64
@@ -1054,6 +1058,10 @@
     0,	/* fnmai_d */
     30,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    17, /* hmulr */
+    27, /* hmuli */
+    17, /* hmulr_u */
+    27, /* hmuli_u */
 #else
 
 #  if __X64_32
@@ -1582,6 +1590,10 @@
     0,	/* fnmai_d */
     31,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    15, /* hmulr */
+    21, /* hmuli */
+    15, /* hmulr_u */
+    21, /* hmuli_u */
 #else
 
 #define JIT_INSTR_MAX 112
@@ -2109,6 +2121,10 @@
     0,	/* fnmai_d */
     31,	/* fnmsr_d */
     0,	/* fnmsi_d */
+    17, /* hmulr */
+    27, /* hmuli */
+    17, /* hmulr_u */
+    27, /* hmuli_u */
 #endif /* __CYGWIN__ || _WIN32 */
 #  endif /* __X64_32 */
 #endif /* __X64 */

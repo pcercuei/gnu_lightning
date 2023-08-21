@@ -1206,6 +1206,12 @@ static void _rsbi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _mulr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define muli(r0,r1,i0)			_muli(_jit,r0,r1,i0)
 static void _muli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#define hmulr(r0,r1,r2)			mulh(r0,r1,r2,1)
+#define hmuli(r0,r1,i0)			_hmuli(_jit,r0,r1,i0)
+static void _hmuli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#define hmulr_u(r0,r1,r2)		mulh(r0,r1,r2,0)
+#define hmuli_u(r0,r1,i0)		_hmuli_u(_jit,r0,r1,i0)
+static void _hmuli_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #define divr(r0,r1,r2)			_divr(_jit,r0,r1,r2)
 static void _divr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #define divi(r0,r1,i0)			_divi(_jit,r0,r1,i0)
@@ -3887,6 +3893,26 @@ _muli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     reg = jit_get_reg(jit_class_gpr);
     movi(rn(reg), i0);
     mulr(r0, r1, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_hmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    hmulr(r0, r1, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_hmuli_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    movi(rn(reg), i0);
+    hmulr_u(r0, r1, rn(reg));
     jit_unget_reg(reg);
 }
 

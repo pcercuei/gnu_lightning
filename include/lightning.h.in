@@ -1203,6 +1203,13 @@ typedef enum {
 #define jit_fnmsi_d(u,v,w,x)	_jit_fnmsi_d(_jit, u, v, w, x)
     jit_code_fnmsr_d,		jit_code_fnmsi_d,
 
+#define jit_hmulr(u,v,w)	jit_new_node_www(jit_code_hmulr,u,v,w)
+#define jit_hmuli(u,v,w)	jit_new_node_www(jit_code_hmuli,u,v,w)
+    jit_code_hmulr,		jit_code_hmuli,
+#define jit_hmulr_u(u,v,w)	jit_new_node_www(jit_code_hmulr_u,u,v,w)
+#define jit_hmuli_u(u,v,w)	jit_new_node_www(jit_code_hmuli_u,u,v,w)
+    jit_code_hmulr_u,		jit_code_hmuli_u,
+
     jit_code_last_code
 } jit_code_t;
 

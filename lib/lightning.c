@@ -1551,7 +1551,8 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_addi:	case jit_code_addxi:	case jit_code_addci:
 	case jit_code_subi:	case jit_code_subxi:	case jit_code_subci:
 	case jit_code_rsbi:
-	case jit_code_muli:	case jit_code_divi:	case jit_code_divi_u:
+	case jit_code_muli:	case jit_code_hmuli:	case jit_code_hmuli_u:
+	case jit_code_divi:	case jit_code_divi_u:
 	case jit_code_remi:	case jit_code_remi_u:	case jit_code_andi:
 	case jit_code_ori:	case jit_code_xori:	case jit_code_lshi:
 	case jit_code_rshi:	case jit_code_rshi_u:	case jit_code_lroti:
@@ -1592,7 +1593,8 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    break;
 	case jit_code_addr:	case jit_code_addxr:	case jit_code_addcr:
 	case jit_code_subr:	case jit_code_subxr:	case jit_code_subcr:
-	case jit_code_mulr:	case jit_code_divr:	case jit_code_divr_u:
+	case jit_code_mulr:	case jit_code_hmulr:	case jit_code_hmulr_u:
+	case jit_code_divr:	case jit_code_divr_u:
 	case jit_code_remr:	case jit_code_remr_u:	case jit_code_andr:
 	case jit_code_orr:	case jit_code_xorr:	case jit_code_lshr:
 	case jit_code_rshr:	case jit_code_rshr_u:	case jit_code_lrotr:

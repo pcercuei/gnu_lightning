@@ -630,6 +630,10 @@ static void _rsbi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  endif
 #  define muli(r0, r1, i0)		_muli(_jit, r0, r1, i0)
 static void _muli(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
+#  define hmulr(r0, r1, r2)		qmulr(JIT_NOREG, r0, r1, r2)
+#  define hmuli(r0, r1, i0)		qmuli(JIT_NOREG, r0, r1, i0)
+#  define hmulr_u(r0, r1, r2)		qmulr_u(JIT_NOREG, r0, r1, r2)
+#  define hmuli_u(r0, r1, i0)		qmuli_u(JIT_NOREG, r0, r1, i0)
 #  if __WORDSIZE == 32
 #    define qmulr(r0,r1,r2,r3)		iqmulr(r0,r1,r2,r3,1)
 #    define qmulr_u(r0,r1,r2,r3)	iqmulr(r0,r1,r2,r3,0)
@@ -1633,6 +1637,8 @@ static void
 _iqmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 	jit_int32_t r2, jit_int32_t r3, jit_bool_t sign)
 {
+    if (r0 == JIT_NOREG)
+	r0 = r1;
     if (sign)
 	SMUL(r2, r3, r0);
     else
@@ -1646,6 +1652,8 @@ _iqmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
 {
     jit_int32_t		reg;
     if (s13_p(i0)) {
+	if (r0 == JIT_NOREG)
+	    r0 = r1;
 	if (sign)
 	    SMULI(r2, i0, r0);
 	else
@@ -1698,7 +1706,8 @@ _qmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     movr(_O0_REGNO, r3);
     movr(_O1_REGNO, r2);
     calli((jit_word_t)__llmul);
-    movr(r0, _O1_REGNO);
+    if (r0 != JIT_NOREG)
+	movr(r0, _O1_REGNO);
     movr(r1, _O0_REGNO);
     QMUL_EPILOG();
 }
@@ -1711,7 +1720,8 @@ _qmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     movi(_O0_REGNO, i0);
     movr(_O1_REGNO, r2);
     calli((jit_word_t)__llmul);
-    movr(r0, _O1_REGNO);
+    if (r0 != JIT_NOREG)
+	movr(r0, _O1_REGNO);
     movr(r1, _O0_REGNO);
     QMUL_EPILOG();
 }
@@ -1729,7 +1739,8 @@ _qmulr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     movr(_O0_REGNO, r3);
     movr(_O1_REGNO, r2);
     calli((jit_word_t)__ullmul);
-    movr(r0, _O1_REGNO);
+    if (r0 != JIT_NOREG)
+	movr(r0, _O1_REGNO);
     movr(r1, _O0_REGNO);
     QMUL_EPILOG();
 }
@@ -1742,7 +1753,8 @@ _qmuli_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
     movi(_O0_REGNO, i0);
     movr(_O1_REGNO, r2);
     calli((jit_word_t)__ullmul);
-    movr(r0, _O1_REGNO);
+    if (r0 != JIT_NOREG)
+	movr(r0, _O1_REGNO);
     movr(r1, _O0_REGNO);
     QMUL_EPILOG();
 }

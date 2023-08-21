@@ -306,6 +306,8 @@ static void subxr(void);	static void subxi(void);
 static void subcr(void);	static void subci(void);
 static void rsbr(void);		static void rsbi(void);
 static void mulr(void);		static void muli(void);
+static void hmulr(void);	static void hmuli(void);
+static void hmulr_u(void);	static void hmuli_u(void);
 static void qmulr(void);	static void qmuli(void);
 static void qmulr_u(void);	static void qmuli_u(void);
 static void divr(void);		static void divi(void);
@@ -709,6 +711,8 @@ static instr_t		  instr_vector[] = {
     entry(subcr),	entry(subci),
     entry(rsbr),	entry(rsbi),
     entry(mulr),	entry(muli),
+    entry(hmulr),	entry(hmuli),
+    entry(hmulr_u),	entry(hmuli_u),
     entry(qmulr),	entry(qmuli),
     entry(qmulr_u),	entry(qmuli_u),
     entry(divr),	entry(divi),
@@ -1723,6 +1727,8 @@ entry_ir_ir_ir(subxr)		entry_ir_ir_im(subxi)
 entry_ir_ir_ir(subcr)		entry_ir_ir_im(subci)
 entry_ir_ir_ir(rsbr)		entry_ir_ir_im(rsbi)
 entry_ir_ir_ir(mulr)		entry_ir_ir_im(muli)
+entry_ir_ir_ir(hmulr)		entry_ir_ir_im(hmuli)
+entry_ir_ir_ir(hmulr_u)		entry_ir_ir_im(hmuli_u)
 entry_ir_ir_ir_ir(qmulr)	entry_ir_ir_ir_im(qmuli)
 entry_ir_ir_ir_ir(qmulr_u)	entry_ir_ir_ir_im(qmuli_u)
 entry_ir_ir_ir(divr)		entry_ir_ir_im(divi)

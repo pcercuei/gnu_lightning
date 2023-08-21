@@ -1377,6 +1377,10 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsb,);
 		case_rrr(mul,);
 		case_rrw(mul,);
+		case_rrr(hmul,);
+		case_rrw(hmul,);
+		case_rrr(hmul, _u);
+		case_rrw(hmul, _u);
 		case_rrrr(qmul,);
 		case_rrrw(qmul,);
 		case_rrrr(qmul, _u);
