@@ -1130,7 +1130,7 @@ _jit_get_reg_for_delay_slot(jit_state_t *_jit, jit_int32_t mask,
 		case MIPS_SYNC:		/* 0f */
 		    assert(i.rs.b == 0 && i.rt.b == 0 && i.rd.b == 0);
 		    if (mask & jit_class_gpr)
-			regs[0] = regs[1] = regs[1] = 0;
+			regs[0] = regs[1] = regs[2] = 0;
 		    break;
 		case MIPS_MOVZ:		/* 0a */
 		case MIPS_MOVN:		/* 0b */
