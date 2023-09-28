@@ -1814,9 +1814,10 @@ _lshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg, mask = 0x00838387;
 
-	assert(i0 > 0);
-
 	movr(r0, r1);
+
+	if (i0 == 0)
+		return;
 
 	if (i0 == 4) {
 		SHLL2(r0);
@@ -1846,8 +1847,6 @@ _rshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg;
 
-	assert(i0 > 0);
-
 	reg = r0 != _R0 ? _R0 : jit_get_reg(jit_class_gpr);
 
 	movr(r0, r1);
@@ -1855,6 +1854,7 @@ _rshi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 		movi(rn(reg), -i0);
 		SHAD(r0, rn(reg));
 	} else {
+		assert(i0 > 0);
 		movi(rn(reg), i0);
 		DT(rn(reg));
 		BFS(-3);
@@ -1870,9 +1870,10 @@ _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg, mask = 0x00838387;
 
-	assert(i0 > 0);
-
 	movr(r0, r1);
+
+	if (i0 == 0)
+		return;
 
 	if (i0 == 4) {
 		SHLR2(r0);
