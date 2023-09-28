@@ -95,7 +95,9 @@
     20,	/* rshi_u */
 #endif
     2,	/* negr */
+    4,	/* negi */
     2,	/* comr */
+    4,	/* comi */
     4,	/* ltr */
     4,	/* lti */
     4,	/* ltr_u */
@@ -123,17 +125,29 @@
     24,	/* casr */
     30,	/* casi */
     2,	/* extr_c */
+    4,	/* exti_c */
     2,	/* extr_uc */
+    4,	/* exti_uc */
     2,	/* extr_s */
+    4,	/* exti_s */
     2,	/* extr_us */
+    4,	/* exti_us */
     4,	/* extr_i */
+    0,	/* exti_i */
     8,	/* extr_ui */
+    0,	/* exti_ui */
     4,	/* bswapr_us */
+    4,	/* bswapi_us */
     6,	/* bswapr_ui */
+    8,	/* bswapi_ui */
     0,	/* bswapr_ul */
+    0,	/* bswapi_ul */
     4,	/* htonr_us */
+    4,	/* htoni_us */
     6,	/* htonr_ui */
+    8,	/* htoni_ui */
     0,	/* htonr_ul */
+    0,	/* htoni_ul */
     2,	/* ldr_c */
     12,	/* ldi_c */
     4,	/* ldr_uc */
@@ -276,8 +290,11 @@
     4,	/* divr_f */
     12,	/* divi_f */
     4,	/* negr_f */
+    0,	/* negi_f */
     4,	/* absr_f */
+    0,	/* absi_f */
     4,	/* sqrtr_f */
+    0,	/* sqrti_f */
     4,	/* ltr_f */
     12,	/* lti_f */
     4,	/* ler_f */
@@ -367,8 +384,11 @@
     4,	/* divr_d */
     24,	/* divi_d */
     4,	/* negr_d */
+    0,	/* negi_d */
     4,	/* absr_d */
+    0,	/* absi_d */
     4,	/* sqrtr_d */
+    0,	/* sqrti_d */
     4,	/* ltr_d */
     24,	/* lti_d */
     4,	/* ler_d */
@@ -445,8 +465,11 @@
     0,	/* reti_d */
     0,	/* retval_d */
     4,	/* movr_w_f */
+    8,	/* movi_w_f */
     0,	/* movr_ww_d */
+    16,	/* movi_ww_d */
     4,	/* movr_w_d */
+    0,	/* movi_w_d */
     0,	/* movr_f_w */
     4,	/* movi_f_w */
     0,	/* movr_d_ww */
@@ -454,15 +477,61 @@
     4,	/* movr_d_w */
     16,	/* movi_d_w */
     10,	/* clor */
+    10,	/* cloi */
     12,	/* clzr */
+    12,	/* clzi */
     10,	/* ctor */
+    10,	/* ctoi */
     12,	/* ctzr */
+    12,	/* ctzi */
     14,	/* rbitr */
+    8,	/* rbiti */
     14,	/* popcntr */
     14,	/* lrotr */
     14,	/* lroti */
     14,	/* rrotr */
     14,	/* rroti */
+
+    8,	/* extr */
+    4,	/* exti */
+    4,	/* extr_u */
+    4,	/* exti_u */
+    4,	/* depr */
+    8,	/* depi */
+    18,	/* qlshr */
+    8,	/* qlshi */
+    18,	/* qlshr_u */
+    8,	/* qlshi_u */
+    18,	/* qrshr */
+    8,	/* qrshi */
+    18,	/* qrshr_u */
+    8,	/* qrshi_u */
+    16,	/* unldr */
+    20,	/* unldi */
+    16,	/* unldr_u */
+    20,	/* unldi_u */
+    44,	/* unstr */
+    28,	/* unsti */
+    32,	/* unldr_x */
+    40,	/* unldi_x */
+    28,	/* unstr_x */
+    40,	/* unsti_x */
+    4,	/* fmar_f */
+    0,	/* fmai_f */
+    4,	/* fmsr_f */
+    0,	/* fmsi_f */
+    4,	/* fmar_d */
+    0,	/* fmai_d */
+    4,	/* fmsr_d */
+    0,	/* fmsi_d */
+    4,	/* fnmar_f */
+    0,	/* fnmai_f */
+    4,	/* fnmsr_f */
+    0,	/* fnmsi_f */
+    4,	/* fnmar_d */
+    0,	/* fnmai_d */
+    4,	/* fnmsr_d */
+    0,	/* fnmsi_d */
     8,	/* hmulr */
     16,	/* hmuli */
     8,	/* hmulr_u */
