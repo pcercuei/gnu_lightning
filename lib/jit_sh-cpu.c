@@ -336,6 +336,9 @@ static void _remi_u(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 static void _bswapr_us(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
 static void _bswapr_ui(jit_state_t*,jit_uint16_t,jit_uint16_t);
+#define extr(r0,r1,i0,i1)		fallback_ext(r0,r1,i0,i1)
+#define extr_u(r0,r1,i0,i1)		fallback_ext_u(r0,r1,i0,i1)
+#define depr(r0,r1,i0,i1)		fallback_dep(r0,r1,i0,i1)
 #    define extr_c(r0, r1)		EXTSB(r0,r1)
 #    define extr_s(r0,r1)		EXTSW(r0,r1)
 #    define extr_uc(r0,r1)		EXTUB(r0,r1)
