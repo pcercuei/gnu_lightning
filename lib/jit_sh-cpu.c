@@ -282,6 +282,14 @@ static void _rsbi(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define rsbi(r0,r1,i0)		_rsbi(_jit,r0,r1,i0)
 static void _mulr(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
 #    define mulr(r0,r1,r2)		_mulr(_jit,r0,r1,r2)
+static void _hmulr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define hmulr(r0,r1,r2)		_hmulr(_jit,r0,r1,r2)
+static void _hmuli(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define hmuli(r0,r1,i0)		_hmuli(_jit,r0,r1,i0)
+static void _hmulr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define hmulr_u(r0,r1,r2)		_hmulr_u(_jit,r0,r1,r2)
+static void _hmuli_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define hmuli_u(r0,r1,i0)		_hmuli_u(_jit,r0,r1,i0)
 static void _qmulr(jit_state_t*,jit_uint16_t,jit_uint16_t,
 		   jit_uint16_t,jit_uint16_t);
 #    define qmulr(r0,r1,r2,r3)		_qmulr(_jit,r0,r1,r2,r3)
@@ -1025,6 +1033,34 @@ _mulr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 {
 	MULL(r1, r2);
 	STSL(r0);
+}
+
+static void
+_hmulr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+	DMULS(r1, r2);
+	STSH(r0);
+}
+
+static void
+_hmuli(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    movi(_R0, i0);
+    hmulr(r0, r1, _R0);
+}
+
+static void
+_hmulr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+	DMULU(r1, r2);
+	STSH(r0);
+}
+
+static void
+_hmuli_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    movi(_R0, i0);
+    hmulr_u(r0, r1, _R0);
 }
 
 static void

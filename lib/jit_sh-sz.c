@@ -463,3 +463,7 @@
     14,	/* lroti */
     14,	/* rrotr */
     14,	/* rroti */
+    8,	/* hmulr */
+    16,	/* hmuli */
+    8,	/* hmulr_u */
+    16,	/* hmuli_u */
