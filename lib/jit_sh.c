@@ -552,6 +552,18 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(ldx, _us);
 		case_rrr(ldx, _i);
 		case_rrw(ldx, _i);
+	    case jit_code_unldr:
+		unldr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi:
+		unldi(rn(node->u.w), node->v.w, node->w.w);
+		break;
+	    case jit_code_unldr_u:
+		unldr_u(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_u:
+		unldi_u(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _c);
 		case_wr(st, _c);
 		case_rr(st, _s);
@@ -564,6 +576,12 @@ _emit_code(jit_state_t *_jit)
 		case_wrr(stx, _s);
 		case_rrr(stx, _i);
 		case_wrr(stx, _i);
+	    case jit_code_unstr:
+		unstr(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti:
+		unsti(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
 		case_rr(bswap, _us);

@@ -458,6 +458,10 @@ static void _ldxi_uc(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define ldxi_uc(r0,r1,i0)		_ldxi_uc(_jit,r0,r1,i0)
 static void _ldxi_us(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define ldxi_us(r0,r1,i0)		_ldxi_us(_jit,r0,r1,i0)
+#  define unldr(r0, r1, i0)		generic_unldr(r0, r1, i0)
+#  define unldi(r0, i0, i1)		generic_unldi(r0, i0, i1)
+#  define unldr_u(r0, r1, i0)		generic_unldr_u(r0, r1, i0)
+#  define unldi_u(r0, i0, i1)		generic_unldi_u(r0, i0, i1)
 #    define str_c(r0,r1)		STB(r0,r1)
 #    define str_s(r0,r1)		STW(r0,r1)
 #    define str_i(r0,r1)		STL(r0,r1)
@@ -479,6 +483,8 @@ static void _stxi_s(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #    define stxi_s(i0,r0,r1)		_stxi_s(_jit,i0,r0,r1)
 static void _stxi_i(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #    define stxi_i(i0,r0,r1)		_stxi_i(_jit,i0,r0,r1)
+#  define unstr(r0, r1, i0)		generic_unstr(r0, r1, i0)
+#  define unsti(i0, r0, i1)		generic_unsti(i0, r0, i1)
 static jit_word_t _bger(jit_state_t*,jit_word_t,jit_uint16_t,
 			jit_uint16_t,jit_bool_t,jit_bool_t);
 #    define bltr(i0,r0,r1)		bltr_p(i0,r0,r1,0)
