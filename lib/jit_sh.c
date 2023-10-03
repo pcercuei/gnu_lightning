@@ -508,10 +508,18 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rem, _u);
 		case_rrr(lsh,);
 		case_rrw(lsh,);
+		case_rrrr(qlsh,);
+		case_rrrw(qlsh,);
+		case_rrrr(qlsh, _u);
+		case_rrrw(qlsh, _u);
 		case_rrr(rsh,);
 		case_rrw(rsh,);
 		case_rrr(rsh, _u);
 		case_rrw(rsh, _u);
+		case_rrrr(qrsh,);
+		case_rrrw(qrsh,);
+		case_rrrr(qrsh, _u);
+		case_rrrw(qrsh, _u);
 		case_rr(neg,);
 		case_rr(com,);
 		case_rr(clo,);

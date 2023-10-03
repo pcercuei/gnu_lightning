@@ -424,6 +424,28 @@ static void _rshi(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define rshi(r0,r1,i0)		_rshi(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
+#  define qlshr(r0,r1,r2,r3)		_qlshr(_jit,r0,r1,r2,r3)
+static void
+_qlshr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define qlshr_u(r0, r1, r2, r3)	_qlshr_u(_jit,r0,r1,r2,r3)
+static void
+_qlshr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define qlshi(r0, r1, r2, i0)		xlshi(1, r0, r1, r2, i0)
+#  define qlshi_u(r0, r1, r2, i0)	xlshi(0, r0, r1, r2, i0)
+#  define xlshi(s, r0, r1, r2, i0)	_xlshi(_jit, s, r0, r1, r2, i0)
+static void
+_xlshi(jit_state_t*,jit_bool_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
+#  define qrshr(r0, r1, r2, r3)		_qrshr(_jit,r0,r1,r2,r3)
+static void
+_qrshr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define qrshr_u(r0, r1, r2, r3)	_qrshr_u(_jit,r0,r1,r2,r3)
+static void
+_qrshr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define qrshi(r0, r1, r2, i0)		xrshi(1, r0, r1, r2, i0)
+#  define qrshi_u(r0, r1, r2, i0)	xrshi(0, r0, r1, r2, i0)
+#  define xrshi(s, r0, r1, r2, i0)	_xrshi(_jit, s, r0, r1, r2, i0)
+static void
+_xrshi(jit_state_t*,jit_bool_t,jit_int32_t,jit_int32_t,jit_int32_t,jit_word_t);
 #    define ldr_c(r0,r1)		LDB(r0,r1)
 #    define ldr_s(r0,r1)		LDW(r0,r1)
 #    define ldr_i(r0,r1)		LDL(r0,r1)
@@ -1911,6 +1933,120 @@ _rshi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 
 		if (r0 == _R0)
 			jit_unget_reg(reg);
+	}
+}
+
+static void
+_qlshr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+       jit_int32_t r2, jit_int32_t r3)
+{
+	assert(r0 != r1);
+	movr(_R0, r3);
+	movr(r0, r2);
+	CMPEQI(32);
+	movr(r1, r2);
+	BF(0);
+	XOR(r0, r0);
+	SHAD(r0, _R0);
+	ADDI(_R0, -__WORDSIZE);
+	SHAD(r1, _R0);
+}
+
+static void
+_qlshr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+         jit_int32_t r2, jit_int32_t r3)
+{
+	assert(r0 != r1);
+	movr(_R0, r3);
+	movr(r0, r2);
+	CMPEQI(32);
+	movr(r1, r2);
+	BF(0);
+	XOR(r0, r0);
+	SHLD(r0, _R0);
+	ADDI(_R0, -__WORDSIZE);
+	SHLD(r1, _R0);
+}
+
+static void
+_xlshi(jit_state_t *_jit, jit_bool_t sign,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+	if (i0 == 0) {
+		movr(r0, r2);
+		if (sign)
+			rshi(r1, r2, __WORDSIZE - 1);
+		else
+			movi(r1, 0);
+	}
+	else if (i0 == __WORDSIZE) {
+		movr(r1, r2);
+		movi(r0, 0);
+	}
+	else {
+		assert((jit_uword_t)i0 <= __WORDSIZE);
+		if (sign)
+			rshi(r1, r2, __WORDSIZE - i0);
+		else
+			rshi_u(r1, r2, __WORDSIZE - i0);
+		lshi(r0, r2, i0);
+	}
+}
+
+static void
+_qrshr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+       jit_int32_t r2, jit_int32_t r3)
+{
+	assert(r0 != r1);
+	NEG(_R0, r3);
+	movr(r1, r2);
+	CMPEQI(0);
+	movr(r0, r2);
+	BF(0);
+	MOV(r1, _R0);
+	SHAD(r0, _R0);
+	ADDI(_R0, __WORDSIZE);
+	SHAD(r1, _R0);
+}
+
+static void
+_qrshr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+         jit_int32_t r2, jit_int32_t r3)
+{
+	assert(r0 != r1);
+	NEG(_R0, r3);
+	movr(r1, r2);
+	CMPEQI(0);
+	movr(r0, r2);
+	BF(0);
+	MOV(r1, _R0);
+	SHLD(r0, _R0);
+	ADDI(_R0, __WORDSIZE);
+	SHLD(r1, _R0);
+}
+
+static void
+_xrshi(jit_state_t *_jit, jit_bool_t sign,
+       jit_int32_t r0, jit_int32_t r1, jit_int32_t r2, jit_word_t i0)
+{
+	if (i0 == 0) {
+		movr(r0, r2);
+		movi(r1, 0);
+	}
+	else if (i0 == __WORDSIZE) {
+		movr(r1, r2);
+		if (sign)
+			rshi(r0, r2, __WORDSIZE - 1);
+		else
+			movi(r0, 0);
+	}
+	else {
+		assert((jit_uword_t)i0 <= __WORDSIZE);
+		lshi(r1, r2, __WORDSIZE - i0);
+		if (sign)
+			rshi(r0, r2, i0);
+		else
+			rshi_u(r0, r2, i0);
 	}
 }
 
