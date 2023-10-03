@@ -806,8 +806,7 @@ static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ul(r0,r1)		_bswapr_ul(_jit,r0,r1)
 static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #  endif
-#define extr(r0,r1,i0,i1)		_extr(_jit,r0,r1,i0,i1)
-static void _extr(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
+#define extr(r0,r1,i0,i1)		fallback_ext(r0,r1,i0,i1)
 #define extr_u(r0,r1,i0,i1)		_extr_u(_jit,r0,r1,i0,i1)
 static void _extr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t,jit_word_t);
 #define depr(r0,r1,i0,i1)		_depr(_jit,r0,r1,i0,i1)
@@ -3490,26 +3489,6 @@ _bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	generic_bswapr_ul(_jit, r0, r1);
 }
 #endif
-
-static void
-_extr(jit_state_t *_jit,
-      jit_int32_t r0, jit_int32_t r1, jit_word_t i0, jit_word_t i1)
-{
-    assert(i0 >= 0 && i1 >= 1 && i0 + i1 <= __WORDSIZE);
-    if ( i1 == __WORDSIZE)
-	movr(r0, r1);
-    else {
-#  if __BYTE_ORDER == __BIG_ENDIAN
-	i0 = __WORDSIZE - (i0 + i1);
-#  endif
-	if (__WORDSIZE - (i0 + i1)) {
-	    lshi(r0, r1, __WORDSIZE - (i0 + i1));
-	    rshi(r0, r0, __WORDSIZE - i1);
-	}
-	else
-	    rshi(r0, r1, __WORDSIZE - i1);
-    }
-}
 
 static void
 _extr_u(jit_state_t *_jit,
