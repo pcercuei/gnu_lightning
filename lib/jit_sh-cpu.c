@@ -828,19 +828,10 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 			NOP();
 		}
 	} else if (!force_patchable && disp >= -128) {
-		if (jit_sh34_p()) {
-			if (t_set)
-				BT(disp);
-			else
-				BF(disp);
-		} else {
-			/* BT/BF are buggy on SH2 - revert to using BTS/BFS */
-			if (t_set)
-				BTS(disp);
-			else
-				BFS(disp);
-			NOP();
-		}
+		if (t_set)
+			BT(disp);
+		else
+			BF(disp);
 	} else {
 		if (force_patchable)
 			movi_p(_R0, i0);
@@ -872,10 +863,7 @@ static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 {
 	maybe_emit_tst(_jit, r2, &set);
 
-	if (jit_sh34_p())
-		emit_branch_opcode(_jit, 4, 0, set, 0);
-	else
-		emit_branch_opcode(_jit, 6, 0, set, 0);
+	emit_branch_opcode(_jit, 4, 0, set, 0);
 	movr(r0, r1);
 }
 
