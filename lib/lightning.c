@@ -4285,7 +4285,7 @@ static void _htoni_ul(jit_state_t*, jit_int32_t, jit_word_t);
 #endif
 #  define movi_f_w(r0, i0)		_movi_f_w(_jit, r0, i0)
 static void _movi_f_w(jit_state_t*, jit_int32_t, jit_float32_t);
-#if __WORDSIZE == 32
+#if __WORDSIZE == 32 && !(defined(__mips__) && NEW_ABI)
 #  define movi_d_ww(r0, r1, i0)		_movi_d_ww(_jit, r0, r1, i0)
 static void _movi_d_ww(jit_state_t*, jit_int32_t, jit_int32_t, jit_float64_t);
 #else
@@ -4569,7 +4569,7 @@ _movi_f_w(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
     movi(r0, data.i);
 }
 
-#if __WORDSIZE == 32
+#if __WORDSIZE == 32 && !(defined(__mips__) && NEW_ABI)
 static void
 _movi_d_ww(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_float64_t i0)
 {
