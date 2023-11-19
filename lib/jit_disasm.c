@@ -89,7 +89,7 @@ jit_init_debug(const char *progname)
     bfd_check_format(disasm_bfd, bfd_object);
     bfd_check_format(disasm_bfd, bfd_archive);
     if (!disasm_stream)
-	disasm_stream = stdout;
+	disasm_stream = stderr;
 
 #if BINUTILS_2_38
     INIT_DISASSEMBLE_INFO(disasm_info, disasm_stream, fprintf, fprintf_styled);
