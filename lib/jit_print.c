@@ -78,7 +78,7 @@ void
 jit_init_print(void)
 {
     if (!print_stream)
-	print_stream = stdout;
+	print_stream = stderr;
 }
 
 void
