@@ -1211,6 +1211,67 @@ typedef enum {
 #define jit_hmuli_u(u,v,w)	jit_new_node_www(jit_code_hmuli_u,u,v,w)
     jit_code_hmulr_u,		jit_code_hmuli_u,
 
+#define jit_ldxbi_c(u,v,w)	jit_new_node_www(jit_code_ldxbi_c,u,v,w)
+#define jit_ldxai_c(u,v,w)	jit_new_node_www(jit_code_ldxai_c,u,v,w)
+    jit_code_ldxbi_c,		jit_code_ldxai_c,
+#define jit_ldxbi_uc(u,v,w)	jit_new_node_www(jit_code_ldxbi_uc,u,v,w)
+#define jit_ldxai_uc(u,v,w)	jit_new_node_www(jit_code_ldxai_uc,u,v,w)
+    jit_code_ldxbi_uc,		jit_code_ldxai_uc,
+#define jit_ldxbi_s(u,v,w)	jit_new_node_www(jit_code_ldxbi_s,u,v,w)
+#define jit_ldxai_s(u,v,w)	jit_new_node_www(jit_code_ldxai_s,u,v,w)
+    jit_code_ldxbi_s,		jit_code_ldxai_s,
+#define jit_ldxbi_us(u,v,w)	jit_new_node_www(jit_code_ldxbi_us,u,v,w)
+#define jit_ldxai_us(u,v,w)	jit_new_node_www(jit_code_ldxai_us,u,v,w)
+    jit_code_ldxbi_us,		jit_code_ldxai_us,
+#define jit_ldxbi_i(u,v,w)	jit_new_node_www(jit_code_ldxbi_i,u,v,w)
+#define jit_ldxai_i(u,v,w)	jit_new_node_www(jit_code_ldxai_i,u,v,w)
+    jit_code_ldxbi_i,		jit_code_ldxai_i,
+#if __WORDSIZE == 32
+#  define jit_ldxbi(u,v,w)	jit_ldxbi_i(u,v,w)
+#  define jit_ldxai(u,v,w)	jit_ldxai_i(u,v,w)
+#else
+#  define jit_ldxbi(u,v,w)	jit_ldxbi_l(u,v,w)
+#  define jit_ldxai(u,v,w)	jit_ldxai_l(u,v,w)
+#  define jit_ldxbi_ui(u,v,w)	jit_new_node_www(jit_code_ldxbi_ui,u,v,w)
+#  define jit_ldxai_ui(u,v,w)	jit_new_node_www(jit_code_ldxai_ui,u,v,w)
+#  define jit_ldxbi_l(u,v,w)	jit_new_node_www(jit_code_ldxbi_l,u,v,w)
+#  define jit_ldxai_l(u,v,w)	jit_new_node_www(jit_code_ldxai_l,u,v,w)
+#endif
+    jit_code_ldxbi_ui,		jit_code_ldxai_ui,
+    jit_code_ldxbi_l,		jit_code_ldxai_l,
+#  define jit_ldxbi_f(u,v,w)	jit_new_node_www(jit_code_ldxbi_f,u,v,w)
+#  define jit_ldxai_f(u,v,w)	jit_new_node_www(jit_code_ldxai_f,u,v,w)
+    jit_code_ldxbi_f,		jit_code_ldxai_f,
+#  define jit_ldxbi_d(u,v,w)	jit_new_node_www(jit_code_ldxbi_d,u,v,w)
+#  define jit_ldxai_d(u,v,w)	jit_new_node_www(jit_code_ldxai_d,u,v,w)
+    jit_code_ldxbi_d,		jit_code_ldxai_d,
+
+#define jit_stxbi_c(u,v,w)	jit_new_node_www(jit_code_stxbi_c,u,v,w)
+#define jit_stxai_c(u,v,w)	jit_new_node_www(jit_code_stxai_c,u,v,w)
+    jit_code_stxbi_c,		jit_code_stxai_c,
+#define jit_stxbi_s(u,v,w)	jit_new_node_www(jit_code_stxbi_s,u,v,w)
+#define jit_stxai_s(u,v,w)	jit_new_node_www(jit_code_stxai_s,u,v,w)
+    jit_code_stxbi_s,		jit_code_stxai_s,
+#define jit_stxbi_i(u,v,w)	jit_new_node_www(jit_code_stxbi_i,u,v,w)
+#define jit_stxai_i(u,v,w)	jit_new_node_www(jit_code_stxai_i,u,v,w)
+    jit_code_stxbi_i,		jit_code_stxai_i,
+#if __WORDSIZE == 32
+#  define jit_stxbi(u,v,w)	jit_stxbi_i(u,v,w)
+#  define jit_stxai(u,v,w)	jit_stxai_i(u,v,w)
+#else
+#  define jit_stxbi(u,v,w)	jit_stxbi_l(u,v,w)
+#  define jit_stxai(u,v,w)	jit_stxai_l(u,v,w)
+#  define jit_stxbi_l(u,v,w)	jit_new_node_www(jit_code_stxbi_l,u,v,w)
+#  define jit_stxai_l(u,v,w)	jit_new_node_www(jit_code_stxai_l,u,v,w)
+#endif
+    jit_code_stxbi_l,		jit_code_stxai_l,
+#  define jit_stxbi_f(u,v,w)	jit_new_node_www(jit_code_stxbi_f,u,v,w)
+#  define jit_stxai_f(u,v,w)	jit_new_node_www(jit_code_stxai_f,u,v,w)
+    jit_code_stxbi_f,		jit_code_stxai_f,
+#  define jit_stxbi_d(u,v,w)	jit_new_node_www(jit_code_stxbi_d,u,v,w)
+#  define jit_stxai_d(u,v,w)	jit_new_node_www(jit_code_stxai_d,u,v,w)
+    jit_code_stxbi_d,		jit_code_stxai_d,
+
     jit_code_last_code
 } jit_code_t;
 

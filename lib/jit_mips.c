@@ -1424,6 +1424,16 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_##name##i##type:				\
 		name##i##type(rn(node->u.w), rn(node->v.w), node->w.w);	\
 		break
+#define case_rrx(name, type)						\
+	    case jit_code_##name##i##type:				\
+		generic_##name##i##type(rn(node->u.w),			\
+					rn(node->v.w), node->w.w);	\
+	       break
+#define case_xrr(name, type)						\
+		case jit_code_##name##i##type:				\
+		generic_##name##i##type(node->u.w, rn(node->v.w),	\
+					rn(node->w.w));			\
+		break
 #define case_rrrr(name, type)						\
 	    case jit_code_##name##r##type:				\
 		name##r##type(rn(node->u.q.l), rn(node->u.q.h),		\
@@ -1645,6 +1655,17 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_unldi_u:
 		unldi_u(rn(node->u.w), node->v.w, node->w.w);
 		break;
+		case_rrx(ldxb, _c);	case_rrx(ldxa, _c);
+		case_rrx(ldxb, _uc);	case_rrx(ldxa, _uc);
+		case_rrx(ldxb, _s);	case_rrx(ldxa, _s);
+		case_rrx(ldxb, _us);	case_rrx(ldxa, _us);
+		case_rrx(ldxb, _i);	case_rrx(ldxa, _i);
+#if __WORDSIZE == 64
+		case_rrx(ldxb, _ui);	case_rrx(ldxa, _ui);
+		case_rrx(ldxb, _l);	case_rrx(ldxa, _l);
+#endif
+		case_rrx(ldxb, _f);	case_rrx(ldxa, _f);
+		case_rrx(ldxb, _d);	case_rrx(ldxa, _d);
 		case_rr(st, _c);
 		case_wr(st, _c);
 		case_rr(st, _s);
@@ -1671,6 +1692,14 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_unsti:
 		unsti(node->u.w, rn(node->v.w), node->w.w);
 		break;
+		case_xrr(stxb, _c);	case_xrr(stxa, _c);
+		case_xrr(stxb, _s);	case_xrr(stxa, _s);
+		case_xrr(stxb, _i);	case_xrr(stxa, _i);
+#if __WORDSIZE == 64
+		case_xrr(stxb, _l);	case_xrr(stxa, _l);
+#endif
+		case_xrr(stxb, _f);	case_xrr(stxa, _f);
+		case_xrr(stxb, _d);	case_xrr(stxa, _d);
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
 #if __WORDSIZE == 64

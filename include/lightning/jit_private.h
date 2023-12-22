@@ -350,17 +350,19 @@ extern jit_node_t *_jit_data(jit_state_t*, const void*,
 #define jit_cc_a0_cnd		0x00000100	/* arg1 is a conditinally set register */
 #define jit_cc_a1_reg		0x00000200	/* arg1 is a register */
 #define jit_cc_a1_chg		0x00000400	/* arg1 is modified */
-#define jit_cc_a1_int		0x00000800	/* arg1 is immediate word */
-#define jit_cc_a1_flt		0x00001000	/* arg1 is immediate float */
-#define jit_cc_a1_dbl		0x00002000	/* arg1 is immediate double */
-#define jit_cc_a1_arg		0x00004000	/* arg1 is an argument node */
-#define jit_cc_a1_rlh		0x00008000	/* arg1 is a register pair */
-#define jit_cc_a2_reg		0x00010000	/* arg2 is a register */
-#define jit_cc_a2_chg		0x00020000	/* arg2 is modified */
-#define jit_cc_a2_int		0x00100000	/* arg2 is immediate word */
-#define jit_cc_a2_flt		0x00200000	/* arg2 is immediate float */
-#define jit_cc_a2_dbl		0x00400000	/* arg2 is immediate double */
-#define jit_cc_a2_rlh		0x00800000	/* arg2 is a register pair */
+#define jit_cc_a1_dep		0x00000800	/* arg1 is incremented
+						 * cannot set jit_cc_a1_chg */
+#define jit_cc_a1_int		0x00001000	/* arg1 is immediate word */
+#define jit_cc_a1_flt		0x00002000	/* arg1 is immediate float */
+#define jit_cc_a1_dbl		0x00004000	/* arg1 is immediate double */
+#define jit_cc_a1_arg		0x00008000	/* arg1 is an argument node */
+#define jit_cc_a1_rlh		0x00010000	/* arg1 is a register pair */
+#define jit_cc_a2_reg		0x00020000	/* arg2 is a register */
+#define jit_cc_a2_chg		0x00040000	/* arg2 is modified */
+#define jit_cc_a2_int		0x00080000	/* arg2 is immediate word */
+#define jit_cc_a2_flt		0x00100000	/* arg2 is immediate float */
+#define jit_cc_a2_dbl		0x00200000	/* arg2 is immediate double */
+#define jit_cc_a2_rlh		0x00400000	/* arg2 is a register pair */
 
 #if __ia64__ || (__sparc__ && __WORDSIZE == 64)
 extern void

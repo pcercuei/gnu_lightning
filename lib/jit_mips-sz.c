@@ -529,6 +529,36 @@
     16,	/* hmuli */
     8,	/* hmulr_u */
     16,	/* hmuli_u */
+    8,	/* ldxbi_c */
+    8,	/* ldxai_c */
+    8,	/* ldxbi_uc */
+    8,	/* ldxai_uc */
+    8,	/* ldxbi_s */
+    8,	/* ldxai_s */
+    8,	/* ldxbi_us */
+    8,	/* ldxai_us */
+    8,	/* ldxbi_i */
+    8,	/* ldxai_i */
+    0,	/* ldxbi_ui */
+    0,	/* ldxai_ui */
+    0,	/* ldxbi_l */
+    0,	/* ldxai_l */
+    8,	/* ldxbi_f */
+    8,	/* ldxai_f */
+    12, /* ldxbi_d */
+    12, /* ldxai_d */
+    8,	/* stxbi_c */
+    8,	/* stxai_c */
+    8,	/* stxbi_s */
+    8,	/* stxai_s */
+    8,	/* stxbi_i */
+    8,	/* stxai_i */
+    0,	/* stxbi_l */
+    0,	/* stxai_l */
+    8,	/* stxbi_f */
+    8,	/* stxai_f */
+    12, /* stxbi_d */
+    12, /* stxai_d */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
@@ -1061,4 +1091,34 @@
     28,	/* hmuli */
     8,	/* hmulr_u */
     28,	/* hmuli_u */
+    8,	/* ldxbi_c */
+    8,	/* ldxai_c */
+    8,	/* ldxbi_uc */
+    8,	/* ldxai_uc */
+    8,	/* ldxbi_s */
+    8,	/* ldxai_s */
+    8,	/* ldxbi_us */
+    8,	/* ldxai_us */
+    8,	/* ldxbi_i */
+    8,	/* ldxai_i */
+    8,	/* ldxbi_ui */
+    8,	/* ldxai_ui */
+    8,	/* ldxbi_l */
+    8,	/* ldxai_l */
+    8,	/* ldxbi_f */
+    8,	/* ldxai_f */
+    8,	/* ldxbi_d */
+    8,	/* ldxai_d */
+    8,	/* stxbi_c */
+    8,	/* stxai_c */
+    8,	/* stxbi_s */
+    8,	/* stxai_s */
+    8,	/* stxbi_i */
+    8,	/* stxai_i */
+    8,	/* stxbi_l */
+    8,	/* stxai_l */
+    8,	/* stxbi_f */
+    8,	/* stxai_f */
+    8,	/* stxbi_d */
+    8,	/* stxai_d */
 #endif /* __WORDSIZE */

@@ -94,6 +94,7 @@ EXTRA_DIST =				\
 	ldstr-c.tst	ldstr-c.ok	\
 	ldstxr-c.tst	ldstxr-c.ok	\
 	ldstxi-c.tst	ldstxi-c.ok	\
+	ldstxbai.tst	ldstxbai.ok	\
 	ext.tst		ext.ok		\
 	cvt.tst		cvt.ok		\
 	hton.tst	hton.ok		\
@@ -162,8 +163,8 @@ base_TESTS =				\
 	ldstr ldsti			\
 	ldstxr ldstxi			\
 	ldstr-c ldstxr-c ldstxi-c	\
-	ext cvt hton bswap branch	\
-	alu_add alux_add		\
+	ldstxbai ext cvt hton bswap	\
+	branch alu_add alux_add		\
 	alu_sub alux_sub alu_rsb	\
 	alu_mul alu_hmul		\
 	alu_div alu_rem			\
@@ -193,7 +194,7 @@ x87_TESTS =					\
 	rpn.x87 ldstr.x87 ldsti.x87		\
 	ldstxr.x87 ldstxi.x87			\
 	ldstr-c.x87 ldstxr-c.x87 ldstxi-c.x87	\
-	ext.x87 cvt.x87 branch.x87		\
+	ldstxbai.x87 ext.x87 cvt.x87 branch.x87	\
 	alu_add.x87 alux_add.x87		\
 	alu_sub.x87 alux_sub.x87 alu_rsb.x87	\
 	alu_mul.x87 alu_hmul.x87		\
@@ -245,6 +246,7 @@ arm_TESTS =					\
 	rpn.arm ldstr.arm ldsti.arm		\
 	ldstxr.arm ldstxi.arm			\
 	ldstr-c.arm ldstxr-c.arm ldstxi-c.arm	\
+	ldstxbai.arm				\
 	ext.arm cvt.arm hton.arm bswap.arm	\
 	branch.arm alu_add.arm alux_add.arm	\
 	alu_sub.arm alux_sub.arm alu_rsb.arm	\
@@ -273,6 +275,7 @@ swf_TESTS =					\
 	rpn.swf ldstr.swf ldsti.swf		\
 	ldstxr.swf ldstxi.swf			\
 	ldstr-c.swf ldstxr-c.swf ldstxi-c.swf	\
+	ldstxbai.swf				\
 	ext.swf cvt.swf hton.swf bswap.swf	\
 	branch.swf alu_add.swf alux_add.swf	\
 	alu_sub.swf alux_sub.swf alu_rsb.swf	\
@@ -299,6 +302,7 @@ arm_swf_TESTS =							\
 	rpn.arm.swf ldstr.arm.swf ldsti.arm.swf			\
 	ldstxr.arm.swf ldstxi.arm.swf				\
 	ldstr-c.arm.swf ldstxr-c.arm.swf ldstxi-c.arm.swf	\
+	ldstxbai.arm.swf					\
 	ext.arm.swf cvt.arm.swf hton.arm.swf bswap.arm.swf	\
 	branch.arm.swf alu_add.arm.swf alux_add.arm.swf		\
 	alu_sub.arm.swf alux_sub.arm.swf alu_rsb.arm.swf	\
@@ -325,6 +329,7 @@ arm4_swf_TESTS =						\
 	rpn.arm4.swf ldstr.arm4.swf ldsti.arm4.swf		\
 	ldstxr.arm4.swf ldstxi.arm4.swf				\
 	ldstr-c.arm4.swf ldstxr-c.arm4.swf ldstxi-c.arm4.swf	\
+	ldstxbai.arm4.swf					\
 	ext.arm4.swf cvt.arm4.swf hton.arm4.swf bswap.arm4.swf	\
 	branch.arm4.swf	alu_add.arm4.swf alux_add.arm4.swf	\
 	alu_sub.arm4.swf alux_sub.arm4.swf alu_rsb.arm4.swf	\
@@ -354,6 +359,7 @@ nodata_TESTS =						\
 	rpn.nodata ldstr.nodata ldsti.nodata		\
 	ldstxr.nodata ldstxi.nodata			\
 	ldstr-c.nodata ldstxr-c.nodata ldstxi-c.nodata	\
+	ldstxbai.nodata					\
 	ext.nodata cvt.nodata branch.nodata		\
 	alu_add.nodata alux_add.nodata			\
 	alu_sub.nodata alux_sub.nodata alu_rsb.nodata	\
