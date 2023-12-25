@@ -806,6 +806,9 @@ static void _patch_at(jit_state_t*, jit_word_t, jit_word_t);
 #    endif
 #  endif
 #  define jit_cmov_p()			jit_cpu.cmov
+#  define is_low_mask(im)		(((im) & 1) ? (__builtin_popcountl((im) + 1) <= 1) : 0)
+#  define is_high_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) == 0) : 0)
+#  define unmasked_bits_count(im)	(__WORDSIZE - __builtin_popcountl(im))
 #endif
 
 #if CODE
@@ -1881,15 +1884,20 @@ _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	ixorr(r0, r0);
     else if (i0 == -1)
 	movr(r0, r1);
+    else if (r0 == r1 && can_sign_extend_int_p(i0))
+        iandi(r0, i0);
+    else if (is_low_mask(i0)) {
+        lshi(r0, r1, unmasked_bits_count(i0));
+        rshi_u(r0, r0, unmasked_bits_count(i0));
+    } else if (is_high_mask(i0)) {
+        rshi_u(r0, r1, unmasked_bits_count(i0));
+        lshi(r0, r0, unmasked_bits_count(i0));
+    }
     else if (r0 == r1) {
-	if (can_sign_extend_int_p(i0))
-	    iandi(r0, i0);
-	else {
 	    reg = jit_get_reg(jit_class_gpr);
 	    movi(rn(reg), i0);
 	    iandr(r0, rn(reg));
 	    jit_unget_reg(reg);
-	}
     }
     else {
 	movi(r0, i0);
