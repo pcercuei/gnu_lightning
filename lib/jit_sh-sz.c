@@ -477,27 +477,27 @@
     4,	/* movr_d_w */
     16,	/* movi_d_w */
     10,	/* clor */
-    10,	/* cloi */
+    6,	/* cloi */
     12,	/* clzr */
-    12,	/* clzi */
+    6,	/* clzi */
     10,	/* ctor */
-    10,	/* ctoi */
+    6,	/* ctoi */
     12,	/* ctzr */
-    12,	/* ctzi */
+    6,	/* ctzi */
     14,	/* rbitr */
-    8,	/* rbiti */
+    6,	/* rbiti */
     14,	/* popcntr */
+    6,	/* popcnti */
     14,	/* lrotr */
     14,	/* lroti */
     14,	/* rrotr */
     14,	/* rroti */
-
     8,	/* extr */
-    4,	/* exti */
+    6,	/* exti */
     4,	/* extr_u */
-    4,	/* exti_u */
+    6,	/* exti_u */
     4,	/* depr */
-    8,	/* depi */
+    10,	/* depi */
     18,	/* qlshr */
     8,	/* qlshi */
     18,	/* qlshr_u */
