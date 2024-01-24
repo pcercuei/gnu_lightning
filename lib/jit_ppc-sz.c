@@ -531,35 +531,65 @@
     12, /* hmuli */
     4,	/* hmulr_u */
     12, /* hmuli_u */
+    12, /* ldxbr_c */
     12, /* ldxbi_c */
+    12, /* ldxar_c */
     12, /* ldxai_c */
+    8,	/* ldxbr_uc */
     8,	/* ldxbi_uc */
+    8,	/* ldxar_uc */
     8,	/* ldxai_uc */
+    8,	/* ldxbr_s */
     8,	/* ldxbi_s */
+    8,	/* ldxar_s */
     8,	/* ldxai_s */
+    8,	/* ldxbr_us */
     8,	/* ldxbi_us */
+    8,	/* ldxar_us */
     8,	/* ldxai_us */
+    8,	/* ldxbr_i */
     8,	/* ldxbi_i */
+    8,	/* ldxar_i */
     8,	/* ldxai_i */
+    0,	/* ldxbr_ui */
     0,	/* ldxbi_ui */
+    0,	/* ldxar_ui */
     0,	/* ldxai_ui */
+    0,	/* ldxbr_l */
     0,	/* ldxbi_l */
+    0,	/* ldxar_l */
     0,	/* ldxai_l */
+    8,	/* ldxbr_f */
     8,	/* ldxbi_f */
+    8,	/* ldxar_f */
     8,	/* ldxai_f */
+    8,	/* ldxbr_d */
     8,	/* ldxbi_d */
+    8,	/* ldxar_d */
     8,	/* ldxai_d */
+    8,	/* stxbr_c */
     8,	/* stxbi_c */
+    8,	/* stxar_c */
     8,	/* stxai_c */
+    8,	/* stxbr_s */
     8,	/* stxbi_s */
+    8,	/* stxar_s */
     8,	/* stxai_s */
+    8,	/* stxbr_i */
     8,	/* stxbi_i */
+    8,	/* stxar_i */
     8,	/* stxai_i */
+    0,	/* stxbr_l */
     0,	/* stxbi_l */
+    0,	/* stxar_l */
     0,	/* stxai_l */
+    8,	/* stxbr_f */
     8,	/* stxbi_f */
+    8,	/* stxar_f */
     8,	/* stxai_f */
+    8,	/* stxbr_d */
     8,	/* stxbi_d */
+    8,	/* stxar_d */
     8,	/* stxai_d */
 #endif /* !_CALL_SYSV */
 #endif /* __BYTE_ORDER */
@@ -1099,35 +1129,65 @@
     12, /* hmuli */
     4,	/* hmulr_u */
     12, /* hmuli_u */
+    12, /* ldxbr_c */
     12, /* ldxbi_c */
+    12, /* ldxar_c */
     12, /* ldxai_c */
+    8,	/* ldxbr_uc */
     8,	/* ldxbi_uc */
+    8,	/* ldxar_uc */
     8,	/* ldxai_uc */
+    8,	/* ldxbr_s */
     8,	/* ldxbi_s */
+    8,	/* ldxar_s */
     8,	/* ldxai_s */
+    8,	/* ldxbr_us */
     8,	/* ldxbi_us */
+    8,	/* ldxar_us */
     8,	/* ldxai_us */
+    8,	/* ldxbr_i */
     8,	/* ldxbi_i */
+    8,	/* ldxar_i */
     8,	/* ldxai_i */
+    0,	/* ldxbr_ui */
     0,	/* ldxbi_ui */
+    0,	/* ldxar_ui */
     0,	/* ldxai_ui */
+    0,	/* ldxbr_l */
     0,	/* ldxbi_l */
+    0,	/* ldxar_l */
     0,	/* ldxai_l */
+    8,	/* ldxbr_f */
     8,	/* ldxbi_f */
+    8,	/* ldxar_f */
     8,	/* ldxai_f */
+    8,	/* ldxbr_d */
     8,	/* ldxbi_d */
+    8,	/* ldxar_d */
     8,	/* ldxai_d */
+    8,	/* stxbr_c */
     8,	/* stxbi_c */
+    8,	/* stxar_c */
     8,	/* stxai_c */
+    8,	/* stxbr_s */
     8,	/* stxbi_s */
+    8,	/* stxar_s */
     8,	/* stxai_s */
+    8,	/* stxbr_i */
     8,	/* stxbi_i */
+    8,	/* stxar_i */
     8,	/* stxai_i */
+    0,	/* stxbr_l */
     0,	/* stxbi_l */
+    0,	/* stxar_l */
     0,	/* stxai_l */
+    8,	/* stxbr_f */
     8,	/* stxbi_f */
+    8,	/* stxar_f */
     8,	/* stxai_f */
+    8,	/* stxbr_d */
     8,	/* stxbi_d */
+    8,	/* stxar_d */
     8,	/* stxai_d */
 #endif /* _CALL_SYSV */
 #endif /* __BYTE_ORDER */
@@ -1666,35 +1726,65 @@
     24,	/* hmuli */
     4,	/* hmulr_u */
     24,	/* hmuli_u */
+    12, /* ldxbr_c */
     12, /* ldxbi_c */
+    12, /* ldxar_c */
     12, /* ldxai_c */
+    8,	/* ldxbr_uc */
     8,	/* ldxbi_uc */
+    8,	/* ldxar_uc */
     8,	/* ldxai_uc */
+    8,	/* ldxbr_s */
     8,	/* ldxbi_s */
+    8,	/* ldxar_s */
     8,	/* ldxai_s */
+    8,	/* ldxbr_us */
     8,	/* ldxbi_us */
+    8,	/* ldxar_us */
     8,	/* ldxai_us */
+    8,	/* ldxbr_i */
     8,	/* ldxbi_i */
+    8,	/* ldxar_i */
     8,	/* ldxai_i */
+    8,	/* ldxbr_ui */
     8,	/* ldxbi_ui */
+    8,	/* ldxar_ui */
     8,	/* ldxai_ui */
+    8,	/* ldxbr_l */
     8,	/* ldxbi_l */
+    8,	/* ldxar_l */
     8,	/* ldxai_l */
+    8,	/* ldxbr_f */
     8,	/* ldxbi_f */
+    8,	/* ldxar_f */
     8,	/* ldxai_f */
+    8,	/* ldxbr_d */
     8,	/* ldxbi_d */
+    8,	/* ldxar_d */
     8,	/* ldxai_d */
+    8,	/* stxbr_c */
     8,	/* stxbi_c */
+    8,	/* stxar_c */
     8,	/* stxai_c */
+    8,	/* stxbr_s */
     8,	/* stxbi_s */
+    8,	/* stxar_s */
     8,	/* stxai_s */
+    8,	/* stxbr_i */
     8,	/* stxbi_i */
+    8,	/* stxar_i */
     8,	/* stxai_i */
+    8,	/* stxbr_l */
     8,	/* stxbi_l */
+    8,	/* stxar_l */
     8,	/* stxai_l */
+    8,	/* stxbr_f */
     8,	/* stxbi_f */
+    8,	/* stxar_f */
     8,	/* stxai_f */
+    8,	/* stxbr_d */
     8,	/* stxbi_d */
+    8,	/* stxar_d */
     8,	/* stxai_d */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */
@@ -2232,35 +2322,65 @@
     24,	/* hmuli */
     4,	/* hmulr_u */
     24,	/* hmuli_u */
+    12, /* ldxbr_c */
     12, /* ldxbi_c */
+    12, /* ldxar_c */
     12, /* ldxai_c */
+    8,	/* ldxbr_uc */
     8,	/* ldxbi_uc */
+    8,	/* ldxar_uc */
     8,	/* ldxai_uc */
+    8,	/* ldxbr_s */
     8,	/* ldxbi_s */
+    8,	/* ldxar_s */
     8,	/* ldxai_s */
+    8,	/* ldxbr_us */
     8,	/* ldxbi_us */
+    8,	/* ldxar_us */
     8,	/* ldxai_us */
+    8,	/* ldxbr_i */
     8,	/* ldxbi_i */
+    8,	/* ldxar_i */
     8,	/* ldxai_i */
+    8,	/* ldxbr_ui */
     8,	/* ldxbi_ui */
+    8,	/* ldxar_ui */
     8,	/* ldxai_ui */
+    8,	/* ldxbr_l */
     8,	/* ldxbi_l */
+    8,	/* ldxar_l */
     8,	/* ldxai_l */
+    8,	/* ldxbr_f */
     8,	/* ldxbi_f */
+    8,	/* ldxar_f */
     8,	/* ldxai_f */
+    8,	/* ldxbr_d */
     8,	/* ldxbi_d */
+    8,	/* ldxar_d */
     8,	/* ldxai_d */
+    8,	/* stxbr_c */
     8,	/* stxbi_c */
+    8,	/* stxar_c */
     8,	/* stxai_c */
+    8,	/* stxbr_s */
     8,	/* stxbi_s */
+    8,	/* stxar_s */
     8,	/* stxai_s */
+    8,	/* stxbr_i */
     8,	/* stxbi_i */
+    8,	/* stxar_i */
     8,	/* stxai_i */
+    8,	/* stxbr_l */
     8,	/* stxbi_l */
+    8,	/* stxar_l */
     8,	/* stxai_l */
+    8,	/* stxbr_f */
     8,	/* stxbi_f */
+    8,	/* stxar_f */
     8,	/* stxai_f */
+    8,	/* stxbr_d */
     8,	/* stxbi_d */
+    8,	/* stxar_d */
     8,	/* stxai_d */
 #endif /* __BYTE_ORDER */
 #endif /* __powerpc__ */

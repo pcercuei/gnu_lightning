@@ -709,6 +709,34 @@ static void _ldxi_l(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define unldi(r0, i0, i1)		generic_unldi(r0, i0, i1)
 #  define unldr_u(r0, r1, i0)		generic_unldr_u(r0, r1, i0)
 #  define unldi_u(r0, i0, i1)		generic_unldi_u(r0, i0, i1)
+#  define ldxbi_c(r0, r1, i0)		_ldxbi_c(_jit, r0, r1, i0)
+static void _ldxbi_c(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbi_uc(r0, r1, i0)		_ldxbi_uc(_jit, r0, r1, i0)
+static void _ldxbi_uc(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbi_s(r0, r1, i0)		_ldxbi_s(_jit, r0, r1, i0)
+static void _ldxbi_s(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbi_us(r0, r1, i0)		_ldxbi_us(_jit, r0, r1, i0)
+static void _ldxbi_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbi_i(r0, r1, i0)		_ldxbi_i(_jit, r0, r1, i0)
+static void _ldxbi_i(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbi_ui(r0, r1, i0)		_ldxbi_ui(_jit, r0, r1, i0)
+static void _ldxbi_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbi_l(r0, r1, i0)		_ldxbi_l(_jit, r0, r1, i0)
+static void _ldxbi_l(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_c(r0, r1, i0)		_ldxai_c(_jit, r0, r1, i0)
+static void _ldxai_c(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_uc(r0, r1, i0)		_ldxai_uc(_jit, r0, r1, i0)
+static void _ldxai_uc(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_s(r0, r1, i0)		_ldxai_s(_jit, r0, r1, i0)
+static void _ldxai_s(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_us(r0, r1, i0)		_ldxai_us(_jit, r0, r1, i0)
+static void _ldxai_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_i(r0, r1, i0)		_ldxai_i(_jit, r0, r1, i0)
+static void _ldxai_i(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_ui(r0, r1, i0)		_ldxai_ui(_jit, r0, r1, i0)
+static void _ldxai_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxai_l(r0, r1, i0)		_ldxai_l(_jit, r0, r1, i0)
+static void _ldxai_l(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define str_c(r0,r1)			STRBI(r1,r0,0)
 #  define sti_c(i0,r0)			_sti_c(_jit,i0,r0)
 static void _sti_c(jit_state_t*,jit_word_t,jit_int32_t);
@@ -735,6 +763,22 @@ static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 static void _stxi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define unstr(r0, r1, i0)		generic_unstr(r0, r1, i0)
 #  define unsti(i0, r0, i1)		generic_unsti(i0, r0, i1)
+#  define stxbi_c(i0,r0,r1)		_stxbi_c(_jit,i0,r0,r1)
+static void _stxbi_c(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxbi_s(i0,r0,r1)		_stxbi_s(_jit,i0,r0,r1)
+static void _stxbi_s(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxbi_i(i0,r0,r1)		_stxbi_i(_jit,i0,r0,r1)
+static void _stxbi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxbi_l(i0,r0,r1)		_stxbi_l(_jit,i0,r0,r1)
+static void _stxbi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxai_c(i0,r0,r1)		_stxai_c(_jit,i0,r0,r1)
+static void _stxai_c(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxai_s(i0,r0,r1)		_stxai_s(_jit,i0,r0,r1)
+static void _stxai_s(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxai_i(i0,r0,r1)		_stxai_i(_jit,i0,r0,r1)
+static void _stxai_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxai_l(i0,r0,r1)		_stxai_l(_jit,i0,r0,r1)
+static void _stxai_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
 static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
