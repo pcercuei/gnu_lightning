@@ -16,6 +16,12 @@
  * Authors:
  *	Paulo Cesar Pereira de Andrade
  */
+#define CHECK_POPCNTB	0
+
+#if CHECK_POPCNTB
+#include <signal.h>
+#include <setjmp.h>
+#endif
 
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < 8)
 #if !_CALL_SYSV
@@ -112,6 +118,7 @@ extern void __clear_cache(void *, void *);
 /*
  * Initialization
  */
+jit_cpu_t		jit_cpu;
 jit_register_t		_rvs[] = {
     { rc(sav) | 0,			"r0" },
     { rc(sav) | 11,			"r11" },	/* env */
@@ -187,6 +194,9 @@ jit_register_t		_rvs[] = {
     { rc(arg) | rc(fpr) | 1,		"f1" },
     { _NOREG,				"<none>" },
 };
+#if CHECK_POPCNTB
+static sigjmp_buf	jit_env;
+#endif
 
 static jit_int32_t iregs[] = {
     _R14, _R15, _R16, _R17, _R18, _R19, _R20, _R21, _R22,
@@ -200,9 +210,57 @@ static jit_int32_t fregs[] = {
 /*
  * Implementation
  */
+#if CHECK_POPCNTB
+static void
+sigill_handler(int signum)
+{
+    jit_cpu.popcntb = 0;
+    siglongjmp(jit_env, 1);
+}
+#endif
+
 void
 jit_get_cpu(void)
 {
+#if CHECK_POPCNTB
+    long		r12;
+    struct		sigaction new_action, old_action;
+    new_action.sa_handler = sigill_handler;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    sigaction(SIGILL, NULL, &old_action);
+    if (old_action.sa_handler != SIG_IGN) {
+	sigaction(SIGILL, &new_action, NULL);
+	if (!sigsetjmp(jit_env, 1)) {
+	    jit_cpu.popcntb = 1;
+	    /* popcntb %r12, %r12 */
+	    __asm__ volatile("mr %%r12, %0;"
+			     "popcntb %%r12, %%r12;"
+			     "mr %0, %%r12;"
+			     : "=r" (r12), "=r" (r12));
+	    sigaction(SIGILL, &old_action, NULL);
+	}
+    }
+#elif defined(__linux__)
+    FILE	*fp;
+    char	*ptr;
+    long	 vers;
+    char	 buf[128];
+
+    if ((fp = fopen("/proc/cpuinfo", "r")) != NULL) {
+	while (fgets(buf, sizeof(buf), fp)) {
+	    if (strncmp(buf, "cpu\t\t: POWER", 12) == 0) {
+		vers = strtol(buf + 12, &ptr, 10);
+		jit_cpu.popcntb = vers > 5;
+		break;
+	    }
+	}
+	fclose(fp);
+    }
+#else
+    /* By default, assume it is not available */
+    jit_cpu.popcntb = 0;
+#endif
 }
 
 void

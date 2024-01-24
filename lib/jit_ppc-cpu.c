@@ -1301,17 +1301,21 @@ _ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _popcntr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    POPCNTB(r0, r1);
+    if (jit_cpu.popcntb) {
+	jit_int32_t		reg;
+	reg = jit_get_reg(jit_class_gpr);
+	POPCNTB(r0, r1);
 #if __WORDSIZE == 32
-    movi(rn(reg), 0x01010101);
+	movi(rn(reg), 0x01010101);
 #else
-    movi(rn(reg), 0x0101010101010101);
+	movi(rn(reg), 0x0101010101010101);
 #endif
-    mullr(r0, r0, rn(reg));
-    rshi_u(r0, r0, __WORDSIZE - 8);
-    jit_unget_reg(reg);
+	mullr(r0, r0, rn(reg));
+	rshi_u(r0, r0, __WORDSIZE - 8);
+	jit_unget_reg(reg);
+    }
+    else
+	fallback_popcnt(r0, r1);
 }
 
 static void
