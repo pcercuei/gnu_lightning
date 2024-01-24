@@ -1322,23 +1322,21 @@ _emit_code(jit_state_t *_jit)
 		break
 #define case_rrx(name, type)						\
 	    case jit_code_##name##i##type:				\
-		generic_##name##i##type(rn(node->u.w),			\
-					rn(node->v.w), node->w.w);	\
+		name##i##type(rn(node->u.w), rn(node->v.w), node->w.w);	\
 	       break
 #define case_rrX(name, type)						\
 	    case jit_code_##name##r##type:				\
-		generic_##name##r##type(rn(node->u.w),			\
-					rn(node->v.w), rn(node->w.w));	\
+		name##r##type(rn(node->u.w),				\
+			      rn(node->v.w), rn(node->w.w));		\
 		break
 #define case_xrr(name, type)						\
 		case jit_code_##name##i##type:				\
-		generic_##name##i##type(node->u.w, rn(node->v.w),	\
-					rn(node->w.w));			\
+		name##i##type(node->u.w, rn(node->v.w), rn(node->w.w));	\
 		break
 #define case_Xrr(name, type)						\
 	    case jit_code_##name##r##type:				\
-		generic_##name##r##type(rn(node->u.w), rn(node->v.w),	\
-					rn(node->w.w));			\
+		name##r##type(rn(node->u.w), rn(node->v.w),		\
+			      rn(node->w.w));				\
 		break
 #define case_rrrr(name, type)						\
 	    case jit_code_##name##r##type:				\
