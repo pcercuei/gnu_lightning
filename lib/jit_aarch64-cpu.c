@@ -323,7 +323,7 @@ typedef union {
 #  define A64_LDRSWI			0xb9800000
 #  define A64_STRB			0x38206800
 #  define A64_LDRB			0x38606800
-#  define A64_LDRSB			0x38e06800
+#  define A64_LDRSB			0x38a06800
 #  define A64_STR			0xf8206800
 #  define A64_LDR			0xf8606800
 #  define A64_LDAXR			0xc85ffc00
@@ -677,8 +677,7 @@ static void _ldi_ui(jit_state_t*,jit_int32_t,jit_word_t);
 static void _ldr_l(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define ldi_l(r0,i0)			_ldi_l(_jit,r0,i0)
 static void _ldi_l(jit_state_t*,jit_int32_t,jit_word_t);
-#  define ldxr_c(r0,r1,r2)		_ldxr_c(_jit,r0,r1,r2)
-static void _ldxr_c(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define ldxr_c(r0,r1,r2)		LDRSB(r0, r1, r2)
 #  define ldxi_c(r0,r1,i0)		_ldxi_c(_jit,r0,r1,i0)
 static void _ldxi_c(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ldxr_uc(r0,r1,r2)		LDRB(r0, r1, r2)
@@ -1936,13 +1935,6 @@ _ldi_l(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
-_ldxr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
-{
-    LDRSB(r0, r1, r2);
-    extr_c(r0, r0);
-}
-
-static void
 _ldxi_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -1956,7 +1948,6 @@ _ldxi_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	LDRSB(r0, r1, rn(reg));
 	jit_unget_reg(reg);
     }
-    extr_c(r0, r0);
 }
 
 static void
