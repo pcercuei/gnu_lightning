@@ -658,22 +658,19 @@ static void _xori(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ldr_c(r0,r1)			LDRSBI(r0,r1,0)
 #  define ldi_c(r0,i0)			_ldi_c(_jit,r0,i0)
 static void _ldi_c(jit_state_t*,jit_int32_t,jit_word_t);
-#  define ldr_uc(r0,r1)			_ldr_uc(_jit,r0,r1)
-static void _ldr_uc(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define ldr_uc(r0,r1)			LDRBI(r0, r1, 0)
 #  define ldi_uc(r0,i0)			_ldi_uc(_jit,r0,i0)
 static void _ldi_uc(jit_state_t*,jit_int32_t,jit_word_t);
 #  define ldr_s(r0,r1)			LDRSHI(r0,r1,0)
 #  define ldi_s(r0,i0)			_ldi_s(_jit,r0,i0)
 static void _ldi_s(jit_state_t*,jit_int32_t,jit_word_t);
-#  define ldr_us(r0,r1)			_ldr_us(_jit,r0,r1)
-static void _ldr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define ldr_us(r0,r1)			LDRHI(r0, r1, 0)
 #  define ldi_us(r0,i0)			_ldi_us(_jit,r0,i0)
 static void _ldi_us(jit_state_t*,jit_int32_t,jit_word_t);
 #  define ldr_i(r0,r1)			LDRSWI(r0,r1,0)
 #  define ldi_i(r0,i0)			_ldi_i(_jit,r0,i0)
 static void _ldi_i(jit_state_t*,jit_int32_t,jit_word_t);
-#  define ldr_ui(r0,r1)			_ldr_ui(_jit,r0,r1)
-static void _ldr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define ldr_ui(r0,r1)			LDRWI(r0, r1, 0)
 #  define ldi_ui(r0,i0)			_ldi_ui(_jit,r0,i0)
 static void _ldi_ui(jit_state_t*,jit_int32_t,jit_word_t);
 #  define ldr_l(r0,r1)			LDRI(r0,r1,0)
@@ -684,22 +681,19 @@ static void _ldi_l(jit_state_t*,jit_int32_t,jit_word_t);
 static void _ldxr_c(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define ldxi_c(r0,r1,i0)		_ldxi_c(_jit,r0,r1,i0)
 static void _ldxi_c(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  define ldxr_uc(r0,r1,r2)		_ldxr_uc(_jit,r0,r1,r2)
-static void _ldxr_uc(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define ldxr_uc(r0,r1,r2)		LDRB(r0, r1, r2)
 #  define ldxi_uc(r0,r1,i0)		_ldxi_uc(_jit,r0,r1,i0)
 static void _ldxi_uc(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ldxr_s(r0,r1,r2)		LDRSH(r0,r1,r2)
 #  define ldxi_s(r0,r1,i0)		_ldxi_s(_jit,r0,r1,i0)
 static void _ldxi_s(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  define ldxr_us(r0,r1,r2)		_ldxr_us(_jit,r0,r1,r2)
-static void _ldxr_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define ldxr_us(r0,r1,r2)		LDRH(r0, r1, r2)
 #  define ldxi_us(r0,r1,i0)		_ldxi_us(_jit,r0,r1,i0)
 static void _ldxi_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ldxr_i(r0,r1,r2)		LDRSW(r0,r1,r2)
 #  define ldxi_i(r0,r1,i0)		_ldxi_i(_jit,r0,r1,i0)
 static void _ldxi_i(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  define ldxr_ui(r0,r1,r2)		_ldxr_ui(_jit,r0,r1,r2)
-static void _ldxr_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define ldxr_ui(r0,r1,r2)		LDRW(r0, r1, r2)
 #  define ldxi_ui(r0,r1,i0)		_ldxi_ui(_jit,r0,r1,i0)
 static void _ldxi_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define ldxr_l(r0,r1,r2)		LDR(r0,r1,r2)
@@ -1882,15 +1876,6 @@ _ldi_c(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
-_ldr_uc(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    LDRBI(r0, r1, 0);
-#if 0
-    extr_uc(r0, r0);
-#endif
-}
-
-static void
 _ldi_uc(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -1911,15 +1896,6 @@ _ldi_s(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
-_ldr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    LDRHI(r0, r1, 0);
-#if 0
-    extr_us(r0, r0);
-#endif
-}
-
-static void
 _ldi_us(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -1937,15 +1913,6 @@ _ldi_i(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     movi(rn(reg), i0);
     ldr_i(r0, rn(reg));
     jit_unget_reg(reg);
-}
-
-static void
-_ldr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    LDRWI(r0, r1, 0);
-#if 0
-    extr_ui(r0, r0);
-#endif
 }
 
 static void
@@ -1993,15 +1960,6 @@ _ldxi_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
-_ldxr_uc(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
-{
-    LDRB(r0, r1, r2);
-#if 0
-    extr_uc(r0, r0);
-#endif
-}
-
-static void
 _ldxi_uc(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -2015,9 +1973,6 @@ _ldxi_uc(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	ldr_uc(r0, rn(reg));
 	jit_unget_reg(reg);
     }
-#if 0
-    extr_uc(r0, r0);
-#endif
 }
 
 static void
@@ -2037,15 +1992,6 @@ _ldxi_s(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
-_ldxr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
-{
-    LDRH(r0, r1, r2);
-#if 0
-    extr_us(r0, r0);
-#endif
-}
-
-static void
 _ldxi_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -2059,9 +2005,6 @@ _ldxi_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	LDRH(r0, r1, rn(reg));
 	jit_unget_reg(reg);
     }
-#if 0
-    extr_us(r0, r0);
-#endif
 }
 
 static void
@@ -2081,15 +2024,6 @@ _ldxi_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
-_ldxr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
-{
-    LDRW(r0, r1, r2);
-#if 0
-    extr_ui(r0, r0);
-#endif
-}
-
-static void
 _ldxi_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -2103,9 +2037,6 @@ _ldxi_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 	LDRW(r0, r1, rn(reg));
 	jit_unget_reg(reg);
     }
-#if 0
-    extr_ui(r0, r0);
-#endif
 }
 
 static void
