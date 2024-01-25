@@ -140,6 +140,12 @@ static void _ldi_f(jit_state_t*,jit_int32_t,jit_word_t);
 static void _ldxr_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define ldxi_f(r0,r1,i0)		_ldxi_f(_jit,r0,r1,i0)
 static void _ldxi_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbr_f(r0,r1,r2)		generic_ldxbr_f(r0,r1,r2)
+#  define ldxbi_f(r0,r1,i0)		_ldxbi_f(_jit,r0,r1,i0)
+static void _ldxbi_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxar_f(r0,r1,r2)		generic_ldxar_f(r0,r1,r2)
+#  define ldxai_f(r0,r1,i0)		_ldxai_f(_jit,r0,r1,i0)
+static void _ldxai_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define unldr_x(r0, r1, i0)		generic_unldr_x(r0, r1, i0)
 #  define unldi_x(r0, i0, i1)		generic_unldi_x(r0, i0, i1)
 #  define str_f(r0,r1)			_str_f(_jit,r0,r1)
@@ -150,6 +156,12 @@ static void _sti_f(jit_state_t*,jit_word_t,jit_int32_t);
 static void _stxr_f(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define stxi_f(i0,r0,r1)		_stxi_f(_jit,i0,r0,r1)
 static void _stxi_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxbr_f(r0,r1,r2)		generic_stxbr_f(r0,r1,r2)
+#  define stxbi_f(i0,r0,r1)		_stxbi_f(_jit,i0,r0,r1)
+static void _stxbi_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxar_f(r0,r1,r2)		generic_stxar_f(r0,r1,r2)
+#  define stxai_f(i0,r0,r1)		_stxai_f(_jit,i0,r0,r1)
+static void _stxai_f(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define unstr_x(r0, r1, i0)		generic_unstr_x(r0, r1, i0)
 #  define unsti_x(i0, r0, i1)		generic_unsti_x(i0, r0, i1)
 #  define movr_f(r0,r1)			_movr_f(_jit,r0,r1)
@@ -267,6 +279,12 @@ static void _ldi_d(jit_state_t*,jit_int32_t,jit_word_t);
 static void _ldxr_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define ldxi_d(r0,r1,i0)		_ldxi_d(_jit,r0,r1,i0)
 static void _ldxi_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxbr_d(r0,r1,r2)		generic_ldxbr_d(r0,r1,r2)
+#  define ldxbi_d(r0,r1,i0)		_ldxbi_d(_jit,r0,r1,i0)
+static void _ldxbi_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define ldxar_d(r0,r1,r2)		generic_ldxar_d(r0,r1,r2)
+#  define ldxai_d(r0,r1,i0)		_ldxai_d(_jit,r0,r1,i0)
+static void _ldxai_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define str_d(r0,r1)			_str_d(_jit,r0,r1)
 static void _str_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define sti_d(i0,r0)			_sti_d(_jit,i0,r0)
@@ -275,6 +293,12 @@ static void _sti_d(jit_state_t*,jit_word_t,jit_int32_t);
 static void _stxr_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define stxi_d(i0,r0,r1)		_stxi_d(_jit,i0,r0,r1)
 static void _stxi_d(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxbr_d(r0,r1,r2)		generic_stxbr_d(r0,r1,r2)
+#  define stxbi_d(i0,r0,r1)		_stxbi_d(_jit,i0,r0,r1)
+static void _stxbi_d(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
+#  define stxar_d(r0,r1,r2)		generic_stxar_d(r0,r1,r2)
+#  define stxai_d(i0,r0,r1)		_stxai_d(_jit,i0,r0,r1)
+static void _stxai_d(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define movr_d(r0,r1)			_movr_d(_jit,r0,r1)
 static void _movr_d(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi_d(r0,i0)			_movi_d(_jit,r0,i0)
@@ -570,6 +594,26 @@ _ldxi_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_ldxbi_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    ldxbi_i(rn(reg), r1, i0);
+    FMOVSW(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_ldxai_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    ldxai_i(rn(reg), r1, i0);
+    FMOVSW(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
 _str_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
@@ -606,6 +650,26 @@ _stxi_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     reg = jit_get_reg(jit_class_gpr);
     FMOVWS(rn(reg), r1);
     stxi_i(i0, r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_stxbi_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    FMOVWS(rn(reg), r1);
+    stxbi_i(i0, r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_stxai_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    FMOVWS(rn(reg), r1);
+    stxai_i(i0, r0, rn(reg));
     jit_unget_reg(reg);
 }
 
@@ -797,6 +861,26 @@ _ldxi_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_ldxbi_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    ldxbi_l(rn(reg), r1, i0);
+    FMOVDX(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_ldxai_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    ldxai_l(rn(reg), r1, i0);
+    FMOVDX(r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
 _str_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
@@ -833,6 +917,26 @@ _stxi_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     reg = jit_get_reg(jit_class_gpr);
     FMOVXD(rn(reg), r1);
     stxi_l(i0, r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_stxbi_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    FMOVXD(rn(reg), r1);
+    stxbi_l(i0, r0, rn(reg));
+    jit_unget_reg(reg);
+}
+
+static void
+_stxai_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    reg = jit_get_reg(jit_class_gpr);
+    FMOVXD(rn(reg), r1);
+    stxai_l(i0, r0, rn(reg));
     jit_unget_reg(reg);
 }
 

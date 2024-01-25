@@ -531,65 +531,65 @@
     4,	/* hmulr_u */
     16,	/* hmuli_u */
     8,	/* ldxbr_c */
-    8,	/* ldxbi_c */
+    4,	/* ldxbi_c */
     8,	/* ldxar_c */
-    8,	/* ldxai_c */
+    4,	/* ldxai_c */
     8,	/* ldxbr_uc */
-    8,	/* ldxbi_uc */
+    4,	/* ldxbi_uc */
     8,	/* ldxar_uc */
-    8,	/* ldxai_uc */
+    4,	/* ldxai_uc */
     8,	/* ldxbr_s */
-    8,	/* ldxbi_s */
+    4,	/* ldxbi_s */
     8,	/* ldxar_s */
-    8,	/* ldxai_s */
+    4,	/* ldxai_s */
     8,	/* ldxbr_us */
-    8,	/* ldxbi_us */
+    4,	/* ldxbi_us */
     8,	/* ldxar_us */
-    8,	/* ldxai_us */
+    4,	/* ldxai_us */
     8,	/* ldxbr_i */
-    8,	/* ldxbi_i */
+    4,	/* ldxbi_i */
     8,	/* ldxar_i */
-    8,	/* ldxai_i */
+    4,	/* ldxai_i */
     8,	/* ldxbr_ui */
-    8,	/* ldxbi_ui */
+    4,	/* ldxbi_ui */
     8,	/* ldxar_ui */
-    8,	/* ldxai_ui */
+    4,	/* ldxai_ui */
     8,	/* ldxbr_l */
-    8,	/* ldxbi_l */
+    4,	/* ldxbi_l */
     8,	/* ldxar_l */
-    8,	/* ldxai_l */
+    4,	/* ldxai_l */
     12, /* ldxbr_f */
-    12, /* ldxbi_f */
+    8,	/* ldxbi_f */
     12, /* ldxar_f */
-    12, /* ldxai_f */
+    8,	/* ldxai_f */
     12, /* ldxbr_d */
-    12, /* ldxbi_d */
+    8,	/* ldxbi_d */
     12, /* ldxar_d */
-    12, /* ldxai_d */
+    8,	/* ldxai_d */
     8,	/* stxbr_c */
-    8,	/* stxbi_c */
+    4,	/* stxbi_c */
     8,	/* stxar_c */
-    8,	/* stxai_c */
+    4,	/* stxai_c */
     8,	/* stxbr_s */
-    8,	/* stxbi_s */
+    4,	/* stxbi_s */
     8,	/* stxar_s */
-    8,	/* stxai_s */
+    4,	/* stxai_s */
     8,	/* stxbr_i */
-    8,	/* stxbi_i */
+    4,	/* stxbi_i */
     8,	/* stxar_i */
-    8,	/* stxai_i */
+    4,	/* stxai_i */
     8,	/* stxbr_l */
-    8,	/* stxbi_l */
+    4,	/* stxbi_l */
     8,	/* stxar_l */
-    8,	/* stxai_l */
+    4,	/* stxai_l */
     12, /* stxbr_f */
-    12, /* stxbi_f */
+    8,	/* stxbi_f */
     12, /* stxar_f */
-    12, /* stxai_f */
+    8,	/* stxai_f */
     12, /* stxbr_d */
-    12, /* stxbi_d */
+    8,	/* stxbi_d */
     12, /* stxar_d */
-    12, /* stxai_d */
+    8,	/* stxai_d */
 #  else	/* PACKED_STACK */
 
 #define JIT_INSTR_MAX 120
@@ -1122,64 +1122,64 @@
     4,	/* hmulr_u */
     16,	/* hmuli_u */
     8,	/* ldxbr_c */
-    8,	/* ldxbi_c */
+    4,	/* ldxbi_c */
     8,	/* ldxar_c */
-    8,	/* ldxai_c */
+    4,	/* ldxai_c */
     8,	/* ldxbr_uc */
-    8,	/* ldxbi_uc */
+    4,	/* ldxbi_uc */
     8,	/* ldxar_uc */
-    8,	/* ldxai_uc */
+    4,	/* ldxai_uc */
     8,	/* ldxbr_s */
-    8,	/* ldxbi_s */
+    4,	/* ldxbi_s */
     8,	/* ldxar_s */
-    8,	/* ldxai_s */
+    4,	/* ldxai_s */
     8,	/* ldxbr_us */
-    8,	/* ldxbi_us */
+    4,	/* ldxbi_us */
     8,	/* ldxar_us */
-    8,	/* ldxai_us */
+    4,	/* ldxai_us */
     8,	/* ldxbr_i */
-    8,	/* ldxbi_i */
+    4,	/* ldxbi_i */
     8,	/* ldxar_i */
-    8,	/* ldxai_i */
+    4,	/* ldxai_i */
     8,	/* ldxbr_ui */
-    8,	/* ldxbi_ui */
+    4,	/* ldxbi_ui */
     8,	/* ldxar_ui */
-    8,	/* ldxai_ui */
+    4,	/* ldxai_ui */
     8,	/* ldxbr_l */
-    8,	/* ldxbi_l */
+    4,	/* ldxbi_l */
     8,	/* ldxar_l */
-    8,	/* ldxai_l */
+    4,	/* ldxai_l */
     12, /* ldxbr_f */
-    12, /* ldxbi_f */
+    8,	/* ldxbi_f */
     12, /* ldxar_f */
-    12, /* ldxai_f */
+    8,	/* ldxai_f */
     12, /* ldxbr_d */
-    12, /* ldxbi_d */
+    8,	/* ldxbi_d */
     12, /* ldxar_d */
-    12, /* ldxai_d */
+    8,	/* ldxai_d */
     8,	/* stxbr_c */
-    8,	/* stxbi_c */
+    4,	/* stxbi_c */
     8,	/* stxar_c */
-    8,	/* stxai_c */
+    4,	/* stxai_c */
     8,	/* stxbr_s */
-    8,	/* stxbi_s */
+    4,	/* stxbi_s */
     8,	/* stxar_s */
-    8,	/* stxai_s */
+    4,	/* stxai_s */
     8,	/* stxbr_i */
-    8,	/* stxbi_i */
+    4,	/* stxbi_i */
     8,	/* stxar_i */
-    8,	/* stxai_i */
+    4,	/* stxai_i */
     8,	/* stxbr_l */
-    8,	/* stxbi_l */
+    4,	/* stxbi_l */
     8,	/* stxar_l */
-    8,	/* stxai_l */
+    4,	/* stxai_l */
     12, /* stxbr_f */
-    12, /* stxbi_f */
+    8,	/* stxbi_f */
     12, /* stxar_f */
-    12, /* stxai_f */
+    8,	/* stxai_f */
     12, /* stxbr_d */
-    12, /* stxbi_d */
+    8,	/* stxbi_d */
     12, /* stxar_d */
-    12, /* stxai_d */
+    8,	/* stxai_d */
 #  endif
 #endif /* __WORDSIZE */
