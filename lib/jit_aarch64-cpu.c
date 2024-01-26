@@ -211,6 +211,7 @@ typedef union {
 #  undef ui
 } instr_t;
 #  define s9_p(d)			((d) >= -256 && (d) <= 255)
+#  define u12_p(d)			((d) >= 0 && (d) <= 4095)
 #  define s26_p(d)			((d) >= -33554432 && (d) <= 33554431)
 #  define ii(i)				*_jit->pc.ui++ = i
 #  define ldr(r0,r1)			ldr_l(r0,r1)
