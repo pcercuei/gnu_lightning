@@ -18,7 +18,7 @@ AM_CFLAGS = -I$(top_builddir)/include -I$(top_srcdir)/include \
 	-D_GNU_SOURCE $(LIGHTNING_CFLAGS)
 
 check_PROGRAMS = lightning ccall self setcode nodata ctramp carg cva_list \
-	catomic protect riprel cbit callee
+	catomic protect riprel cbit callee cldstxba
 
 lightning_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 lightning_SOURCES = lightning.c
@@ -66,6 +66,9 @@ cbit_SOURCES = cbit.c
 
 callee_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 callee_SOURCES = callee.c
+
+cldstxba_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
+cldstxba_SOURCES = cldstxba.c
 
 noinst_PROGRAMS = gen_cbit
 gen_cbit_SOURCES = gen_cbit.c
