@@ -2481,7 +2481,7 @@ _emit_code(jit_state_t *_jit)
 	     * FIXME can this cause issues in the preprocessor prefetch
 	     * or something else? should not, as the constants are after
 	     * an unconditional jump */
-	    if (value & ARM_P)	value =   value & 0x00000fff;
+	    if (value & ARM_U)	value =   value & 0x00000fff;
 	    else		value = -(value & 0x00000fff);
 	    word = word + 8 + value;
  	}
