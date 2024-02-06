@@ -531,23 +531,23 @@
     4,	/* hmulr_u */
     8,	/* hmuli_u */
     8,	/* ldxbr_c */
-    8,	/* ldxbi_c */
+    4,	/* ldxbi_c */
     8,	/* ldxar_c */
     8,	/* ldxai_c */
     8,	/* ldxbr_uc */
-    8,	/* ldxbi_uc */
+    4,	/* ldxbi_uc */
     8,	/* ldxar_uc */
     8,	/* ldxai_uc */
     8,	/* ldxbr_s */
-    8,	/* ldxbi_s */
+    4,	/* ldxbi_s */
     8,	/* ldxar_s */
     8,	/* ldxai_s */
     8,	/* ldxbr_us */
-    8,	/* ldxbi_us */
+    4,	/* ldxbi_us */
     8,	/* ldxar_us */
     8,	/* ldxai_us */
     8,	/* ldxbr_i */
-    8,	/* ldxbi_i */
+    4,	/* ldxbi_i */
     8,	/* ldxar_i */
     8,	/* ldxai_i */
     0,	/* ldxbr_ui */
@@ -567,15 +567,15 @@
     20, /* ldxar_d */
     20, /* ldxai_d */
     8,	/* stxbr_c */
-    8,	/* stxbi_c */
+    4,	/* stxbi_c */
     8,	/* stxar_c */
     8,	/* stxai_c */
     8,	/* stxbr_s */
-    8,	/* stxbi_s */
+    4,	/* stxbi_s */
     8,	/* stxar_s */
     8,	/* stxai_s */
     8,	/* stxbr_i */
-    8,	/* stxbi_i */
+    4,	/* stxbi_i */
     8,	/* stxar_i */
     8,	/* stxai_i */
     0,	/* stxbr_l */
@@ -1125,23 +1125,23 @@
     4,	/* hmulr_u */
     8,	/* hmuli_u */
     8,	/* ldxbr_c */
-    8,	/* ldxbi_c */
+    4,	/* ldxbi_c */
     8,	/* ldxar_c */
     8,	/* ldxai_c */
     8,	/* ldxbr_uc */
-    8,	/* ldxbi_uc */
+    4,	/* ldxbi_uc */
     8,	/* ldxar_uc */
     8,	/* ldxai_uc */
     8,	/* ldxbr_s */
-    8,	/* ldxbi_s */
+    4,	/* ldxbi_s */
     8,	/* ldxar_s */
     8,	/* ldxai_s */
     8,	/* ldxbr_us */
-    8,	/* ldxbi_us */
+    4,	/* ldxbi_us */
     8,	/* ldxar_us */
     8,	/* ldxai_us */
     8,	/* ldxbr_i */
-    8,	/* ldxbi_i */
+    4,	/* ldxbi_i */
     8,	/* ldxar_i */
     8,	/* ldxai_i */
     0,	/* ldxbr_ui */
@@ -1161,15 +1161,15 @@
     8,	/* ldxar_d */
     8,	/* ldxai_d */
     8,	/* stxbr_c */
-    8,	/* stxbi_c */
+    4,	/* stxbi_c */
     8,	/* stxar_c */
     8,	/* stxai_c */
     8,	/* stxbr_s */
-    8,	/* stxbi_s */
+    4,	/* stxbi_s */
     8,	/* stxar_s */
     8,	/* stxai_s */
     8,	/* stxbr_i */
-    8,	/* stxbi_i */
+    4,	/* stxbi_i */
     8,	/* stxar_i */
     8,	/* stxai_i */
     0,	/* stxbr_l */
