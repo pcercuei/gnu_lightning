@@ -127,9 +127,11 @@ typedef struct {
      * of that function if generating jit for a relative jump.
      */
     /* Apparently a qemu 8.1.3 and possibly others bug, that treat
-     * ldrT Rt, [Rn, #+-<immN>]! and ldrT Rt, [Rn, #+/-<immN>
+     * ldrT Rt, [Rn, #+-<immN>]! and ldrT Rt, [Rn], #+/-<immN>
      * identically, as a pre-index but the second one should adjust
-     * Rn after the load */
+     * Rn after the load.
+     * The syntax for only offseting is ldrT Rt{, [Rn, #+/-<immN>}]
+     */
     jit_uint32_t post_index	: 1;
     jit_uint32_t exchange	: 1;
     /* By default assume cannot load unaligned data.
