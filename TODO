@@ -1,3 +1,2 @@
 o Use PC relative load/store in aarch64
 o Check post-index in real arm hardware
-o Implement valid encodings for vfp pre/post index in arm hardware

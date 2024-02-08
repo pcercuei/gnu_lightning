@@ -8,10 +8,11 @@
 int
 main(int argc, char *argv[])
 {
-#if defined(__x86_64__) || defined(__i386__)
     jit_state_t		*_jit;
     jit_node_t		*jmp, *fail;
     void		(*code)(void);
+#if defined(__x86_64__) || defined(__i386__)
+    /* test lodsb stosb special cases */
     struct data_t {
 	signed char	sc;
 	unsigned char	uc;
@@ -127,6 +128,76 @@ main(int argc, char *argv[])
     jmp = jit_bnei(_RDI, -8);
     jit_patch_at(jmp, fail);
 #  endif
+
+    jmp = jit_jmpi();
+    jit_link(fail);
+    jit_calli(abort);
+    jit_patch(jmp);
+    jit_prepare();
+    {
+	jit_pushargi((jit_word_t)"ok");
+    }
+    jit_finishi(puts);
+    jit_ret();
+    jit_epilog();
+    code = jit_emit();
+    jit_clear_state();
+
+    (*code)();
+
+    jit_destroy_state();
+    finish_jit();
+
+#elif defined(__arm__)
+    /* make sure to test ldmia and stmia cases */
+    struct data_t {
+	float		f1;
+	float		f2;
+	double		d3;
+	double		d4;
+    } data;
+
+    init_jit(argv[0]);
+    _jit = jit_new_state();
+    jit_prolog();
+    fail = jit_forward();
+
+#define F1_VAL		1
+    jit_movi(JIT_R0, (jit_word_t)&data + offsetof(struct data_t, f1));
+    jit_movi_f(JIT_F0, F1_VAL);
+    jit_movr(JIT_R1, JIT_R0);
+    jit_stxai_f(4, JIT_R0, JIT_F0);
+    jit_subr(JIT_R1, JIT_R0, JIT_R1);
+    jmp = jit_bnei(JIT_R1, 4);
+    jit_patch_at(jmp, fail);
+    data.f2 = 2;
+#define D3_VAL		3
+    jit_movi(JIT_R0, (jit_word_t)&data + offsetof(struct data_t, d3));
+    jit_movi_d(JIT_F0, D3_VAL);
+    jit_movr(JIT_R1, JIT_R0);
+    jit_stxai_d(8, JIT_R0, JIT_F0);
+    jit_subr(JIT_R1, JIT_R0, JIT_R1);
+    jmp = jit_bnei(JIT_R1, 8);
+    jit_patch_at(jmp, fail);
+    data.d4 = 4;
+
+    jit_movi(JIT_R0, (jit_word_t)&data + offsetof(struct data_t, f1));
+    jit_movr(JIT_R1, JIT_R0);
+    jit_ldxai_f(JIT_F0, JIT_R0, 4);
+    jmp = jit_bnei_f(JIT_F0, F1_VAL);
+    jit_patch_at(jmp, fail);
+    jit_subr(JIT_R1, JIT_R0, JIT_R1);
+    jmp = jit_bnei(JIT_R1, 4);
+    jit_patch_at(jmp, fail);
+
+    jit_movi(JIT_R0, (jit_word_t)&data + offsetof(struct data_t, d3));
+    jit_movr(JIT_R1, JIT_R0);
+    jit_ldxai_d(JIT_F0, JIT_R0, 8);
+    jmp = jit_bnei_d(JIT_F0, D3_VAL);
+    jit_patch_at(jmp, fail);
+    jit_subr(JIT_R1, JIT_R0, JIT_R1);
+    jmp = jit_bnei(JIT_R1, 8);
+    jit_patch_at(jmp, fail);
 
     jmp = jit_jmpi();
     jit_link(fail);
