@@ -71,6 +71,7 @@ cldstxba_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)
 cldstxba_SOURCES = cldstxba.c
 
 noinst_PROGRAMS = gen_cbit
+gen_cgit_LDADD =
 gen_cbit_SOURCES = gen_cbit.c
 
 cbit.c:		gen_cbit
