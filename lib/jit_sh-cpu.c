@@ -318,8 +318,7 @@ static void _qdivr_u(jit_state_t*,jit_uint16_t,jit_uint16_t,
 #    define qdivr_u(r0,r1,r2,r3)	_qdivr_u(_jit,r0,r1,r2,r3)
 static void _divi(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #    define divi(r0,r1,i0)		_divi(_jit,r0,r1,i0)
-static void _divi_u(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
-#    define divi_u(r0,r1,i0)		_divi_u(_jit,r0,r1,i0)
+#    define divi_u(r0,r1,i0)		fallback_divi_u(r0,r1,i0)
 static void _qdivi(jit_state_t*,jit_uint16_t,jit_uint16_t,
 		   jit_uint16_t,jit_word_t);
 #    define qdivi(r0,r1,r2,i0)		_qdivi(_jit,r0,r1,r2,i0)
@@ -1299,17 +1298,6 @@ _divi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 
 	movi(rn(reg), i0);
 	divr(r0, r1, rn(reg));
-
-	jit_unget_reg(reg);
-}
-
-static void
-_divi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
-{
-	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
-
-	movi(rn(reg), i0);
-	divr_u(r0, r1, rn(reg));
 
 	jit_unget_reg(reg);
 }
