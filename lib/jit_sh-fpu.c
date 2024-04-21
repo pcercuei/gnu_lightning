@@ -418,6 +418,7 @@ _stxbi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #if CODE
 static inline void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	jit_uint16_t reg;
 
 	if (_jitc->mode_d ^ is_double) {
@@ -434,6 +435,7 @@ static inline void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 
 		jit_unget_reg(reg);
 	}
+#endif
 }
 
 static void _extr_f(jit_state_t *_jit, jit_int16_t r0,
@@ -464,7 +466,9 @@ static void _movr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
 	if (r0 != r1) {
 		FMOV(r0, r1);
+#ifndef __SH4_SINGLE_ONLY__
 		FMOV(r0 + 1, r1 + 1);
+#endif
 	}
 }
 
@@ -496,6 +500,7 @@ static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 
 static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	union fl64 {
 		struct {
 			jit_uint32_t hi;
@@ -512,6 +517,9 @@ static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 	movi(_R0, ((union fl64)i0).lo);
 	LDS(_R0);
 	FSTS(r0);
+#else
+	movi_f(r0, (jit_float32_t)i0);
+#endif
 }
 
 static void _ltr_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1,
@@ -1405,25 +1413,37 @@ static void _negr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 
 static void _extr_d_f(jit_state_t *_jit,jit_uint16_t r0, jit_uint16_t r1)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	set_fmode(_jit, 1);
 	FCNVDS(r1);
 	set_fmode(_jit, 0);
 	FSTS(r0);
+#else
+	movr_f(r0, r1);
+#endif
 }
 
 static void _extr_f_d(jit_state_t *_jit,jit_uint16_t r0, jit_uint16_t r1)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	set_fmode(_jit, 0);
 	FLDS(r1);
 	set_fmode(_jit, 1);
 	FCNVSD(r0);
+#else
+	movr_f(r0, r1);
+#endif
 }
 
 static void _ldr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	movr(_R0, r1);
 	LDFS(r0 + 1, _R0);
 	LDF(r0, _R0);
+#else
+	ldr_f(r0, r1);
+#endif
 }
 
 static void _ldi_f(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
@@ -1448,8 +1468,12 @@ static void _ldxr_f(jit_state_t *_jit, jit_uint16_t r0,
 static void _ldxr_d(jit_state_t *_jit, jit_uint16_t r0,
 		    jit_uint16_t r1, jit_uint16_t r2)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	addr(_R0, r1, r2);
 	ldr_d(r0, _R0);
+#else
+	ldxr_f(r0, r1, r2);
+#endif
 }
 
 static void _ldxi_f(jit_state_t *_jit, jit_uint16_t r0,
@@ -1468,9 +1492,13 @@ static void _ldxi_d(jit_state_t *_jit, jit_uint16_t r0,
 
 static void _str_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	STF(r0, r1 + 1);
 	movi(_R0, 4);
 	STXF(r0, r1);
+#else
+	str_f(r0, r1);
+#endif
 }
 
 static void _sti_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
@@ -1481,9 +1509,13 @@ static void _sti_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
 
 static void _sti_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	movi(_R0, i0 + 8);
 	STFS(_R0, r0);
 	STFS(_R0, r0 + 1);
+#else
+	sti_f(i0, r0);
+#endif
 }
 
 static void _stxr_f(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
@@ -1496,10 +1528,14 @@ static void _stxr_f(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 static void _stxr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 		    jit_uint16_t r2)
 {
+#ifndef __SH4_SINGLE_ONLY__
 	movr(_R0, r0);
 	STXF(r1, r2 + 1);
 	addr(_R0, _R0, 4);
 	STXF(r1, r2);
+#else
+	stxr_f(r0, r1, r2);
+#endif
 }
 
 static void _stxi_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
@@ -2090,12 +2126,16 @@ _ldxai_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_word_t i0)
 static jit_word_t
 _ldxai_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_word_t i0)
 {
+#ifndef __SH4_SINGLE_ONLY__
     if (i0 == 8) {
         LDFS(r0 + 1, r1);
         LDFS(r0, r1);
     } else {
         generic_ldxai_d(r0, r1, i0);
     }
+#else
+    ldxai_f(r0, r1, i0);
+#endif
 }
 
 static jit_word_t
@@ -2110,12 +2150,16 @@ _stxbi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_int16_t r1)
 static jit_word_t
 _stxbi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_int16_t r1)
 {
+#ifndef __SH4_SINGLE_ONLY__
     if (i0 == -8) {
         STFS(r0, r1);
         STFS(r0, r1 + 1);
     } else {
         generic_stxbi_d(i0, r0, r1);
     }
+#else
+    stxbi_f(i0, r0, r1);
+#endif
 }
 
 #endif /* CODE */
