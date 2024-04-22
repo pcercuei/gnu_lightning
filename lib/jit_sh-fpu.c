@@ -1531,7 +1531,7 @@ static void _stxr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 #ifndef __SH4_SINGLE_ONLY__
 	movr(_R0, r0);
 	STXF(r1, r2 + 1);
-	addr(_R0, _R0, 4);
+	addi(_R0, _R0, 4);
 	STXF(r1, r2);
 #else
 	stxr_f(r0, r1, r2);
@@ -1541,14 +1541,14 @@ static void _stxr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 static void _stxi_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 		    jit_uint16_t r1)
 {
-	movr(_R0, i0);
+	movi(_R0, i0);
 	stxr_f(_R0, r0, r1);
 }
 
 static void _stxi_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 		    jit_uint16_t r1)
 {
-	movr(_R0, i0);
+	movi(_R0, i0);
 	stxr_d(_R0, r0, r1);
 }
 
