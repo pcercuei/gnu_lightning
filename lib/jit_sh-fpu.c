@@ -59,7 +59,6 @@ static void _gei_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
 #  define gei_f(r0,r1,i0)		_gei_f(_jit,r0,r1,i0)
 static void _gei_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_float64_t);
 #  define gei_d(r0,r1,i0)		_gei_f(_jit,r0,r1,i0)
-static void _gtr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_int16_t);
 #  define gtr_f(r0,r1,r2)		ltr_f(r0,r2,r1)
 #  define gtr_d(r0,r1,r2)		ltr_d(r0,r2,r1)
 static void _gti_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_float32_t);
@@ -562,11 +561,9 @@ static void _ler_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1,
 {
 	set_fmode(_jit, is_double);
 
-	FCMPGT(r2, r1);
-	MOVT(r0);
-	FCMPEQ(r1, r2);
-	MOVT(_R0);
-	orr(r0, _R0, r0);
+	gtr_f(_R0, r1, r2);
+	XORI(1);
+	movr(r0, _R0);
 }
 
 static void
