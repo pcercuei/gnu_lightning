@@ -1512,7 +1512,10 @@ _xorr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_uint16_t r2)
 static void
 _xori(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	if (r0 != r1) {
+	if (r0 == _R0 && !(i0 & ~0xff)) {
+		movr(r0, r1);
+		XORI(i0);
+	} else if (r0 != r1) {
 		movi(r0, i0);
 		XOR(r0, r1);
 	} else {
