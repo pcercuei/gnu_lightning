@@ -18,6 +18,8 @@
  */
 
 #if PROTO
+static void set_fmode(jit_state_t *_jit, jit_bool_t is_double);
+
 static void _extr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_bool_t);
 #  define extr_f(r0,r1)			_extr_f(_jit,r0,r1,0)
 #  define extr_d(r0,r1)			_extr_f(_jit,r0,r1,1)
@@ -406,9 +408,9 @@ _stxbi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #endif /* PROTO */
 
 #if CODE
-static inline void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
+static void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 {
-#ifndef __SH4_SINGLE_ONLY__
+#if !defined(__SH4_SINGLE_ONLY__) && defined(__SH_FPU_ANY__)
 	jit_uint16_t reg;
 
 	if (_jitc->mode_d ^ is_double) {

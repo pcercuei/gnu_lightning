@@ -18,6 +18,13 @@
  */
 
 #if PROTO
+
+#  ifdef __SH_FPU_DOUBLE__
+#    define SH_DEFAULT_FPU_MODE 1
+#  else
+#    define SH_DEFAULT_FPU_MODE 0
+#  endif
+
 struct jit_instr_ni {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	jit_uint16_t i :8;
@@ -2912,11 +2919,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->stack)
 		subi(JIT_SP, JIT_SP, _jitc->function->stack);
 
-#ifdef __SH_FPU_DOUBLE__
-	_jitc->mode_d = 1;
-#else
-	_jitc->mode_d = 0;
-#endif
+	_jitc->mode_d = SH_DEFAULT_FPU_MODE;
 }
 
 static void
@@ -2938,5 +2941,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 
 	RTS();
 	LDLU(JIT_FP, JIT_SP);
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 }
 #endif /* CODE */
