@@ -1079,6 +1079,64 @@ _emit_code(jit_state_t *_jit)
 		casi(rn(node->u.w), node->v.w,
 		     rn(node->w.q.l), rn(node->w.q.h));
 		break;
+	    case jit_code_negi_f:		case jit_code_absi_f:
+	    case jit_code_sqrti_f:		case jit_code_negi_d:
+	    case jit_code_absi_d:		case jit_code_sqrti_d:
+		break;
+	    case jit_code_negi:
+		negi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_comi:
+		comi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_c:
+		exti_c(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_uc:
+		exti_uc(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_s:
+		exti_s(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti_us:
+		exti_us(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_bswapi_us:
+		bswapi_us(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_bswapi_ui:
+		bswapi_ui(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_htoni_us:
+		htoni_us(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_htoni_ui:
+		htoni_ui(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_cloi:
+		cloi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_clzi:
+		clzi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_ctoi:
+		ctoi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_ctzi:
+		ctzi(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_rbiti:
+		rbiti(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_popcnti:
+		popcnti(rn(node->u.w), node->v.w);
+		break;
+	    case jit_code_exti:
+		exti(rn(node->u.w), node->v.w, node->w.q.l, node->w.q.h);
+		break;
+	    case jit_code_exti_u:
+		exti_u(rn(node->u.w), node->v.w, node->w.q.l, node->w.q.h);
+		break;
 	    default:
 		printf("ABORT MISSION (%i)\n", node->code);
 		abort();
