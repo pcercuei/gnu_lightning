@@ -988,7 +988,6 @@ _emit_code(jit_state_t *_jit)
 		_jitc->function = NULL;
 		flush_consts(0);
 		break;
-#if 0
 	    case jit_code_movr_w_f:
 		movr_w_f(rn(node->u.w), rn(node->v.w));
 		break;
@@ -999,16 +998,24 @@ _emit_code(jit_state_t *_jit)
 		assert_data(node);
 		movi_f_w(rn(node->u.w), node->v.f);
 		break;
-	    case jit_code_movr_w_d:
-		movr_w_d(rn(node->u.w), rn(node->v.w));
+	    case jit_code_movi_w_f:
+		movi_w_f(rn(node->u.w), node->v.w);
 		break;
-	    case jit_code_movr_d_w:
-		movr_d_w(rn(node->u.w), rn(node->v.w));
+	    case jit_code_movr_ww_d:
+		movr_ww_d(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		break;
-	    case jit_code_movi_d_w:
+	    case jit_code_movr_d_ww:
+		movr_d_ww(rn(node->u.w), rn(node->v.w), rn(node->w.w));
+		break;
+	    case jit_code_movi_d_ww:
 		assert_data(node);
-		movi_d_w(rn(node->u.w), node->v.d);
+		movi_d_ww(rn(node->u.w), rn(node->v.w),
+			  *(jit_float64_t *)node->w.n->u.w);
 		break;
+	    case jit_code_movi_ww_d:
+		movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
+		break;
+#if 0
 	    case jit_code_va_start:
 		vastart(rn(node->u.w));
 		break;

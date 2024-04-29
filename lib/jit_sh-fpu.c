@@ -171,6 +171,18 @@ static void _divr_d(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_uint16_t);
 #  define divr_d(r0,r1,r2)		_divr_d(_jit,r0,r1,r2)
 static void _divi_d(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_float64_t);
 #  define divi_d(r0,r1,i0)		_divi_d(_jit,r0,r1,i0)
+static void _movr_w_f(jit_state_t*,jit_uint16_t,jit_int16_t);
+#define movr_w_f(r0,r1)			_movr_w_f(_jit,r0,r1)
+static void _movr_f_w(jit_state_t*,jit_uint16_t,jit_int16_t);
+#define movr_f_w(r0,r1)			_movr_f_w(_jit,r0,r1)
+static void _movi_w_f(jit_state_t*,jit_int16_t,jit_word_t);
+# define movi_w_f(r0,i0)		_movi_w_f(_jit,r0,i0)
+static void _movr_ww_d(jit_state_t*,jit_uint16_t,jit_int16_t, jit_int16_t);
+# define movr_ww_d(r0,r1,r2)		_movr_ww_d(_jit,r0,r1,r2)
+static void _movr_d_ww(jit_state_t*,jit_uint16_t,jit_int16_t, jit_int16_t);
+# define movr_d_ww(r0,r1,r2)		_movr_d_ww(_jit,r0,r1,r2)
+static void _movi_ww_d(jit_state_t*,jit_int16_t,jit_word_t, jit_word_t);
+# define movi_ww_d(r0,i0,i1)		_movi_ww_d(_jit,r0,i0,i1)
 static void _absr_f(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #  define absr_f(r0,r1)			_absr_f(_jit,r0,r1)
 static void _absr_d(jit_state_t*,jit_uint16_t,jit_uint16_t);
@@ -2042,6 +2054,45 @@ _stxbi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_int16_t r1)
 #else
     stxbi_f(i0, r0, r1);
 #endif
+}
+
+static void _movr_w_f(jit_state_t *_jit, jit_uint16_t r0, jit_int16_t r1)
+{
+	LDS(r1);
+	FSTS(r0);
+}
+
+static void _movr_f_w(jit_state_t *_jit, jit_uint16_t r0, jit_int16_t r1)
+{
+	FLDS(r1);
+	STSUL(r0);
+}
+
+static void _movi_w_f(jit_state_t *_jit, jit_int16_t r0, jit_word_t i0)
+{
+	movi(_R0, i0);
+	movr_w_f(r0, _R0);
+}
+
+static void _movr_ww_d(jit_state_t *_jit, jit_uint16_t r0, jit_int16_t r1, jit_int16_t r2)
+{
+	/* TODO: single-only */
+	movr_w_f(r0, r1);
+	movr_w_f(r0 + 1, r2);
+}
+
+static void _movr_d_ww(jit_state_t *_jit, jit_uint16_t r0, jit_int16_t r1, jit_int16_t r2)
+{
+	/* TODO: single-only */
+	movr_f_w(r0, r2);
+	movr_f_w(r1, r2 + 1);
+}
+
+static void _movi_ww_d(jit_state_t *_jit, jit_int16_t r0, jit_word_t i0, jit_word_t i1)
+{
+	/* TODO: single-only */
+	movi_w_f(r0 + 1, i1);
+	movi_w_f(r0, i0);
 }
 
 #endif /* CODE */
