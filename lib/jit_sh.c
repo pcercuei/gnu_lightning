@@ -751,10 +751,22 @@ _emit_code(jit_state_t *_jit)
 		case_rw(ld, _f);
 		case_rrr(ldx, _f);
 		case_rrw(ldx, _f);
+	    case jit_code_unldr_x:
+		unldr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unldi_x:
+		unldi_x(rn(node->u.w), node->v.w, node->w.w);
+		break;
 		case_rr(st, _f);
 		case_wr(st, _f);
 		case_rrr(stx, _f);
 		case_wrr(stx, _f);
+	    case jit_code_unstr_x:
+		unstr_x(rn(node->u.w), rn(node->v.w), node->w.w);
+		break;
+	    case jit_code_unsti_x:
+		unsti_x(node->u.w, rn(node->v.w), node->w.w);
+		break;
 		case_rr(mov, _f);
 	    case jit_code_movi_f:
 		assert_data(node);

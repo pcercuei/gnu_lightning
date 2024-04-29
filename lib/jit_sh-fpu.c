@@ -210,6 +210,8 @@ static void _ldxi_f(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #  define ldxi_f(r0,r1,i0)		_ldxi_f(_jit,r0,r1,i0)
 static void _ldxi_d(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #  define ldxi_d(r0,r1,i0)		_ldxi_d(_jit,r0,r1,i0)
+#  define unldr_x(r0,r1,i0)		fallback_unldr_x(r0,r1,i0)
+#  define unldi_x(r0,i0,i1)		fallback_unldi_x(r0,i0,i1)
 #  define str_f(r0,r1)			STF(r0,r1)
 static void _str_d(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #  define str_d(r0,r1)			_str_d(_jit,r0,r1)
@@ -225,6 +227,8 @@ static void _stxi_f(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #  define stxi_f(i0,r0,r1)		_stxi_f(_jit,i0,r0,r1)
 static void _stxi_d(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #  define stxi_d(i0,r0,r1)		_stxi_d(_jit,i0,r0,r1)
+#  define unstr_x(r0,r1,i0)		fallback_unstr_x(r0,r1,i0)
+#  define unsti_x(i0,r0,i1)		fallback_unsti_x(i0,r0,i1)
 static jit_word_t _beqr_f(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t,
 			  jit_bool_t,jit_bool_t,jit_bool_t);
 #  define beqr_f(i0,r0,r1)		beqr_f_p(i0,r0,r1,0)
