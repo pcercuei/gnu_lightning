@@ -496,9 +496,7 @@ static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 		FLDI1(r0);
 		FNEG(r0);
 	} else {
-		movi(_R0, ((union fl32)i0).i);
-		LDS(_R0);
-		FSTS(r0);
+		movi_w_f(r0, ((union fl32)i0).i);
 	}
 }
 
@@ -513,14 +511,8 @@ static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 		jit_float64_t f;
 	};
 
-	set_fmode(_jit, 1);
-
-	movi(_R0, ((union fl64)i0).hi);
-	LDS(_R0);
-	FSTS(r0 + 1);
-	movi(_R0, ((union fl64)i0).lo);
-	LDS(_R0);
-	FSTS(r0);
+	movi_w_f(r0 + 1, ((union fl64)i0).hi);
+	movi_w_f(r0, ((union fl64)i0).lo);
 #else
 	movi_f(r0, (jit_float32_t)i0);
 #endif
@@ -581,12 +573,10 @@ static void _ler_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1,
 	BRA(13 + is_double);
 	XORI(1);
 
-	if (is_double) {
-		LDS(_R0);
-		FSTS(rn(reg));
-	} else {
+	if (is_double)
+		movr_w_f(rn(reg), _R0);
+	else
 		FLDI0(rn(reg));
-	}
 	FCMPGT(rn(reg), r1);
 	MOVT(_R0);
 	FCMPGT(r1, rn(reg));
