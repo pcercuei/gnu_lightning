@@ -2650,6 +2650,7 @@ static jit_word_t _boaddr_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	CLRT();
 	ADDC(r0, r1);
 
 	w = _jit->pc.w;
@@ -2705,6 +2706,7 @@ static jit_word_t _bosubr_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	CLRT();
 	SUBC(r0, r1);
 
 	w = _jit->pc.w;
