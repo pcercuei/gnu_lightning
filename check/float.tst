@@ -49,12 +49,12 @@ T##op##r##t##r0##f0##f1##l:				\
 	b##op##r##t bT##op##r##t##r0##f0##f1##l %f0 %f1	\
 	calli @abort					\
 bT##op##r##t##r0##f0##f1##l:				\
-	movi##t %f1 li					\
+	movi##t %f0 li					\
 	op##i##t %r0 %f0 ri				\
 	bnei T##op##i##t##r0##f0##f1##l %r0 0		\
 	calli @abort					\
 T##op##i##t##r0##f0##f1##l:				\
-	movi##t %f1 li					\
+	movi##t %f0 li					\
 	b##op##i##t bT##op##i##t##r0##f0##f1##l %f0 ri	\
 	calli @abort					\
 bT##op##i##t##r0##f0##f1##l:				\
@@ -64,7 +64,7 @@ bT##op##i##t##r0##f0##f1##l:				\
 	beqi F##op##r##t##r0##f0##f1##l %r0 1		\
 	calli @abort					\
 F##op##r##t##r0##f0##f1##l:				\
-	movi##t %f1 li					\
+	movi##t %f0 li					\
 	op##i##t %r0 %f0 ri				\
 	beqi F##op##i##t##r0##f0##f1##l %r0 1		\
 	calli @abort					\
