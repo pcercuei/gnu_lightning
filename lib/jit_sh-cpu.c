@@ -2861,10 +2861,12 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 static void
 _callr(jit_state_t *_jit, jit_int16_t r0)
 {
-	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+	reset_fpu(_jit, r0 == _R0);
 
 	JSR(r0);
 	NOP();
+
+	reset_fpu(_jit, 1);
 }
 
 static void
@@ -2874,18 +2876,20 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 	jit_uint16_t reg;
 	jit_word_t w;
 
-	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+	reset_fpu(_jit, 0);
 
 	w = _jit->pc.w;
 	disp = (i0 - w >> 1) - 2;
 
 	if (disp >= -2048 && disp <= 2046) {
 		BSR(disp);
-		NOP();
 	} else {
 		movi(_R0, i0);
-		callr(_R0);
+		JSR(_R0);
 	}
+
+	NOP();
+	reset_fpu(_jit, 1);
 }
 
 static jit_word_t
@@ -2916,10 +2920,13 @@ _calli_p(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
 
-    set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+    reset_fpu(_jit, 0);
 
     w = movi_p(_R0, i0);
-    callr(_R0);
+    JSR(_R0);
+    NOP();
+
+    reset_fpu(_jit, 1);
 
     return (w);
 }
@@ -3021,6 +3028,7 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->stack)
 		subi(JIT_SP, JIT_SP, _jitc->function->stack);
 
+	reset_fpu(_jit, 0);
 }
 
 static void
@@ -3031,7 +3039,7 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->assume_frame)
 		return;
 
-	set_fmode_no_r0(_jit, SH_DEFAULT_FPU_MODE);
+	reset_fpu(_jit, 1);
 
 	movr(JIT_SP, JIT_FP);
 

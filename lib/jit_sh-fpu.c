@@ -20,6 +20,7 @@
 #if PROTO
 static void set_fmode(jit_state_t *_jit, jit_bool_t is_double);
 static void set_fmode_no_r0(jit_state_t *_jit, jit_bool_t is_double);
+static void reset_fpu(jit_state_t *_jit, jit_bool_t no_r0);
 
 static void _extr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_bool_t);
 #  define extr_f(r0,r1)			_extr_f(_jit,r0,r1,0)
@@ -456,6 +457,20 @@ static void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
 		set_fmode_mask(_jit, PR_FLAG, 0);
 		_jitc->mode_d = is_double;
+	}
+}
+
+static void reset_fpu(jit_state_t *_jit, jit_bool_t no_r0)
+{
+	if (SH_HAS_FPU) {
+		if (_jitc->mode_d != SH_DEFAULT_FPU_MODE)
+			set_fmode_mask(_jit, PR_FLAG | FR_FLAG, no_r0);
+		else if (SH_DEFAULT_FPU_MODE)
+			set_fmode_mask(_jit, FR_FLAG, no_r0);
+		else
+			maybe_emit_frchg();
+
+		_jitc->mode_d = SH_DEFAULT_FPU_MODE;
 	}
 }
 

@@ -179,10 +179,10 @@ typedef jit_uint64_t		jit_regset_t;
 typedef jit_uint64_t		jit_regset_t;
 #elif defined(__sh__)
 #  define JIT_RA0		_R4
-#  define JIT_FA0		_F4
+#  define JIT_FA0		_XF4
 #  define JIT_SP		_R15
 #  define JIT_RET		_R0
-#  define JIT_FRET		_F0
+#  define JIT_FRET		_XF0
 typedef jit_uint32_t		jit_regset_t;
 #endif
 
