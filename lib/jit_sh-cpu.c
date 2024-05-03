@@ -238,6 +238,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define STF(rn, rm)			_cnmd(_jit, 0xf, rn, rm, 0xa)
 #    define STFS(rn, rm)		_cnmd(_jit, 0xf, rn, rm, 0xb)
 #    define FMOV(rn, rm)		_cnmd(_jit, 0xf, rn, rm, 0xc)
+#    define FMAC(rn, rm)		_cnmd(_jit, 0xf, rn, rm, 0xe)
 #    define FSTS(rn)			_cni(_jit, 0xf, rn, 0x0d)
 #    define FLDS(rn)			_cni(_jit, 0xf, rn, 0x1d)
 #    define FLOAT(rn)			_cni(_jit, 0xf, rn, 0x2d)
