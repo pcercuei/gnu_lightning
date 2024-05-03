@@ -342,7 +342,6 @@ _emit_code(jit_state_t *_jit)
     undo.info_offset =
 #endif
     undo.const_offset = undo.patch_offset = 0;
-#  define assert_data(node)		/**/
 #define case_rr(name, type)						\
 	    case jit_code_##name##r##type:				\
 		name##r##type(rn(node->u.w), rn(node->v.w));		\
@@ -396,12 +395,10 @@ _emit_code(jit_state_t *_jit)
 		break
 #define case_rrf(name)							\
 	    case jit_code_##name##i_f:					\
-		assert_data(node);					\
 		name##i_f(rn(node->u.w), rn(node->v.w), node->w.f);	\
 		break
 #define case_rrd(name)							\
 	    case jit_code_##name##i_d:					\
-		assert_data(node);					\
 		name##i_d(rn(node->u.w), rn(node->v.w), node->w.d);	\
 		break
 #define case_wrr(name, type)						\
@@ -787,7 +784,6 @@ _emit_code(jit_state_t *_jit)
 		break;
 		case_rr(mov, _f);
 	    case jit_code_movi_f:
-		assert_data(node);
 		movi_f(rn(node->u.w), node->v.f);
 		break;
 		case_rr(ext, _d_f);
@@ -870,7 +866,6 @@ _emit_code(jit_state_t *_jit)
 		case_wrr(stx, _d);
 		case_rr(mov, _d);
 	    case jit_code_movi_d:
-		assert_data(node);
 		movi_d(rn(node->u.w), node->v.d);
 		break;
 		case_rr(ext, _f_d);
@@ -1025,7 +1020,6 @@ _emit_code(jit_state_t *_jit)
 		movr_f_w(rn(node->u.w), rn(node->v.w));
 		break;
 	    case jit_code_movi_f_w:
-		assert_data(node);
 		movi_f_w(rn(node->u.w), node->v.f);
 		break;
 	    case jit_code_movi_w_f:
