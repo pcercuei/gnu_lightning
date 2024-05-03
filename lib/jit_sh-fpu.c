@@ -424,23 +424,23 @@ _stxbi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #endif /* PROTO */
 
 #if CODE
+static void set_fmode_mask(jit_state_t *_jit, jit_uint32_t mask)
+{
+	if (SH_HAS_FPU) {
+		STSFP(_R0);
+		SWAPW(_R0, _R0);
+		XORI(mask >> 16);
+		SWAPW(_R0, _R0);
+		LDSFP(_R0);
+	}
+}
+
 static void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 {
-	jit_uint16_t reg;
-
 	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
-		reg = jit_get_reg(jit_class_gpr);
-
+		set_fmode_mask(_jit, PR_FLAG);
 		_jitc->mode_d = is_double;
 
-		movi(_R0, 0x1 << 19);
-		STSFP(rn(reg));
-		orr(rn(reg), rn(reg), _R0);
-		if (!is_double)
-			xorr(rn(reg), rn(reg), _R0);
-		LDSFP(rn(reg));
-
-		jit_unget_reg(reg);
 	}
 }
 

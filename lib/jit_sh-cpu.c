@@ -262,6 +262,10 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 
 #    define stack_framesize		256
 
+#    define PR_FLAG			(1 << 19)
+#    define SZ_FLAG			(1 << 20)
+#    define FR_FLAG			(1 << 21)
+
 static void _nop(jit_state_t*,jit_word_t);
 #    define nop(i0)			_nop(_jit,i0)
 static void _movr(jit_state_t*,jit_uint16_t,jit_uint16_t);
