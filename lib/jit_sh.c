@@ -1552,13 +1552,11 @@ jit_node_t *
 _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 {
     jit_node_t		*call;
-    jit_node_t		*node;
     assert(_jitc->function);
     jit_inc_synth_w(finishi, (jit_word_t)i0);
     if (_jitc->function->self.alen < _jitc->function->call.size)
 	_jitc->function->self.alen = _jitc->function->call.size;
-    node = jit_movi(_R0, (jit_word_t)i0);
-    call = jit_callr(_R0);
+    call = jit_calli(i0);
     call->v.w = _jitc->function->call.argi;
 #if NEW_ABI
     call->w.w = call->v.w;
@@ -1569,7 +1567,7 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 	_jitc->function->call.size = 0;
     _jitc->prepare = 0;
     jit_dec_synth();
-    return (node);
+    return (call);
 }
 
 void
