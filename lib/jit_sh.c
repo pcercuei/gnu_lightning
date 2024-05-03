@@ -1860,7 +1860,7 @@ _jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_d, u, v);
 
     if (jit_arg_reg_p(v->u.w))
-	jit_movr_d(u, _F4 + v->u.w * 2);
+	jit_movr_d(u, JIT_FA0 + v->u.w * 2);
     else
 	jit_ldxi_d(u, JIT_FP, v->u.w);
 
@@ -1874,7 +1874,7 @@ _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_f, u, v);
 
     if (jit_arg_reg_p(v->u.w))
-	jit_movr_f(u, _F4 + v->u.w ^ jit_little_endian());
+	jit_movr_f(u, JIT_FA0 + v->u.w ^ jit_little_endian());
     else
 	jit_ldxi_f(u, JIT_FP, v->u.w);
 
