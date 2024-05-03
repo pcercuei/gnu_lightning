@@ -250,6 +250,10 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define FCNVSD(rn)			_cni(_jit, 0xf, rn, 0xad)
 #    define FCNVDS(rn)			_cni(_jit, 0xf, rn, 0xbd)
 
+#    define FMOVXX(rn, rm)		FMOV((rn) | 1, (rm) | 1)
+#    define FMOVDX(rn, rm)		FMOV((rn) | 0, (rm) | 1)
+#    define FMOVXD(rn, rm)		FMOV((rn) | 1, (rm) | 0)
+
 #    define CLRT()			ii(0x8)
 #    define NOP()			ii(0x9)
 #    define RTS()			ii(0xb)

@@ -487,16 +487,52 @@ static void _truncr_f_i(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1,
 
 static void _movr_f(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
-	if (r0 != r1)
-		FMOV(r0, r1);
+	if (r0 != r1) {
+		if (r0 >= _XF0 || r1 >= _XF0) {
+			set_fmode(_jit, 0);
+
+			if (r0 >= _XF0 && r1 >= _XF0) {
+				FRCHG();
+				FMOV(r0 - _XF0, r1 - _XF0);
+				FRCHG();
+			} else if (r0 >= _XF0) {
+				FLDS(r1);
+				FRCHG();
+				FSTS(r0 - _XF0);
+				FRCHG();
+			} else {
+				FRCHG();
+				FLDS(r1 - _XF0);
+				FRCHG();
+				FSTS(r0);
+			}
+		} else {
+			FMOV(r0, r1);
+		}
+	}
 }
 
 static void _movr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 {
 	if (r0 != r1) {
-		FMOV(r0, r1);
-		if (!SH_SINGLE_ONLY)
+		if (SH_SINGLE_ONLY) {
+			movr_f(r0, r1);
+		} else if (r0 >= _XF0 || r1 >= _XF0) {
+			set_fmode(_jit, 0);
+			FSCHG();
+
+			if (r0 >= _XF0 && r1 >= _XF0)
+				FMOVXX(r0 - _XF0, r1 - _XF0);
+			else if (r0 >= _XF0)
+				FMOVXD(r0 - _XF0, r1);
+			else
+				FMOVDX(r0, r1 - _XF0);
+
+			FSCHG();
+		} else {
+			FMOV(r0, r1);
 			FMOV(r0 + 1, r1 + 1);
+		}
 	}
 }
 
@@ -536,6 +572,14 @@ static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 
 	if (SH_SINGLE_ONLY) {
 		movi_f(r0, (jit_float32_t)i0);
+	} else if (r0 >= _XF0) {
+		set_fmode(_jit, 0);
+		FRCHG();
+
+		movi_w_f(r0 + 1 - _XF0, ((union fl64)i0).hi);
+		movi_w_f(r0 - _XF0, ((union fl64)i0).lo);
+
+		FRCHG();
 	} else {
 		movi_w_f(r0 + 1, ((union fl64)i0).hi);
 		movi_w_f(r0, ((union fl64)i0).lo);
