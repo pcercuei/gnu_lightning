@@ -519,7 +519,7 @@ static void _movr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 			movr_f(r0, r1);
 		} else if (r0 >= _XF0 || r1 >= _XF0) {
 			set_fmode(_jit, 0);
-			FSCHG();
+			maybe_emit_fschg();
 
 			if (r0 >= _XF0 && r1 >= _XF0)
 				FMOVXX(r0 - _XF0, r1 - _XF0);

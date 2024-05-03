@@ -730,6 +730,8 @@ static void _epilog(jit_state_t*,jit_node_t*);
 
 static void _maybe_emit_frchg(jit_state_t *_jit);
 #  define maybe_emit_frchg() _maybe_emit_frchg(_jit)
+static void _maybe_emit_fschg(jit_state_t *_jit);
+#  define maybe_emit_fschg() _maybe_emit_fschg(_jit)
 #endif /* PROTO */
 
 #if CODE
@@ -910,6 +912,16 @@ static void _maybe_emit_frchg(jit_state_t *_jit)
 		_jit->pc.us--;
 	else
 		FRCHG();
+}
+
+static void _maybe_emit_fschg(jit_state_t *_jit)
+{
+	jit_instr_t *instr = (jit_instr_t *)(_jit->pc.w - 2);
+
+	if (_jitc->no_flag && instr->op == 0xf3fd)
+		_jit->pc.us--;
+	else
+		FSCHG();
 }
 
 static void maybe_emit_tst(jit_state_t *_jit, jit_uint16_t r0, jit_bool_t *set)
