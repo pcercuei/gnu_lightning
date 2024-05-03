@@ -71,6 +71,11 @@ typedef enum {
 #define JIT_F7			_F14
 	_F0,	_F1,	_F2,	_F3,	_F4,	_F5,	_F6,	_F7,
 	_F8,	_F9,	_F10,	_F11,	_F12,	_F13,	_F14,	_F15,
+
+	/* Banked floating-point registers */
+	_XF0,	_XF1,	_XF2,	_XF3,	_XF4,	_XF5,	_XF6,	_XF7,
+	_XF8,	_XF9,	_XF10,	_XF11,	_XF12,	_XF13,	_XF14,	_XF15,
+
 #define JIT_NOREG		_NOREG
 	_NOREG,
 } jit_reg_t;

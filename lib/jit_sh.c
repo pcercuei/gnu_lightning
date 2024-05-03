@@ -96,6 +96,23 @@ jit_register_t _rvs[] = {
     { rc(sav) | 0xd,			"$f13" },
     { rc(sav) | rc(fpr) | 0xe,		"$f14" },
     { rc(sav) | 0xf,			"$f15" },
+
+    { _XF0,				"$xf0" },
+    { _XF1,				"$xf1" },
+    { _XF2,				"$xf2" },
+    { _XF3,				"$xf3" },
+    { _XF4,				"$xf4" },
+    { _XF5,				"$xf5" },
+    { _XF6,				"$xf6" },
+    { _XF7,				"$xf7" },
+    { _XF8,				"$xf8" },
+    { _XF9,				"$xf9" },
+    { _XF10,				"$xf10" },
+    { _XF11,				"$xf11" },
+    { rc(sav) | _XF12,			"$xf12" },
+    { rc(sav) | _XF13,			"$xf13" },
+    { rc(sav) | _XF14,			"$xf14" },
+    { rc(sav) | _XF15,			"$xf15" },
 };
 
 void
