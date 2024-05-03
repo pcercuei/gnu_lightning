@@ -2447,6 +2447,8 @@ _bger(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	CMPGE(r0, r1);
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, t, p);
@@ -2460,6 +2462,8 @@ _bger_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	CMPHS(r0, r1);
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, t, p);
@@ -2472,6 +2476,8 @@ _beqr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
       jit_uint16_t r1, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	if (r0 == r1) {
 		if (p)
@@ -2493,6 +2499,8 @@ _bner(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	CMPEQ(r0, r1);
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, 0, p);
@@ -2506,6 +2514,8 @@ _bmsr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_bool_t set = 0;
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	if (r0 != r1)
 		TST(r0, r1);
@@ -2525,6 +2535,8 @@ _bmcr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_bool_t set = 1;
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	if (r0 != r1)
 		TST(r0, r1);
 	else
@@ -2541,6 +2553,8 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
       jit_word_t i1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	if (i1 == 0) {
 		CMPPL(r0);
@@ -2562,6 +2576,8 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	if (i1 == 0) {
 		CMPPZ(r0);
 	} else {
@@ -2581,6 +2597,8 @@ _bgti_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	jit_word_t i1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	if (i1 == 0) {
 		maybe_emit_tst(_jit, r0, &set);
@@ -2604,6 +2622,8 @@ _bgei_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	assert(r0 != _R0);
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	movi(_R0, i1);
 	CMPHS(r0, _R0);
 	w = _jit->pc.w;
@@ -2616,6 +2636,8 @@ static jit_word_t _beqi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			jit_word_t i1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	if (i1 == 0) {
 		maybe_emit_tst(_jit, r0, &set);
@@ -2641,6 +2663,8 @@ static jit_word_t _bmsi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	assert(r0 != _R0);
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	movi(_R0, i1);
 	TST(_R0, r0);
 	w = _jit->pc.w;
@@ -2654,6 +2678,8 @@ static jit_word_t _boaddr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	ADDV(r0, r1);
 
 	w = _jit->pc.w;
@@ -2666,6 +2692,8 @@ static jit_word_t _boaddr_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			    jit_uint16_t r1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	CLRT();
 	ADDC(r0, r1);
@@ -2681,6 +2709,8 @@ static jit_word_t _boaddi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	assert(r0 != _R0);
 
 	movi(_R0, i1);
@@ -2694,6 +2724,8 @@ static jit_word_t _boaddi_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 {
 	jit_word_t w;
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	assert(r0 != _R0);
 
 	movi(_R0, i1);
@@ -2706,6 +2738,8 @@ static jit_word_t _bosubr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			  jit_uint16_t r1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	assert(r0 != _R0);
 
@@ -2722,6 +2756,8 @@ static jit_word_t _bosubr_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			    jit_uint16_t r1, jit_bool_t set, jit_bool_t p)
 {
 	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	CLRT();
 	SUBC(r0, r1);
@@ -2761,6 +2797,7 @@ static jit_word_t _bosubi_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 static void
 _jmpr(jit_state_t *_jit, jit_int16_t r0)
 {
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 	JMP(r0);
 	NOP();
 }
@@ -2768,8 +2805,13 @@ _jmpr(jit_state_t *_jit, jit_int16_t r0)
 static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 {
-	jit_word_t w = _jit->pc.w;
-	jit_int32_t disp = (i0 - w >> 1) - 2;
+	jit_int32_t disp;
+	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
+	w = _jit->pc.w;
+	disp = (i0 - w >> 1) - 2;
 
 	if (force || (disp >= -2048 && disp <= 2046)) {
 		BRA(disp);
@@ -2790,6 +2832,8 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 static void
 _callr(jit_state_t *_jit, jit_int16_t r0)
 {
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	JSR(r0);
 	NOP();
 }
@@ -2797,8 +2841,14 @@ _callr(jit_state_t *_jit, jit_int16_t r0)
 static void
 _calli(jit_state_t *_jit, jit_word_t i0)
 {
-	jit_word_t w = _jit->pc.w;
-	jit_int32_t disp = (i0 - w >> 1) - 2;
+	jit_int32_t disp;
+	jit_uint16_t reg;
+	jit_word_t w;
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
+	w = _jit->pc.w;
+	disp = (i0 - w >> 1) - 2;
 
 	if (disp >= -2048 && disp <= 2046) {
 		BSR(disp);
@@ -2824,6 +2874,8 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t w;
 
+    set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
     w = movi_p(_R0, i0);
     jmpr(_R0);
 
@@ -2834,6 +2886,8 @@ static jit_word_t
 _calli_p(jit_state_t *_jit, jit_word_t i0)
 {
     jit_word_t		w;
+
+    set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
     w = movi_p(_R0, i0);
     callr(_R0);
@@ -2938,7 +2992,6 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->stack)
 		subi(JIT_SP, JIT_SP, _jitc->function->stack);
 
-	_jitc->mode_d = SH_DEFAULT_FPU_MODE;
 }
 
 static void
@@ -2948,6 +3001,8 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 
 	if (_jitc->function->assume_frame)
 		return;
+
+	set_fmode_no_r0(_jit, SH_DEFAULT_FPU_MODE);
 
 	movr(JIT_SP, JIT_FP);
 
@@ -2960,7 +3015,5 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 
 	RTS();
 	LDLU(JIT_FP, JIT_SP);
-
-	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 }
 #endif /* CODE */

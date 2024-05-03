@@ -328,6 +328,7 @@ _emit_code(jit_state_t *_jit)
 
     _jitc->function = NULL;
     _jitc->no_flag = 0;
+    _jitc->mode_d = SH_DEFAULT_FPU_MODE;
 
     jit_reglive_setup();
 
@@ -1165,6 +1166,11 @@ _emit_code(jit_state_t *_jit)
 	jit_reglive(node);
 
         _jitc->no_flag = !(node->flag & jit_flag_patch);
+
+	if (!_jitc->no_flag) {
+		/* We have a patch flag - reset FPU mode */
+		set_fmode_no_r0(_jit, SH_DEFAULT_FPU_MODE);
+	}
 
 	if (_jitc->consts.length &&
 	    (_jit->pc.uc - _jitc->consts.data >= 450 ||

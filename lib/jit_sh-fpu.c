@@ -1490,6 +1490,9 @@ static jit_word_t _beqr_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	set_fmode(_jit, is_double);
 
 	FCMPEQ(r0, r1);
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
@@ -1509,6 +1512,8 @@ static jit_word_t _beqi_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	FCMPEQ(r0, rn(reg));
 	jit_unget_reg(reg);
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, set, p);
@@ -1530,6 +1535,8 @@ static jit_word_t _beqi_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	FCMPEQ(r0, rn(reg));
 	jit_unget_reg(reg);
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
@@ -1545,6 +1552,9 @@ static jit_word_t _bgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	set_fmode(_jit, is_double);
 
 	FCMPGT(r0, r1);
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
@@ -1633,6 +1643,8 @@ static jit_word_t _bler_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	ROTCL(_R0);
 	TSTI(3);
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
@@ -1715,6 +1727,8 @@ static jit_word_t _buneqr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	_uneqr_f(_jit, _R0, r0, r1, is_double);
 	TST(_R0, _R0);
 
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
+
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, 0, p);
 
@@ -1728,6 +1742,8 @@ static jit_word_t _bltgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	_ltgtr_f(_jit, _R0, r0, r1, is_double);
 	TST(_R0, _R0);
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, 0, p);
@@ -1743,6 +1759,8 @@ static jit_word_t _bordr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	_ordr_f(_jit, _R0, r0, r1, is_double);
 	TST(_R0, _R0);
+
+	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	w = _jit->pc.w;
 	emit_branch_opcode(_jit, i0, w, !set, p);
