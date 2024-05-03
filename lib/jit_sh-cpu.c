@@ -25,6 +25,19 @@
 #    define SH_DEFAULT_FPU_MODE 0
 #  endif
 
+#  ifdef __SH_FPU_ANY__
+#    define SH_HAS_FPU 1
+#  else
+#    define SH_HAS_FPU 0
+#  endif
+
+#  ifdef __SH4_SINGLE_ONLY__
+#    define SH_SINGLE_ONLY 1
+#  else
+#    define SH_SINGLE_ONLY 0
+#  endif
+
+
 struct jit_instr_ni {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	jit_uint16_t i :8;
