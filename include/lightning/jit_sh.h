@@ -28,7 +28,7 @@ typedef enum {
 #define jit_r_num()		3
 #define jit_v(i)		(JIT_V0 + (i))
 #define jit_v_num()		6
-#define jit_f(i)		(JIT_F0 + (i) * 2)
+#define jit_f(i)		(JIT_F7 - (i) * 2)
 #ifdef __SH_FPU_ANY__
 #    define jit_f_num()		8
 #else
