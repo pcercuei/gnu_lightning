@@ -727,6 +727,9 @@ static void _epilog(jit_state_t*,jit_node_t*);
 #  else
 #    define jit_sh34_p()	0
 #  endif
+
+static void _maybe_emit_frchg(jit_state_t *_jit);
+#  define maybe_emit_frchg() _maybe_emit_frchg(_jit)
 #endif /* PROTO */
 
 #if CODE
@@ -897,6 +900,16 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 		JMP(_R0);
 		NOP();
 	}
+}
+
+static void _maybe_emit_frchg(jit_state_t *_jit)
+{
+	jit_instr_t *instr = (jit_instr_t *)(_jit->pc.w - 2);
+
+	if (_jitc->no_flag && instr->op == 0xfbfd)
+		_jit->pc.us--;
+	else
+		FRCHG();
 }
 
 static void maybe_emit_tst(jit_state_t *_jit, jit_uint16_t r0, jit_bool_t *set)

@@ -492,7 +492,7 @@ static void _movr_f(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 			set_fmode(_jit, 0);
 
 			if (r0 >= _XF0 && r1 >= _XF0) {
-				FRCHG();
+				maybe_emit_frchg();
 				FMOV(r0 - _XF0, r1 - _XF0);
 				FRCHG();
 			} else if (r0 >= _XF0) {
@@ -501,7 +501,7 @@ static void _movr_f(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 				FSTS(r0 - _XF0);
 				FRCHG();
 			} else {
-				FRCHG();
+				maybe_emit_frchg();
 				FLDS(r1 - _XF0);
 				FRCHG();
 				FSTS(r0);
@@ -574,7 +574,7 @@ static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
 		movi_f(r0, (jit_float32_t)i0);
 	} else if (r0 >= _XF0) {
 		set_fmode(_jit, 0);
-		FRCHG();
+		maybe_emit_frchg();
 
 		movi_w_f(r0 + 1 - _XF0, ((union fl64)i0).hi);
 		movi_w_f(r0 - _XF0, ((union fl64)i0).lo);
