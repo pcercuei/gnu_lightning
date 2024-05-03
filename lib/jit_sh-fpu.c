@@ -19,6 +19,7 @@
 
 #if PROTO
 static void set_fmode(jit_state_t *_jit, jit_bool_t is_double);
+static void set_fmode_no_r0(jit_state_t *_jit, jit_bool_t is_double);
 
 static void _extr_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_bool_t);
 #  define extr_f(r0,r1)			_extr_f(_jit,r0,r1,0)
@@ -424,23 +425,45 @@ _stxbi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #endif /* PROTO */
 
 #if CODE
-static void set_fmode_mask(jit_state_t *_jit, jit_uint32_t mask)
+static void set_fmode_mask(jit_state_t *_jit, jit_uint32_t mask, jit_bool_t no_r0)
 {
+	jit_uint16_t reg, reg2;
+
 	if (SH_HAS_FPU) {
-		STSFP(_R0);
-		SWAPW(_R0, _R0);
-		XORI(mask >> 16);
-		SWAPW(_R0, _R0);
-		LDSFP(_R0);
+		if (no_r0) {
+			reg = jit_get_reg(jit_class_gpr);
+			reg2 = jit_get_reg(jit_class_gpr);
+
+			movi(rn(reg2), mask);
+			STSFP(rn(reg));
+			xorr(rn(reg), rn(reg), rn(reg2));
+			LDSFP(rn(reg));
+
+			jit_unget_reg(reg);
+			jit_unget_reg(reg2);
+		} else {
+			STSFP(_R0);
+			SWAPW(_R0, _R0);
+			XORI(mask >> 16);
+			SWAPW(_R0, _R0);
+			LDSFP(_R0);
+		}
 	}
 }
 
 static void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 {
 	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
-		set_fmode_mask(_jit, PR_FLAG);
+		set_fmode_mask(_jit, PR_FLAG, 0);
 		_jitc->mode_d = is_double;
+	}
+}
 
+static void set_fmode_no_r0(jit_state_t *_jit, jit_bool_t is_double)
+{
+	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
+		set_fmode_mask(_jit, PR_FLAG, 1);
+		_jitc->mode_d = is_double;
 	}
 }
 
