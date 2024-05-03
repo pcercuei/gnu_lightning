@@ -1070,7 +1070,11 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_arg_f:		case jit_code_arg_d:
 	    case jit_code_va_end:
 	    case jit_code_ret:
-	    case jit_code_retr:			case jit_code_reti:
+	    case jit_code_retr_c:		case jit_code_reti_c:
+	    case jit_code_retr_uc:		case jit_code_reti_uc:
+	    case jit_code_retr_s:		case jit_code_reti_s:
+	    case jit_code_retr_us:		case jit_code_reti_us:
+	    case jit_code_retr_i:		case jit_code_reti_i:
 	    case jit_code_retr_f:		case jit_code_reti_f:
 	    case jit_code_retr_d:		case jit_code_reti_d:
 	    case jit_code_getarg_c:		case jit_code_getarg_uc:
