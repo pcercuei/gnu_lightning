@@ -1038,9 +1038,7 @@ _emit_code(jit_state_t *_jit)
 		movr_d_ww(rn(node->u.w), rn(node->v.w), rn(node->w.w));
 		break;
 	    case jit_code_movi_d_ww:
-		assert_data(node);
-		movi_d_ww(rn(node->u.w), rn(node->v.w),
-			  *(jit_float64_t *)node->w.n->u.w);
+		movi_d_ww(rn(node->u.w), rn(node->v.w), node->w.d);
 		break;
 	    case jit_code_movi_ww_d:
 		movi_ww_d(rn(node->u.w), node->v.w, node->w.w);

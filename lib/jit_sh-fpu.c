@@ -2164,22 +2164,22 @@ static void _movi_w_f(jit_state_t *_jit, jit_int16_t r0, jit_word_t i0)
 static void _movr_ww_d(jit_state_t *_jit, jit_uint16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
 	/* TODO: single-only */
-	movr_w_f(r0, r1);
-	movr_w_f(r0 + 1, r2);
+	movr_w_f(r0 + 1, r1);
+	movr_w_f(r0, r2);
 }
 
 static void _movr_d_ww(jit_state_t *_jit, jit_uint16_t r0, jit_int16_t r1, jit_int16_t r2)
 {
 	/* TODO: single-only */
-	movr_f_w(r0, r2);
-	movr_f_w(r1, r2 + 1);
+	movr_f_w(r0, r2 + 1);
+	movr_f_w(r1, r2);
 }
 
 static void _movi_ww_d(jit_state_t *_jit, jit_int16_t r0, jit_word_t i0, jit_word_t i1)
 {
 	/* TODO: single-only */
-	movi_w_f(r0 + 1, i1);
-	movi_w_f(r0, i0);
+	movi_w_f(r0, i1);
+	movi_w_f(r0 + 1, i0);
 }
 
 #endif /* CODE */
