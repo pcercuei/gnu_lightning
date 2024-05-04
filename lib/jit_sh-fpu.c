@@ -732,9 +732,7 @@ static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 		movr_f(r0, rn(reg));
 
 		jit_unget_reg(reg);
-	}
-
-	if (i0 == 0.0f) {
+	} else if (i0 == 0.0f) {
 		FLDI0(r0);
 	} else if (i0 == -0.0f) {
 		FLDI0(r0);
