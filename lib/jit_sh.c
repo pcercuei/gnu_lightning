@@ -24,7 +24,7 @@
 
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < NUM_WORD_ARGS)
 
-#define jit_little_endian()		(__BYTE_ORDER == __LITTLE_ENDIAN)
+#define fpr_args_inverted()		(__BYTE_ORDER == __LITTLE_ENDIAN && !SH_SINGLE_ONLY)
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #  define C_DISP			0
@@ -1744,7 +1744,7 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
 	jit_link_prepare();
 	assert(_jitc->function);
 	if (jit_arg_reg_p(_jitc->function->call.argf)) {
-		jit_movr_f(JIT_FA0 + _jitc->function->call.argf ^ jit_little_endian(), u);
+		jit_movr_f(JIT_FA0 + _jitc->function->call.argf ^ fpr_args_inverted(), u);
 		++_jitc->function->call.argf;
 	}
 	else {
@@ -1763,7 +1763,7 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 	jit_link_prepare();
 	assert(_jitc->function);
 	if (jit_arg_reg_p(_jitc->function->call.argf)) {
-		jit_movi_f(JIT_FA0 + _jitc->function->call.argf ^ jit_little_endian(), u);
+		jit_movi_f(JIT_FA0 + _jitc->function->call.argf ^ fpr_args_inverted(), u);
 		++_jitc->function->call.argf;
 	}
 	else {
@@ -1826,7 +1826,7 @@ _jit_putargr_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	assert(v->code == jit_code_arg_f);
 	jit_inc_synth_wp(putargr, u, v);
 	if (jit_arg_reg_p(v->u.w))
-		jit_movr_f(JIT_FA0 + v->u.w ^ jit_little_endian(), u);
+		jit_movr_f(JIT_FA0 + v->u.w ^ fpr_args_inverted(), u);
 	else
 		jit_stxi_f(v->u.w, JIT_FP, u);
 	jit_dec_synth();
@@ -1840,7 +1840,7 @@ _jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
 	assert(v->code == jit_code_arg_f);
 	jit_inc_synth_wp(putargi, u, v);
 	if (jit_arg_reg_p(v->u.w)) {
-		jit_movi_f(JIT_FA0 + v->u.w ^ jit_little_endian(), u);
+		jit_movi_f(JIT_FA0 + v->u.w ^ fpr_args_inverted(), u);
 	} else {
 		regno = jit_get_reg(jit_class_fpr);
 
@@ -1905,7 +1905,7 @@ _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_f, u, v);
 
     if (jit_arg_reg_p(v->u.w))
-	jit_movr_f(u, JIT_FA0 + v->u.w ^ jit_little_endian());
+	jit_movr_f(u, JIT_FA0 + v->u.w ^ fpr_args_inverted());
     else
 	jit_ldxi_f(u, JIT_FP, v->u.w);
 
