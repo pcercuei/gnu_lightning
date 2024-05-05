@@ -871,6 +871,7 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 		   int t_set, int force_patchable)
 {
 	jit_int32_t disp = (i0 - w >> 1) - 2;
+	jit_uint16_t reg;
 
 	if (!force_patchable && i0 == 0) {
 		/* Positive displacement - we don't know the target yet. */
@@ -892,16 +893,20 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 		else
 			BF(disp);
 	} else {
+		reg = jit_get_reg(jit_class_gpr);
+
 		if (force_patchable)
-			movi_p(_R0, i0);
+			movi_p(rn(reg), i0);
 		else
-			movi(_R0, i0);
+			movi(rn(reg), i0);
 		if (t_set)
 			BF(0);
 		else
 			BT(0);
-		JMP(_R0);
+		JMP(rn(reg));
 		NOP();
+
+		jit_unget_reg(reg);
 	}
 }
 
@@ -2835,6 +2840,7 @@ _jmpr(jit_state_t *_jit, jit_int16_t r0)
 static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 {
+	jit_uint16_t reg;
 	jit_int32_t disp;
 	jit_word_t w;
 
@@ -2848,12 +2854,20 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 		NOP();
 	} else if (0) {
 		/* TODO: BRAF */
-		movi_p(_R0, disp - 7);
-		BRAF(_R0);
+		reg = jit_get_reg(jit_class_gpr);
+
+		movi_p(rn(reg), disp - 7);
+		BRAF(rn(reg));
 		NOP();
+
+		jit_unget_reg(reg);
 	} else {
-		movi(_R0, i0);
-		jmpr(_R0);
+		reg = jit_get_reg(jit_class_gpr);
+
+		movi(rn(reg), i0);
+		jmpr(rn(reg));
+
+		jit_unget_reg(reg);
 	}
 
 	return (w);
@@ -2906,12 +2920,15 @@ _movi_p(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 static jit_word_t
 _jmpi_p(jit_state_t *_jit, jit_word_t i0)
 {
+    jit_uint16_t reg;
     jit_word_t w;
 
     set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-    w = movi_p(_R0, i0);
-    jmpr(_R0);
+    reg = jit_get_reg(jit_class_gpr);
+    w = movi_p(rn(reg), i0);
+    jmpr(rn(reg));
+    jit_unget_reg(reg);
 
     return (w);
 }
@@ -2919,13 +2936,16 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
 static jit_word_t
 _calli_p(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
+    jit_uint16_t reg;
+    jit_word_t w;
 
     reset_fpu(_jit, 0);
 
-    w = movi_p(_R0, i0);
-    JSR(_R0);
+    reg = jit_get_reg(jit_class_gpr);
+    w = movi_p(rn(reg), i0);
+    JSR(rn(reg));
     NOP();
+    jit_unget_reg(reg);
 
     reset_fpu(_jit, 1);
 
