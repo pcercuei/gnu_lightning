@@ -265,7 +265,7 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 
 #    define ii(i)			*_jit->pc.us++ = i
 
-#    define stack_framesize		256
+#    define stack_framesize		((JIT_V_NUM + 2) * 4)
 
 #    define PR_FLAG			(1 << 19)
 #    define SZ_FLAG			(1 << 20)
@@ -3035,14 +3035,15 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 				   /* align stack at 8 bytes */
 				   _jitc->function->self.aoff) + 7) & -8;
 
-	STLU(JIT_SP, JIT_FP);
+	ADDI(JIT_SP, -stack_framesize);
+	STDL(JIT_SP, JIT_FP, JIT_V_NUM + 1);
 
 	STSPR(_R0);
-	STLU(JIT_SP, _R0);
+	STDL(JIT_SP, _R0, JIT_V_NUM);
 
 	for (i = 0; i < JIT_V_NUM; i++)
 		if (jit_regset_tstbit(&_jitc->function->regset, JIT_V(i)))
-			STLU(JIT_SP, JIT_V(i));
+			STDL(JIT_SP, JIT_V(i), i);
 
 	movr(JIT_FP, JIT_SP);
 
@@ -3066,12 +3067,13 @@ _epilog(jit_state_t *_jit, jit_node_t *node)
 
 	for (i = JIT_V_NUM; i > 0; i--)
 		if (jit_regset_tstbit(&_jitc->function->regset, JIT_V(i - 1)))
-			LDLU(JIT_V(i - 1), JIT_SP);
+			LDDL(JIT_V(i - 1), JIT_SP, i - 1);
 
-	LDLU(JIT_FP, JIT_SP);
+	LDDL(JIT_FP, JIT_SP, JIT_V_NUM);
 	LDSPR(JIT_FP);
 
+	LDDL(JIT_FP, JIT_SP, JIT_V_NUM + 1);
 	RTS();
-	LDLU(JIT_FP, JIT_SP);
+	ADDI(JIT_SP, stack_framesize);
 }
 #endif /* CODE */
