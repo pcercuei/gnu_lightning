@@ -1084,7 +1084,11 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_getarg_i:		case jit_code_getarg_ui:
 	    case jit_code_getarg_l:
 	    case jit_code_getarg_f:		case jit_code_getarg_d:
-	    case jit_code_putargr:		case jit_code_putargi:
+	    case jit_code_putargr_c:		case jit_code_putargi_c:
+	    case jit_code_putargr_uc:		case jit_code_putargi_uc:
+	    case jit_code_putargr_s:		case jit_code_putargi_s:
+	    case jit_code_putargr_us:		case jit_code_putargi_us:
+	    case jit_code_putargr_i:		case jit_code_putargi_i:
 	    case jit_code_putargr_f:		case jit_code_putargi_f:
 	    case jit_code_putargr_d:		case jit_code_putargi_d:
 	    case jit_code_pushargr_c:		case jit_code_pushargi_c:
@@ -1413,8 +1417,8 @@ _jit_make_arg_f(jit_state_t *_jit, jit_node_t *node)
 {
     jit_int32_t		 offset;
 
-    if (jit_arg_reg_p(_jitc->function->self.argi)) {
-	offset = _jitc->function->self.argi++;
+    if (jit_arg_reg_p(_jitc->function->self.argf)) {
+	offset = _jitc->function->self.argf++;
 	if (_jitc->function->self.call & jit_call_varargs)
 	    offset += 8;
     }
@@ -1436,8 +1440,9 @@ static jit_node_t *
 _jit_make_arg_d(jit_state_t *_jit, jit_node_t *node)
 {
     jit_int32_t		 offset;
-    if (jit_arg_reg_p(_jitc->function->self.argi)) {
-	offset = _jitc->function->self.argi++;
+    if (jit_arg_reg_p(_jitc->function->self.argf)) {
+	offset = (_jitc->function->self.argf + 1) & ~1;
+	_jitc->function->self.argf = offset + 2;
 	if (_jitc->function->self.call & jit_call_varargs)
 	    offset += 8;
     }
@@ -1746,7 +1751,7 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
 	jit_link_prepare();
 	assert(_jitc->function);
 	if (jit_arg_reg_p(_jitc->function->call.argf)) {
-		jit_movr_f(JIT_FA0 + _jitc->function->call.argf ^ fpr_args_inverted(), u);
+		jit_movr_f(JIT_FA0 + (_jitc->function->call.argf ^ fpr_args_inverted()), u);
 		++_jitc->function->call.argf;
 	}
 	else {
@@ -1765,7 +1770,7 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 	jit_link_prepare();
 	assert(_jitc->function);
 	if (jit_arg_reg_p(_jitc->function->call.argf)) {
-		jit_movi_f(JIT_FA0 + _jitc->function->call.argf ^ fpr_args_inverted(), u);
+		jit_movi_f(JIT_FA0 + (_jitc->function->call.argf ^ fpr_args_inverted()), u);
 		++_jitc->function->call.argf;
 	}
 	else {
@@ -1828,7 +1833,7 @@ _jit_putargr_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
 	assert(v->code == jit_code_arg_f);
 	jit_inc_synth_wp(putargr, u, v);
 	if (jit_arg_reg_p(v->u.w))
-		jit_movr_f(JIT_FA0 + v->u.w ^ fpr_args_inverted(), u);
+		jit_movr_f(JIT_FA0 + (v->u.w ^ fpr_args_inverted()), u);
 	else
 		jit_stxi_f(v->u.w, JIT_FP, u);
 	jit_dec_synth();
@@ -1842,7 +1847,7 @@ _jit_putargi_f(jit_state_t *_jit, jit_float32_t u, jit_node_t *v)
 	assert(v->code == jit_code_arg_f);
 	jit_inc_synth_wp(putargi, u, v);
 	if (jit_arg_reg_p(v->u.w)) {
-		jit_movi_f(JIT_FA0 + v->u.w ^ fpr_args_inverted(), u);
+		jit_movi_f(JIT_FA0 + (v->u.w ^ fpr_args_inverted()), u);
 	} else {
 		regno = jit_get_reg(jit_class_fpr);
 
@@ -1893,7 +1898,7 @@ _jit_getarg_d(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_d, u, v);
 
     if (jit_arg_reg_p(v->u.w))
-	jit_movr_d(u, JIT_FA0 + v->u.w * 2);
+	jit_movr_d(u, JIT_FA0 + v->u.w);
     else
 	jit_ldxi_d(u, JIT_FP, v->u.w);
 
@@ -1907,7 +1912,7 @@ _jit_getarg_f(jit_state_t *_jit, jit_int32_t u, jit_node_t *v)
     jit_inc_synth_wp(getarg_f, u, v);
 
     if (jit_arg_reg_p(v->u.w))
-	jit_movr_f(u, JIT_FA0 + v->u.w ^ fpr_args_inverted());
+	jit_movr_f(u, JIT_FA0 + (v->u.w ^ fpr_args_inverted()));
     else
 	jit_ldxi_f(u, JIT_FP, v->u.w);
 
