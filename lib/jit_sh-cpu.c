@@ -1110,7 +1110,7 @@ _subxi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 static void
 _rsbi(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
-	if (!(i0 & ~0xff)) {
+	if ((jit_uword_t)((i0 >> 7) + 1) < 2) {
 		negr(r0, r1);
 		ADDI(r0, i0);
 	} else if (r0 != r1) {
