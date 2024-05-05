@@ -271,10 +271,12 @@ _jit_putargi(jit_state_t *_jit, jit_word_t u, jit_node_t *v, jit_code_t code)
     assert_putarg_type(code, v->code);
     jit_code_inc_synth_wp(code, u, v);
     if (jit_arg_reg_p(v->u.w))
-	jit_movi(JIT_RA0 + v->u.w, u);
+        jit_movi(JIT_RA0 + v->u.w, u);
     else {
-	jit_movi(_R0, u);
-	jit_stxi(v->u.w, JIT_FP, _R0);
+        regno = jit_get_reg(jit_class_gpr);
+        jit_movi(regno, u);
+        jit_stxi(v->u.w, JIT_FP, regno);
+        jit_unget_reg(regno);
     }
     jit_dec_synth();
 }
