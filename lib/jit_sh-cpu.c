@@ -3012,8 +3012,8 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 	if (_jitc->function->allocar)
 		_jitc->function->self.aoff &= -8;
 	_jitc->function->stack = ((_jitc->function->self.alen -
-				   /* align stack at 16 bytes */
-				   _jitc->function->self.aoff) + 15) & -16;
+				   /* align stack at 8 bytes */
+				   _jitc->function->self.aoff) + 7) & -8;
 
 	STLU(JIT_SP, JIT_FP);
 
