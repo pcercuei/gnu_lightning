@@ -21,7 +21,6 @@
 #  define NUM_FLOAT_ARGS		8
 #  define STACK_SLOT			4
 #  define STACK_SHIFT			2
-#  define WORD_ADJUST			0
 
 #define jit_arg_reg_p(i)		((i) >= 0 && (i) < NUM_WORD_ARGS)
 #define jit_arg_f_reg_p(i)		((i) >= 0 && (i) < NUM_FLOAT_ARGS)
@@ -1584,7 +1583,7 @@ _jit_pushargr(jit_state_t *_jit, jit_int32_t u, jit_code_t code)
 	++_jitc->function->call.argi;
     }
     else {
-	jit_stxi(_jitc->function->call.size + WORD_ADJUST, JIT_SP, u);
+	jit_stxi(_jitc->function->call.size, JIT_SP, u);
 	_jitc->function->call.size += STACK_SLOT;
     }
     jit_dec_synth();
@@ -1604,7 +1603,7 @@ _jit_pushargi(jit_state_t *_jit, jit_word_t u, jit_code_t code)
     else {
 	regno = jit_get_reg(jit_class_gpr);
 	jit_movi(regno, u);
-	jit_stxi(_jitc->function->call.size + WORD_ADJUST, JIT_SP, regno);
+	jit_stxi(_jitc->function->call.size, JIT_SP, regno);
 	_jitc->function->call.size += STACK_SLOT;
 	jit_unget_reg(regno);
     }
@@ -1621,11 +1620,7 @@ _jit_finishr(jit_state_t *_jit, jit_int32_t r0)
 	_jitc->function->self.alen = _jitc->function->call.size;
     call = jit_callr(r0);
     call->v.w = _jitc->function->self.argi;
-#if NEW_ABI
-    call->w.w = call->v.w;
-#else
     call->w.w = _jitc->function->self.argf;
-#endif
     _jitc->function->call.argi = _jitc->function->call.argf =
 	_jitc->function->call.size = 0;
     _jitc->prepare = 0;
@@ -1642,11 +1637,7 @@ _jit_finishi(jit_state_t *_jit, jit_pointer_t i0)
 	_jitc->function->self.alen = _jitc->function->call.size;
     call = jit_calli(i0);
     call->v.w = _jitc->function->call.argi;
-#if NEW_ABI
-    call->w.w = call->v.w;
-#else
     call->w.w = _jitc->function->call.argf;
-#endif
     _jitc->function->call.argi = _jitc->function->call.argf =
 	_jitc->function->call.size = 0;
     _jitc->prepare = 0;
@@ -1799,7 +1790,7 @@ _jit_pushargr_f(jit_state_t *_jit, jit_int32_t u)
 		++_jitc->function->call.argf;
 	}
 	else {
-		jit_stxi_f(_jitc->function->call.size + WORD_ADJUST, JIT_SP, u);
+		jit_stxi_f(_jitc->function->call.size, JIT_SP, u);
 		_jitc->function->call.size += STACK_SLOT;
 	}
 	jit_dec_synth();
@@ -1820,7 +1811,7 @@ _jit_pushargi_f(jit_state_t *_jit, jit_float32_t u)
 	else {
 		regno = jit_get_reg(jit_class_fpr);
 		jit_movi_f(regno, u);
-		jit_stxi_f(_jitc->function->call.size + WORD_ADJUST, JIT_SP, regno);
+		jit_stxi_f(_jitc->function->call.size, JIT_SP, regno);
 		_jitc->function->call.size += STACK_SLOT;
 		jit_unget_reg(regno);
 	}
@@ -1841,7 +1832,7 @@ _jit_pushargr_d(jit_state_t *_jit, jit_int32_t u)
 		_jitc->function->call.argf = regno + 2;
 	}
 	else {
-		jit_stxi_d(_jitc->function->call.size + WORD_ADJUST, JIT_SP, u);
+		jit_stxi_d(_jitc->function->call.size, JIT_SP, u);
 		_jitc->function->call.size += STACK_SLOT * 2;
 	}
 	jit_dec_synth();
@@ -1864,7 +1855,7 @@ _jit_pushargi_d(jit_state_t *_jit, jit_float64_t u)
 	else {
 		regno = jit_get_reg(jit_class_fpr);
 		jit_movi_d(regno, u);
-		jit_stxi_d(_jitc->function->call.size + WORD_ADJUST, JIT_SP, regno);
+		jit_stxi_d(_jitc->function->call.size, JIT_SP, regno);
 		_jitc->function->call.size += STACK_SLOT * 2;
 		jit_unget_reg(regno);
 	}
