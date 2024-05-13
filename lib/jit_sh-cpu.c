@@ -19,10 +19,10 @@
 
 #if PROTO
 
-#  ifdef __SH_FPU_DOUBLE__
-#    define SH_DEFAULT_FPU_MODE 1
-#  else
+#  ifdef __SH4_SINGLE__
 #    define SH_DEFAULT_FPU_MODE 0
+#  else
+#    define SH_DEFAULT_FPU_MODE 1
 #  endif
 
 #  ifdef __SH_FPU_ANY__
