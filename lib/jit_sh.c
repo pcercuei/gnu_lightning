@@ -44,6 +44,8 @@ static jit_node_t *_jit_make_arg_f(jit_state_t*,jit_node_t*);
 static jit_node_t *_jit_make_arg_d(jit_state_t*,jit_node_t*);
 #define load_const(uniq,r0,i0)		_load_const(_jit,uniq,r0,i0)
 static void _load_const(jit_state_t*,jit_bool_t,jit_int32_t,jit_word_t);
+#define load_const_f(uniq,r0,i0)	_load_const_f(_jit,uniq,r0,i0)
+static void _load_const_f(jit_state_t*,jit_bool_t,jit_int32_t,jit_float32_t);
 #define flush_consts(force)		_flush_consts(_jit,force)
 static void _flush_consts(jit_state_t*,jit_bool_t);
 #define invalidate_consts()		_invalidate_consts(_jit)
@@ -1288,6 +1290,46 @@ _load_const(jit_state_t *_jit, jit_bool_t uniq, jit_int32_t r0, jit_word_t i0)
     _jitc->consts.patches[_jitc->consts.offset++] = _jit->pc.w;
     /* positive forward offset */
     LDPL(r0, 0);
+
+    if (!uniq) {
+	/* search already requested values */
+	for (offset = 0; offset < _jitc->consts.length; offset++) {
+	    if (_jitc->consts.values[offset] == i0) {
+		_jitc->consts.patches[_jitc->consts.offset++] = offset;
+		return;
+	    }
+	}
+    }
+
+#if DEBUG
+    /* cannot run out of space because of limited range
+     * but assert anyway to catch logic errors */
+    assert(_jitc->consts.length < 1024);
+    assert(_jitc->consts.offset < 2048);
+#endif
+    _jitc->consts.patches[_jitc->consts.offset++] = _jitc->consts.length;
+    _jitc->consts.values[_jitc->consts.length++] = i0;
+}
+
+static void
+_load_const_f(jit_state_t *_jit, jit_bool_t uniq, jit_int32_t r0, jit_float32_t f0)
+{
+    jit_word_t		 w;
+    jit_word_t		 d;
+    jit_word_t		 base;
+    jit_int32_t		*data;
+    jit_int32_t		 size;
+    jit_int32_t		 offset;
+    union fl32 {
+	    jit_int32_t i;
+	    jit_float32_t f;
+    };
+    jit_uint32_t i0 = ((union fl32)f0).i;
+
+    _jitc->consts.patches[_jitc->consts.offset++] = _jit->pc.w;
+    /* positive forward offset */
+    MOVA(0);
+    LDF(r0, _R0);
 
     if (!uniq) {
 	/* search already requested values */

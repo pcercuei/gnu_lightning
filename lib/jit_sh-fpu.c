@@ -743,7 +743,7 @@ static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 		FLDI1(r0);
 		FNEG(r0);
 	} else {
-		movi_w_f(r0, ((union fl32)i0).i);
+		load_const_f(0, r0, i0);
 	}
 }
 

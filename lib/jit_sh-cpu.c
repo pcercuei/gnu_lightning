@@ -2973,6 +2973,11 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	case 0xe:
 		patch_abs(instr, label);
 		break;
+	case 0xc:
+		disp = ((label - (instr & ~0x3)) >> 2) - 1;
+		assert(disp >= 0 && disp <= 255);
+		ptr->ni.i = disp;
+		break;
 	case 0xa:
 		disp = ((label - instr) >> 1) - 2;
 		assert(disp >= -2048 && disp <= 2046);
