@@ -717,22 +717,16 @@ static void _movr_d(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1)
 
 static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 {
-	union fl32 {
-		jit_uint32_t i;
-		jit_float32_t f;
-	};
-	jit_uint16_t reg;
+	jit_bool_t is_bank = r0 >= _XF0;
 
 	set_fmode(_jit, 0);
 
-	if (r0 >= _XF0) {
-		reg = jit_get_reg(jit_class_fpr);
+	if (is_bank) {
+		maybe_emit_frchg();
+		r0 -= _XF0;
+	}
 
-		movi_f(rn(reg), i0);
-		movr_f(r0, rn(reg));
-
-		jit_unget_reg(reg);
-	} else if (i0 == 0.0f) {
+	if (i0 == 0.0f) {
 		FLDI0(r0);
 	} else if (i0 == -0.0f) {
 		FLDI0(r0);
@@ -745,6 +739,9 @@ static void _movi_f(jit_state_t *_jit, jit_uint16_t r0, jit_float32_t i0)
 	} else {
 		load_const_f(0, r0, i0);
 	}
+
+	if (is_bank)
+		FRCHG();
 }
 
 static void _movi_d(jit_state_t *_jit, jit_uint16_t r0, jit_float64_t i0)
