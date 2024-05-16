@@ -536,33 +536,63 @@
     16,	/* hmuli */
     8,	/* hmulr_u */
     16,	/* hmuli_u */
+    8,	/* ldxbr_c */
     18,	/* ldxbi_c */
+    12, /* ldxar_c */
     18,	/* ldxai_c */
+    4,	/* ldxbr_uc */
     18,	/* ldxbi_uc */
+    8,	/* ldxar_uc */
     18,	/* ldxai_uc */
+    4,	/* ldxbr_s */
     18,	/* ldxbi_s */
+    8,	/* ldxar_s */
     18,	/* ldxai_s */
+    4,	/* ldxbr_us */
     18,	/* ldxbi_us */
+    8,	/* ldxar_us */
     18,	/* ldxai_us */
+    4,	/* ldxbr_i */
     18,	/* ldxbi_i */
+    8,	/* ldxar_i */
     18,	/* ldxai_i */
+    0,	/* ldxbr_ui */
     0,	/* ldxbi_ui */
+    0,	/* ldxar_ui */
     0,	/* ldxai_ui */
+    0,	/* ldxbr_l */
     0,	/* ldxbi_l */
+    0,	/* ldxar_l */
     0,	/* ldxai_l */
+    4,	/* ldxbr_f */
     18,	/* ldxbi_f */
+    8,	/* ldxar_f */
     18,	/* ldxai_f */
+    4,	/* ldxbr_d */
     18, /* ldxbi_d */
+    8,	/* ldxar_d */
     18, /* ldxai_d */
+    4,	/* stxbr_c */
     18,	/* stxbi_c */
+    8,	/* stxar_c */
     18,	/* stxai_c */
+    4,	/* stxbr_s */
     18,	/* stxbi_s */
+    8,	/* stxar_s */
     18,	/* stxai_s */
+    4,	/* stxbr_i */
     18,	/* stxbi_i */
+    8,	/* stxar_i */
     18,	/* stxai_i */
+    0,	/* stxbr_l */
     0,	/* stxbi_l */
+    0,	/* stxar_l */
     0,	/* stxai_l */
+    4,	/* stxbr_f */
     18,	/* stxbi_f */
+    8,	/* stxar_f */
     18,	/* stxai_f */
+    4,	/* stxbr_d */
     18, /* stxbi_d */
+    8,	/* stxar_d */
     18, /* stxai_d */
