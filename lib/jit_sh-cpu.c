@@ -25,10 +25,12 @@
 #    define SH_DEFAULT_FPU_MODE 1
 #  endif
 
-#  ifdef __SH_FPU_ANY__
-#    define SH_HAS_FPU 1
-#  else
-#    define SH_HAS_FPU 0
+#  ifndef SH_HAS_FPU
+#    ifdef __SH_FPU_ANY__
+#      define SH_HAS_FPU 1
+#    else
+#      define SH_HAS_FPU 0
+#    endif
 #  endif
 
 #  ifdef __SH4_SINGLE_ONLY__
