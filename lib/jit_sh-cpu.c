@@ -1379,12 +1379,19 @@ static void
 _qdivi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
 	 jit_uint16_t r2, jit_word_t i0)
 {
-	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
+	if (r0 != r2 && r1 != r2) {
+		fallback_divi_u(r0, r2, i0);
+		muli(r1, r0, i0);
+		subr(r1, r2, r1);
+	} else {
+		jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
-	movi(rn(reg), i0);
-	qdivr_u(r0, r1, r2, rn(reg));
+		fallback_divi_u(rn(reg), r2, i0);
+		muli(_R0, rn(reg), i0);
+		subr(r1, r2, _R0);
 
-	jit_unget_reg(reg);
+		jit_unget_reg(reg);
+	}
 }
 
 static void
@@ -1427,8 +1434,7 @@ _remi_u(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 {
 	jit_uint32_t reg = jit_get_reg(jit_class_gpr);
 
-	movi(rn(reg), i0);
-	remr_u(r0, r1, rn(reg));
+	qdivi_u(rn(reg), r0, r1, i0);
 
 	jit_unget_reg(reg);
 }
