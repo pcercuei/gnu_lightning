@@ -1804,8 +1804,8 @@ _jit_patch_abs(jit_state_t *_jit, jit_node_t *instr, jit_pointer_t address)
 	default:
 #ifndef NDEBUG
 	    mask = jit_classify(instr->code);
-#endif
 	    assert((mask & (jit_cc_a0_reg|jit_cc_a0_jmp)) == jit_cc_a0_jmp);
+#endif
 	    instr->u.p = address;
     }
 }
@@ -1834,8 +1834,8 @@ _jit_patch_at(jit_state_t *_jit, jit_node_t *instr, jit_node_t *label)
 	default:
 #ifndef NDEBUG
 	    mask = jit_classify(instr->code);
-#endif
 	    assert((mask & (jit_cc_a0_reg|jit_cc_a0_jmp)) == jit_cc_a0_jmp);
+#endif
 	    assert(label->code == jit_code_label);
 	    instr->u.n = label;
 	    break;
@@ -2627,8 +2627,11 @@ _jit_emit(jit_state_t *_jit)
 #endif /* HAVE_MMAP */
 
     return (_jit->code.ptr);
+
+#if HAVE_MMAP
 fail:
     return (NULL);
+#endif /* HAVE_MMAP */
 }
 
 void
