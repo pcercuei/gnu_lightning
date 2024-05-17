@@ -433,16 +433,16 @@ _bunordi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_float64_t,jit_bool_t);
 #  define bunordi_d_p(i0,r0,i1,p)	_bunordi_d(_jit,i0,r0,i1,p)
 #  define ldxbi_f(r0,r1,i0)		generic_ldxbi_f(r0,r1,i0)
 #  define ldxbi_d(r0,r1,i0)		generic_ldxbi_d(r0,r1,i0)
-static jit_word_t
+static void
 _ldxai_f(jit_state_t*,jit_int16_t,jit_int16_t,jit_word_t);
 #  define ldxai_f(r0,r1,i0)		_ldxai_f(_jit,r0,r1,i0)
-static jit_word_t
+static void
 _ldxai_d(jit_state_t*,jit_int16_t,jit_int16_t,jit_word_t);
 #  define ldxai_d(r0,r1,i0)		_ldxai_d(_jit,r0,r1,i0)
-static jit_word_t
+static void
 _stxbi_f(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #  define stxbi_f(i0,r0,r1)		_stxbi_f(_jit,i0,r0,r1)
-static jit_word_t
+static void
 _stxbi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #  define stxbi_d(i0,r0,r1)		_stxbi_d(_jit,i0,r0,r1)
 #  define stxai_f(i0,r0,r1)		generic_stxai_f(i0,r0,r1)
@@ -2268,7 +2268,7 @@ _bunordi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 	return w;
 }
 
-static jit_word_t
+static void
 _ldxai_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_word_t i0)
 {
     if (i0 == 4)
@@ -2277,7 +2277,7 @@ _ldxai_f(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_word_t i0)
         generic_ldxai_f(r0, r1, i0);
 }
 
-static jit_word_t
+static void
 _ldxai_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_word_t i0)
 {
 	if (SH_SINGLE_ONLY) {
@@ -2290,7 +2290,7 @@ _ldxai_d(jit_state_t *_jit, jit_int16_t r0, jit_int16_t r1, jit_word_t i0)
 	}
 }
 
-static jit_word_t
+static void
 _stxbi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_int16_t r1)
 {
     if (i0 == -4)
@@ -2299,7 +2299,7 @@ _stxbi_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_int16_t r1)
         generic_stxbi_f(i0, r0, r1);
 }
 
-static jit_word_t
+static void
 _stxbi_d(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0, jit_int16_t r1)
 {
 	if (SH_SINGLE_ONLY) {
