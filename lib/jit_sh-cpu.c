@@ -530,10 +530,10 @@ static void _ldxai_us(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #  define ldxai_us(r0,r1,i0)		_ldxai_us(_jit,r0,r1,i0)
 static void _ldxai_i(jit_state_t*,jit_uint16_t,jit_uint16_t,jit_word_t);
 #  define ldxai_i(r0,r1,i0)		_ldxai_i(_jit,r0,r1,i0)
-#  define unldr(r0, r1, i0)		generic_unldr(r0, r1, i0)
-#  define unldi(r0, i0, i1)		generic_unldi(r0, i0, i1)
-#  define unldr_u(r0, r1, i0)		generic_unldr_u(r0, r1, i0)
-#  define unldi_u(r0, i0, i1)		generic_unldi_u(r0, i0, i1)
+#  define unldr(r0, r1, i0)		fallback_unldr(r0, r1, i0)
+#  define unldi(r0, i0, i1)		fallback_unldi(r0, i0, i1)
+#  define unldr_u(r0, r1, i0)		fallback_unldr_u(r0, r1, i0)
+#  define unldi_u(r0, i0, i1)		fallback_unldi_u(r0, i0, i1)
 #    define str_c(r0,r1)		STB(r0,r1)
 #    define str_s(r0,r1)		STW(r0,r1)
 #    define str_i(r0,r1)		STL(r0,r1)
@@ -564,8 +564,8 @@ static void _stxbi_i(jit_state_t*,jit_word_t,jit_uint16_t,jit_uint16_t);
 #  define stxai_c(i0,r0,r1)		generic_stxai_c(i0,r0,r1)
 #  define stxai_s(i0,r0,r1)		generic_stxai_s(i0,r0,r1)
 #  define stxai_i(i0,r0,r1)		generic_stxai_i(i0,r0,r1)
-#  define unstr(r0, r1, i0)		generic_unstr(r0, r1, i0)
-#  define unsti(i0, r0, i1)		generic_unsti(i0, r0, i1)
+#  define unstr(r0, r1, i0)		fallback_unstr(r0, r1, i0)
+#  define unsti(i0, r0, i1)		fallback_unsti(i0, r0, i1)
 static jit_word_t _bger(jit_state_t*,jit_word_t,jit_uint16_t,
 			jit_uint16_t,jit_bool_t,jit_bool_t);
 #    define bltr(i0,r0,r1)		bltr_p(i0,r0,r1,0)
