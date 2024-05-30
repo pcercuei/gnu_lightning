@@ -1243,7 +1243,7 @@ _emit_code(jit_state_t *_jit)
 void
 jit_flush(void *fptr, void *tptr)
 {
-#if defined(__GNUC__)
+#if defined(__linux__)
     jit_uword_t		i, f, t, s;
 
     s = sysconf(_SC_PAGE_SIZE);
