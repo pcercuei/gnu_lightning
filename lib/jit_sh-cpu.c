@@ -2260,7 +2260,7 @@ _ldxi_i(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1, jit_word_t i0)
 			movr(r0, _R0);
 		} else {
 			movr(r0, r1);
-			ldxi_s(r0, r0, i0);
+			ldxi_i(r0, r0, i0);
 		}
 	} else if (i0 >= 0 && i0 <= 0x3f && !(i0 & 0x3)) {
 		LDDL(r0, r1, i0 >> 2);
