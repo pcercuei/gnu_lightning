@@ -1192,8 +1192,8 @@ _emit_code(jit_state_t *_jit)
 	}
 
 	if (_jitc->consts.length &&
-		(jit_uword_t)_jit->pc.uc - (jit_uword_t)_jitc->consts.patches[0] >= 950) {
-		/* Maximum displacement for mov.l is +1020 bytes. If we're already +950 bytes
+		(jit_uword_t)_jit->pc.uc - (jit_uword_t)_jitc->consts.patches[0] >= 900) {
+		/* Maximum displacement for mov.l is +1020 bytes. If we're already +900 bytes
 		 * since the first mov.l, force a flush. */
 
 		if (node->next &&
