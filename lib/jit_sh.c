@@ -515,6 +515,8 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_label:
 		/* remember label is defined */
 		node->flag |= jit_flag_patch;
+		/* Reset FPU mode */
+		set_fmode_no_r0(_jit, SH_DEFAULT_FPU_MODE);
 		node->u.w = _jit->pc.w;
 		break;
 		case_rrr(add,);
@@ -1185,11 +1187,6 @@ _emit_code(jit_state_t *_jit)
 	jit_reglive(node);
 
         _jitc->no_flag = !(node->flag & jit_flag_patch);
-
-	if (!_jitc->no_flag) {
-		/* We have a patch flag - reset FPU mode */
-		set_fmode_no_r0(_jit, SH_DEFAULT_FPU_MODE);
-	}
 
 	if (_jitc->consts.length &&
 		(jit_uword_t)_jit->pc.uc - (jit_uword_t)_jitc->consts.patches[0] >= 900) {
