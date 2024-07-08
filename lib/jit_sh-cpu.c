@@ -852,6 +852,12 @@ _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 
 	if (i0 >= -128 && i0 < 128) {
 		MOVI(r0, i0);
+	} else if (!(i0 & 0x1) && i0 >= -256 && i0 < 256) {
+		MOVI(r0, i0 >> 1);
+		SHLL(r0);
+	} else if (!(i0 & 0x3) && i0 >= -512 && i0 < 512) {
+		MOVI(r0, i0 >> 2);
+		SHLL2(r0);
 	} else if (i0 >= w && i0 <= w + 0x3ff && !((i0 - w) & 0x3)) {
 		MOVA((i0 - w) >> 2);
 		movr(r0, _R0);
