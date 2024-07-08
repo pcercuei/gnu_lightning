@@ -3033,6 +3033,7 @@ static void
 _prolog(jit_state_t *_jit, jit_node_t *node)
 {
 	unsigned int i;
+	jit_uint16_t reg;
 
 	if (_jitc->function->define_frame || _jitc->function->assume_frame) {
 		jit_int32_t	frame = -_jitc->function->frame;
@@ -3062,6 +3063,12 @@ _prolog(jit_state_t *_jit, jit_node_t *node)
 
 	if (_jitc->function->stack)
 		subi(JIT_SP, JIT_SP, _jitc->function->stack);
+	if (_jitc->function->allocar) {
+		reg = jit_get_reg(jit_class_gpr);
+		movi(rn(reg), _jitc->function->self.aoff);
+		stxi_i(_jitc->function->aoffoff, JIT_FP, rn(reg));
+		jit_unget_reg(reg);
+	}
 
 	reset_fpu(_jit, 0);
 }
