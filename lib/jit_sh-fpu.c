@@ -447,6 +447,8 @@ _stxbi_d(jit_state_t*,jit_word_t,jit_int16_t,jit_int16_t);
 #  define stxbi_d(i0,r0,r1)		_stxbi_d(_jit,i0,r0,r1)
 #  define stxai_f(i0,r0,r1)		generic_stxai_f(i0,r0,r1)
 #  define stxai_d(i0,r0,r1)		generic_stxai_d(i0,r0,r1)
+static void _vaarg_d(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define vaarg_d(r0, r1)		_vaarg_d(_jit, r0, r1)
 #endif /* PROTO */
 
 #if CODE
@@ -2349,6 +2351,44 @@ static void _movi_ww_d(jit_state_t *_jit, jit_int16_t r0, jit_word_t i0, jit_wor
 	/* TODO: single-only */
 	movi_w_f(r0, i1);
 	movi_w_f(r0 + 1, i0);
+}
+
+static void
+_vaarg_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t rg0, rg1;
+    jit_word_t ge_code;
+
+    assert(_jitc->function->self.call & jit_call_varargs);
+
+    rg0 = jit_get_reg(jit_class_gpr);
+    rg1 = jit_get_reg(jit_class_gpr);
+
+    /* Load begin/end gpr pointers */
+    ldxi(rn(rg1), r1, offsetof(jit_va_list_t, efpr));
+    movi(_R0, offsetof(jit_va_list_t, bfpr));
+    ldxr(rn(rg0), r1, _R0);
+
+    /* Check that we didn't reach the end gpr pointer. */
+    CMPHS(rn(rg0), rn(rg1));
+
+    ge_code = _jit->pc.w;
+    BF(0);
+
+    /* If we did, load the stack pointer instead. */
+    movi(_R0, offsetof(jit_va_list_t, over));
+    ldxr(rn(rg0), r1, _R0);
+
+    patch_at(ge_code, _jit->pc.w);
+
+    /* All good, we can now load the actual value */
+    ldxai_d(r0, rn(rg0), sizeof(jit_float64_t));
+
+    /* Update the pointer (gpr or stack) to the next word */
+    stxr(_R0, r1, rn(rg0));
+
+    jit_unget_reg(rg0);
+    jit_unget_reg(rg1);
 }
 
 #endif /* CODE */

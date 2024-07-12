@@ -118,6 +118,14 @@ jit_register_t _rvs[] = {
     { rc(sav) | _XF15,			"$xf15" },
 };
 
+typedef struct jit_va_list {
+    jit_pointer_t	bgpr;
+    jit_pointer_t	egpr;
+    jit_pointer_t	bfpr;
+    jit_pointer_t	efpr;
+    jit_pointer_t	over;
+} jit_va_list_t;
+
 void
 jit_get_cpu(void)
 {
@@ -1058,7 +1066,6 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_movi_ww_d:
 		movi_ww_d(rn(node->u.w), node->v.w, node->w.w);
 		break;
-#if 0
 	    case jit_code_va_start:
 		vastart(rn(node->u.w));
 		break;
@@ -1068,7 +1075,6 @@ _emit_code(jit_state_t *_jit)
 	    case jit_code_va_arg_d:
 		vaarg_d(rn(node->u.w), rn(node->v.w));
 		break;
-#endif
 	    case jit_code_live:			case jit_code_ellipsis:
 	    case jit_code_va_push:
 	    case jit_code_allocai:		case jit_code_allocar:
@@ -1458,8 +1464,6 @@ _jit_make_arg_f(jit_state_t *_jit, jit_node_t *node)
 
     if (jit_arg_f_reg_p(_jitc->function->self.argf)) {
 	offset = _jitc->function->self.argf++;
-	if (_jitc->function->self.call & jit_call_varargs)
-	    offset += 8;
     }
     else {
 	offset = _jitc->function->self.size;
@@ -1482,8 +1486,6 @@ _jit_make_arg_d(jit_state_t *_jit, jit_node_t *node)
     if (jit_arg_f_reg_p(_jitc->function->self.argf)) {
 	offset = (_jitc->function->self.argf + 1) & ~1;
 	_jitc->function->self.argf = offset + 2;
-	if (_jitc->function->self.call & jit_call_varargs)
-	    offset += 8;
     }
     else {
 	offset = _jitc->function->self.size;
@@ -1685,6 +1687,10 @@ _jit_ellipsis(jit_state_t *_jit)
 	assert(!(_jitc->function->self.call & jit_call_varargs));
 	_jitc->function->self.call |= jit_call_varargs;
 	_jitc->function->vagp = _jitc->function->self.argi;
+	_jitc->function->vafp = _jitc->function->self.argf;
+	_jitc->function->vaoff = jit_allocai(sizeof(jit_va_list_t)
+					     /* +1 to ensure 8-byte alignment */
+					     + (NUM_WORD_ARGS + NUM_FLOAT_ARGS + 1) * 4);
     }
     jit_dec_synth();
 }
@@ -1692,9 +1698,21 @@ _jit_ellipsis(jit_state_t *_jit)
 void
 _jit_va_push(jit_state_t *_jit, jit_int32_t u)
 {
-    jit_inc_synth_w(va_push, u);
-    jit_pushargr(u);
-    jit_dec_synth();
+	jit_int32_t i, reg;
+	jit_inc_synth_w(va_push, u);
+
+	reg = jit_get_reg(jit_class_gpr);
+
+	for (i = 0; i < 5; i++) {
+		jit_ldxi(reg, u, i * 4);
+		jit_stxi(_jitc->function->call.size + i * 4, JIT_SP, reg);
+	}
+
+	jit_unget_reg(reg);
+
+	_jitc->function->call.size += 5 * 4;
+
+	jit_dec_synth();
 }
 
 jit_bool_t
