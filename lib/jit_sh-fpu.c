@@ -456,7 +456,7 @@ static void set_fmode_mask(jit_state_t *_jit, jit_uint32_t mask, jit_bool_t no_r
 {
 	jit_uint16_t reg, reg2;
 
-	if (SH_HAS_FPU) {
+	if (SH_HAS_FPU && _jitc->uses_fpu) {
 		if (no_r0) {
 			reg = jit_get_reg(jit_class_gpr);
 			reg2 = jit_get_reg(jit_class_gpr);
@@ -480,7 +480,7 @@ static void set_fmode_mask(jit_state_t *_jit, jit_uint32_t mask, jit_bool_t no_r
 
 static void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 {
-	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
+	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->uses_fpu && _jitc->mode_d != is_double) {
 		set_fmode_mask(_jit, PR_FLAG, 0);
 		_jitc->mode_d = is_double;
 	}
@@ -488,7 +488,7 @@ static void set_fmode(jit_state_t *_jit, jit_bool_t is_double)
 
 static void reset_fpu(jit_state_t *_jit, jit_bool_t no_r0)
 {
-	if (SH_HAS_FPU) {
+	if (SH_HAS_FPU && _jitc->uses_fpu) {
 		if (_jitc->mode_d != SH_DEFAULT_FPU_MODE)
 			set_fmode_mask(_jit, PR_FLAG | FR_FLAG, no_r0);
 		else if (SH_DEFAULT_FPU_MODE)
@@ -502,7 +502,7 @@ static void reset_fpu(jit_state_t *_jit, jit_bool_t no_r0)
 
 static void set_fmode_no_r0(jit_state_t *_jit, jit_bool_t is_double)
 {
-	if (SH_HAS_FPU && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
+	if (SH_HAS_FPU && _jitc->uses_fpu && !SH_SINGLE_ONLY && _jitc->mode_d != is_double) {
 		set_fmode_mask(_jit, PR_FLAG, 1);
 		_jitc->mode_d = is_double;
 	}
