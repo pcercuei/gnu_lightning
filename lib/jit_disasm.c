@@ -247,12 +247,12 @@ disasm_compare_symbols(const void *ap, const void *bp)
     return (0);
 }
 
-#if __WORDSIZE == 32
+#if !defined(BFD64)
 #  define address_buffer_length		16
-#  define address_buffer_format		"%llx"
+#  define address_buffer_format		"%x"
 #else
 #  define address_buffer_length		32
-#  define address_buffer_format		"%lx"
+#  define address_buffer_format		"%llx"
 #endif
 static void
 disasm_print_address(bfd_vma addr, struct disassemble_info *info)
