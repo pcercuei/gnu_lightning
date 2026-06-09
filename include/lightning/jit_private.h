@@ -614,6 +614,10 @@ struct jit_compiler {
     jit_int32_t		  rout;		/* first output register */
     jit_int32_t		  breg;		/* base register for prolog/epilog */
 #endif
+#if __sh__
+    jit_uint16_t          ibuf[16];
+    jit_uint16_t          ioff;
+#endif
 #if __mips__
     struct {
 	jit_int32_t	  op;		/* pending instruction, candidate

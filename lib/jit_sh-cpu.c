@@ -265,7 +265,11 @@ static void _cd(jit_state_t*,jit_uint16_t,jit_uint16_t);
 #    define FSCHG()			ii(0xf3fd)
 #    define FRCHG()			ii(0xfbfd)
 
-#    define ii(i)			*_jit->pc.us++ = i
+static void _flush(jit_state_t*, jit_bool_t);
+#    define flush(all)         _flush(_jit,all)
+
+static void _ii(jit_state_t*,jit_uint16_t);
+#    define ii(i)			_ii(_jit, i)
 
 #    define stack_framesize		((JIT_V_NUM + 2) * 4)
 
@@ -735,6 +739,8 @@ static void _vaarg(jit_state_t*, jit_int32_t, jit_int32_t);
 #    define jit_sh34_p()	0
 #  endif
 
+static jit_instr_t *_last_instr(jit_state_t *_jit);
+#  define last_instr() _last_instr(_jit)
 static void _maybe_emit_frchg(jit_state_t *_jit);
 #  define maybe_emit_frchg() _maybe_emit_frchg(_jit)
 static void _maybe_emit_fschg(jit_state_t *_jit);
@@ -781,6 +787,26 @@ _cd(jit_state_t *_jit, jit_uint16_t c, jit_uint16_t d)
 	op.d = (struct jit_instr_d){ .c = c, .d = d };
 
 	ii(op.op);
+}
+
+static void
+_flush(jit_state_t *_jit, jit_bool_t all)
+{
+    unsigned int i;
+
+    for (i = 0; i < _jitc->ioff; i++)
+        *_jit->pc.us++ = _jitc->ibuf[i];
+
+    _jitc->ioff = 0;
+}
+
+static void
+_ii(jit_state_t *_jit, jit_uint16_t c)
+{
+    if (_jitc->ioff == 16)
+        flush(0);
+
+    _jitc->ibuf[_jitc->ioff++] = c;
 }
 
 static void
@@ -852,7 +878,7 @@ movi_loop_cnt(jit_word_t i0)
 static void
 _movi(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 {
-	jit_word_t w = _jit->pc.w & ~3;
+	jit_word_t w = (_jit->pc.w + _jitc->ioff * 2) & ~3;
 
 	if (i0 >= -128 && i0 < 128) {
 		MOVI(r0, i0);
@@ -894,7 +920,7 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 
 		/* Leave space after the BF/BT in case we need to add a
 		 * BRA opcode. */
-		w = _jit->code.length - (_jit->pc.uc - _jit->code.ptr);
+		w = _jit->code.length - (_jit->pc.uc + _jitc->ioff * 2 - _jit->code.ptr);
 		if (w > 254) {
 			NOP();
 			NOP();
@@ -922,36 +948,38 @@ emit_branch_opcode(jit_state_t *_jit, jit_word_t i0, jit_word_t w,
 	}
 }
 
+static jit_instr_t *_last_instr(jit_state_t *_jit)
+{
+    if(_jitc->ioff > 0)
+        return (jit_instr_t *)(&_jitc->ibuf[_jitc->ioff - 1]);
+    else
+        return (jit_instr_t *)(_jit->pc.w - 2);
+}
+
 static void _maybe_emit_frchg(jit_state_t *_jit)
 {
-	jit_instr_t *instr = (jit_instr_t *)(_jit->pc.w - 2);
-
-	if (_jitc->no_flag && instr->op == 0xfbfd)
-		_jit->pc.us--;
-	else
-		FRCHG();
+    if (_jitc->no_flag && _jitc->ioff > 0 && last_instr()->op == 0xfbfd)
+        _jitc->ioff--;
+    else
+        FRCHG();
 }
 
 static void _maybe_emit_fschg(jit_state_t *_jit)
 {
-	jit_instr_t *instr = (jit_instr_t *)(_jit->pc.w - 2);
-
-	if (_jitc->no_flag && instr->op == 0xf3fd)
-		_jit->pc.us--;
-	else
-		FSCHG();
+    if (_jitc->no_flag && _jitc->ioff > 0 && last_instr()->op == 0xf3fd)
+        _jitc->ioff--;
+    else
+        FSCHG();
 }
 
 static void maybe_emit_tst(jit_state_t *_jit, jit_uint16_t r0, jit_bool_t *set)
 {
-	jit_instr_t *instr = (jit_instr_t *)(_jit->pc.w - 2);
-
 	/* If the previous opcode is a MOVT(r0), we can skip the TST opcode,
 	 * but we need to invert the branch condition. */
-	if (_jitc->no_flag && instr->op == (0x29 | (r0 << 8)))
-		*set ^= 1;
-	else
-		TST(r0, r0);
+    if (_jitc->no_flag && last_instr()->op == (0x29 | (r0 << 8)))
+        *set ^= 1;
+    else
+        TST(r0, r0);
 }
 
 static void _movnr(jit_state_t *_jit, jit_uint16_t r0, jit_uint16_t r1,
@@ -2503,7 +2531,7 @@ _bger(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	CMPGE(r0, r1);
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, t, p);
 
 	return (w);
@@ -2518,7 +2546,7 @@ _bger_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	CMPHS(r0, r1);
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, t, p);
 
 	return (w);
@@ -2539,7 +2567,7 @@ _beqr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 			w = _jmpi(_jit, i0, i0 == 0);
 	} else {
 		CMPEQ(r0, r1);
-		w = _jit->pc.w;
+		w = _jit->pc.w + _jitc->ioff * 2;
 		emit_branch_opcode(_jit, i0, w, 1, p);
 	}
 
@@ -2555,7 +2583,7 @@ _bner(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
 	CMPEQ(r0, r1);
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, 0, p);
 
 	return (w);
@@ -2575,7 +2603,7 @@ _bmsr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	else
 		maybe_emit_tst(_jit, r0, &set);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2595,7 +2623,7 @@ _bmcr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	else
 		maybe_emit_tst(_jit, r0, &set);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2617,7 +2645,7 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 		movi(_R0, i1);
 		CMPGT(r0, _R0);
 	}
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2639,7 +2667,7 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 		movi(_R0, i1);
 		CMPGE(r0, _R0);
 	}
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2661,7 +2689,7 @@ _bgti_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 		movi(_R0, i1);
 		CMPHI(r0, _R0);
 	}
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2679,7 +2707,7 @@ _bgei_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	movi(_R0, i1);
 	CMPHS(r0, _R0);
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2703,7 +2731,7 @@ static jit_word_t _beqi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 		movi(_R0, i1);
 		CMPEQ(_R0, r0);
 	}
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2720,7 +2748,7 @@ static jit_word_t _bmsi(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	movi(_R0, i1);
 	TST(_R0, r0);
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2735,7 +2763,7 @@ static jit_word_t _boaddr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	ADDV(r0, r1);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2751,7 +2779,7 @@ static jit_word_t _boaddr_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	CLRT();
 	ADDC(r0, r1);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2799,7 +2827,7 @@ static jit_word_t _bosubr(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	NEG(_R0, r1);
 	ADDV(r0, _R0);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2815,7 +2843,7 @@ static jit_word_t _bosubr_u(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 	CLRT();
 	SUBC(r0, r1);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -2864,7 +2892,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t force)
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	disp = (i0 - w >> 1) - 2;
 
 	if (force || (disp >= -2048 && disp <= 2046)) {
@@ -2911,7 +2939,7 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 
 	reset_fpu(_jit, 0);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	disp = (i0 - w >> 1) - 2;
 
 	if (disp >= -2048 && disp <= 2046) {
@@ -2928,7 +2956,7 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 static jit_word_t
 _movi_p(jit_state_t *_jit, jit_uint16_t r0, jit_word_t i0)
 {
-	jit_word_t w = _jit->pc.w;
+	jit_word_t w = _jit->pc.w + _jitc->ioff * 2;
 
 	load_const(1, r0, 0);
 
@@ -3029,6 +3057,8 @@ _vaarg(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 
     /* Check that we didn't reach the end gpr pointer. */
     CMPHS(rn(rg0), rn(rg1));
+
+    flush(1);
 
     ge_code = _jit->pc.w;
     BF(0);

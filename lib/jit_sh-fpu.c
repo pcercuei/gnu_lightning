@@ -1723,7 +1723,7 @@ static jit_word_t _beqr_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -1745,7 +1745,7 @@ static jit_word_t _beqi_f(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -1767,7 +1767,7 @@ static jit_word_t _beqi_d(jit_state_t *_jit, jit_word_t i0, jit_uint16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -1785,7 +1785,7 @@ static jit_word_t _bgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -1875,7 +1875,7 @@ static jit_word_t _bler_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, set, p);
 
 	return (w);
@@ -1959,7 +1959,7 @@ static jit_word_t _buneqr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, 0, p);
 
 	return (w);
@@ -1975,7 +1975,7 @@ static jit_word_t _bltgtr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, 0, p);
 
 	return (w);
@@ -1992,7 +1992,7 @@ static jit_word_t _bordr_f(jit_state_t *_jit, jit_word_t i0, jit_int16_t r0,
 
 	set_fmode(_jit, SH_DEFAULT_FPU_MODE);
 
-	w = _jit->pc.w;
+	w = _jit->pc.w + _jitc->ioff * 2;
 	emit_branch_opcode(_jit, i0, w, !set, p);
 
 	return (w);
@@ -2372,7 +2372,7 @@ _vaarg_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     /* Check that we didn't reach the end gpr pointer. */
     CMPHS(rn(rg0), rn(rg1));
 
-    ge_code = _jit->pc.w;
+    ge_code = _jit->pc.w + _jitc->ioff * 2;
     BF(0);
 
     /* If we did, load the stack pointer instead. */
