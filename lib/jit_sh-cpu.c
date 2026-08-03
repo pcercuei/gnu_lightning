@@ -794,6 +794,43 @@ _flush(jit_state_t *_jit, jit_bool_t all)
 {
     unsigned int i;
 
+    /* TODO: Instead of copying the instructions as-is, reorder them in the best
+     * way possible.
+     *
+     * If 'all', we want to flush all instructions of the buffer. Otherwise, we
+     * can settle with flushing one or two.
+     *
+     * - First, try to locate a LS instruction that can be scheduled earlier.
+     *   Try to find an EX to combine with it in priority, or a FE, and finally,
+     *   a MT. Note that right now Lightrec does not emit any FE so these can be
+     *   skipped for now.
+     *
+     * - Keep track of load delays using a register mask: set the bit for the
+     *   target register of the LS, and for the next instruction slot (of the
+     *   next cycle, not for a combined instruction), make sure that we don't
+     *   pick an instruction that accesses this register. After the next
+     *   instruction, the bit is reset to 0 as the result becomes available.
+     *
+     * - Try to locate an EX instruction with no load delay dependency. If we
+     *   find one, try to locate a MT instruction to combine it with.
+     *
+     * - Try to locate a CO instruction.
+     *
+     * - If we can't find anything and we have load delays, clear the load delay
+     *   mask and try again.
+     *
+     * - Skip NOP pairs.
+     *
+     * - If we can't combine, emit just one instruction.
+     *
+     * - If we only have three instructions left, and the middle one is a BRA,
+     *   BRAF, JMP, JSR, BT/S or BF/S, and the last one is a NOP, check if the
+     *   first instruction can be moved to the branch's delay slot.
+     *
+     * - If we only have two instructions left:
+     *   * Second opcode is BT/BF, and does not have dependency with the first
+     *     opcode: convert those to BT/S or BF/S.
+     */
     for (i = 0; i < _jitc->ioff; i++)
         *_jit->pc.us++ = _jitc->ibuf[i];
 
